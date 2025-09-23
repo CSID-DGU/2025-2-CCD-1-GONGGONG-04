@@ -70,6 +70,7 @@
 
 3. **통합 정보 제공**
    - 센터별 운영시간, 업무내용, 전문분야
+   - **실시간 운영 상태 표시** (운영중/마감)
    - 이용 후기 및 평점 시스템
    - 센터 연락처 및 위치 정보
 
@@ -106,7 +107,7 @@
 
 #### 2.4.2 데이터 가공 및 활용 전략
 - 위도/경도 기반 지도 마커 표시
-- 운영시간 파싱하여 현재 운영 중 센터 필터링
+- **운영시간 파싱하여 실시간 운영 상태 판별** (현재시간과 비교)
 - 센터구분별 카테고리 분류
 - 의료진 현황 기반 전문성 지표 생성
 
@@ -155,7 +156,7 @@
 - 각 카드: 센터 기본 정보 및 매칭 이유
 
 **4. 센터 상세 화면**
-- 헤더: 센터명, 구분, 평점
+- 헤더: 센터명, 구분, 평점, **실시간 운영 상태 배지**
 - 정보 섹션: 운영시간, 휴무일, 업무내용
 - 의료진 현황: 전문 인력 정보
 - 위치 정보: 지도 및 주소
@@ -176,6 +177,7 @@
 | 공공데이터 DB 구축 | 전국건강증진센터 데이터 수집 및 정제 | P0 (필수) | 1주 |
 | 지도 기반 검색 | 네이버/카카오 지도 API 연동 | P0 (필수) | 2주 |
 | 기본 검색/필터 | 지역, 운영시간, 센터구분별 필터 | P0 (필수) | 1주 |
+| **실시간 운영 상태 표시** | **현재시간 기반 운영중/마감 상태 표시** | **P0 (필수)** | **0.5주** |
 | 센터 상세 페이지 | 센터 정보 표시 | P0 (필수) | 1주 |
 | 반응형 웹 디자인 | 모바일/태블릿 대응 | P0 (필수) | 1주 |
 | 센터 즐겨찾기 | 로컬 스토리지 기반 저장 | P0 (필수) | 0.5주 |
@@ -280,7 +282,13 @@ centers (
   operating_phone VARCHAR(20),
   managing_agency VARCHAR(100),
   managing_phone VARCHAR(20),
-  data_update_date DATE
+  data_update_date DATE,
+  is_operating BOOLEAN GENERATED ALWAYS AS (
+    CASE
+      WHEN CURRENT_TIME BETWEEN open_time AND close_time THEN TRUE
+      ELSE FALSE
+    END
+  ) STORED
 )
 
 -- 사용자 테이블 (Phase 2)
@@ -317,6 +325,7 @@ reviews (
 - `GET /api/centers/:id` - 센터 상세 조회
 - `GET /api/centers/nearby` - 주변 센터 조회
 - `GET /api/centers/recommend` - 추천 센터 조회
+- **`GET /api/centers/:id/status` - 센터 실시간 운영 상태 조회**
 
 #### 2.10.2 사용자 관련 (Phase 2)
 - `POST /api/auth/register` - 회원가입
