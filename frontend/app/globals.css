@@ -42,6 +42,25 @@
   --sidebar-accent-foreground: oklch(0.2 0 0);
   --sidebar-border: oklch(0.92 0.02 300);
   --sidebar-ring: oklch(0.72 0.15 300);
+
+  /* MindConnect Lavender Colors */
+  --lavender-50: #FAF5FF;
+  --lavender-100: #F3E8FF;
+  --lavender-200: #E9D5FF;
+  --lavender-300: #D8B4FE;
+  --lavender-400: #C084FC;
+  --lavender-500: #A855F7;
+  --lavender-600: #9333EA;
+  --lavender-700: #7E22CE;
+  --lavender-800: #6B21A8;
+  --lavender-900: #581C87;
+  --lavender-950: #3B0764;
+
+  /* Status Colors */
+  --status-operating: #10B981;
+  --status-closed: #9CA3AF;
+  --status-emergency: #EF4444;
+  --status-warning: #F59E0B;
 }
 
 .dark {
@@ -121,6 +140,25 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
+
+  /* MindConnect Lavender Colors */
+  --color-lavender-50: var(--lavender-50);
+  --color-lavender-100: var(--lavender-100);
+  --color-lavender-200: var(--lavender-200);
+  --color-lavender-300: var(--lavender-300);
+  --color-lavender-400: var(--lavender-400);
+  --color-lavender-500: var(--lavender-500);
+  --color-lavender-600: var(--lavender-600);
+  --color-lavender-700: var(--lavender-700);
+  --color-lavender-800: var(--lavender-800);
+  --color-lavender-900: var(--lavender-900);
+  --color-lavender-950: var(--lavender-950);
+
+  /* Status Colors */
+  --color-status-operating: var(--status-operating);
+  --color-status-closed: var(--status-closed);
+  --color-status-emergency: var(--status-emergency);
+  --color-status-warning: var(--status-warning);
 }
 
 @layer base {
@@ -157,4 +195,41 @@
 
 .status-closed {
   @apply bg-muted text-muted-foreground;
+}
+
+/* Badge variants for MindConnect */
+.badge-operating {
+  background-color: rgba(16, 185, 129, 0.1);
+  color: #10B981;
+}
+
+.badge-closed {
+  background-color: rgba(156, 163, 175, 0.1);
+  color: #9CA3AF;
+}
+
+.badge-emergency {
+  background-color: rgba(239, 68, 68, 0.1);
+  color: #EF4444;
+}
+
+/* Custom utility classes */
+.gradient-lavender {
+  @apply bg-gradient-to-r from-lavender-400 to-lavender-600;
+}
+
+.gradient-lavender-soft {
+  @apply bg-gradient-to-r from-lavender-100 to-lavender-200;
+}
+
+.hover-lift {
+  @apply transition-transform hover:-translate-y-0.5;
+}
+
+.focus-ring {
+  @apply focus:outline-none focus:ring-2 focus:ring-lavender-500 focus:ring-offset-2;
+}
+
+.text-gradient {
+  @apply bg-gradient-to-r from-lavender-400 to-lavender-600 bg-clip-text text-transparent;
 }
