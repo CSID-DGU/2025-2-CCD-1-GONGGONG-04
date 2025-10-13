@@ -1,0 +1,658 @@
+// Prisma Schema for MindConnect
+// Database: MySQL 8.0+
+// Generated from Database_design.md
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================
+// 사용자 관련 테이블
+// ============================================
+
+model User {
+  id              BigInt      @id @default(autoincrement()) @db.UnsignedBigInt
+  email           String      @unique @db.VarChar(255)
+  passwordHash    String      @map("password_hash") @db.VarChar(255)
+  nickname        String      @db.VarChar(50)
+  phone           String?     @db.VarChar(20)
+  birthYear       Int?        @map("birth_year") @db.Year
+  gender          Gender      @default(N)
+  userType        UserType    @default(GENERAL) @map("user_type")
+  status          UserStatus  @default(ACTIVE)
+  emailVerified   Boolean     @default(false) @map("email_verified")
+  lastLoginAt     DateTime?   @map("last_login_at") @db.Timestamp(0)
+  createdAt       DateTime    @default(now()) @map("created_at") @db.Timestamp(0)
+  updatedAt       DateTime    @default(now()) @updatedAt @map("updated_at") @db.Timestamp(0)
+  deletedAt       DateTime?   @map("deleted_at") @db.Timestamp(0)
+
+  // Relations
+  profile         UserProfile?
+  sessions        UserSession[]
+  reviews         Review[]
+  favorites       UserFavorite[]
+  recommendations Recommendation[]
+  assessments     UserAssessment[]
+  reactions       ReviewReaction[]
+  searchLogs      SearchLog[]
+  pageViews       PageView[]
+
+  @@index([email])
+  @@index([status])
+  @@index([createdAt])
+  @@map("users")
+}
+
+model UserProfile {
+  userId              BigInt    @id @map("user_id") @db.UnsignedBigInt
+  ageGroup            AgeGroup? @map("age_group")
+  occupation          String?   @db.VarChar(100)
+  locationLat         Decimal?  @map("location_lat") @db.Decimal(10, 8)
+  locationLng         Decimal?  @map("location_lng") @db.Decimal(11, 8)
+  addressSido         String?   @map("address_sido") @db.VarChar(50)
+  addressSigungu      String?   @map("address_sigungu") @db.VarChar(50)
+  preferOnline        Boolean   @default(false) @map("prefer_online")
+  preferAfter6pm      Boolean   @default(false) @map("prefer_after_6pm")
+  preferWeekend       Boolean   @default(false) @map("prefer_weekend")
+  mainConcern         Json?     @map("main_concern")
+  severityCode        SeverityCode? @map("severity_code")
+  severityScore       Decimal?  @map("severity_score") @db.Decimal(5, 2)
+  notificationEnabled Boolean   @default(true) @map("notification_enabled")
+  privacyAgreed       Boolean   @default(false) @map("privacy_agreed")
+  marketingAgreed     Boolean   @default(false) @map("marketing_agreed")
+  createdAt           DateTime  @default(now()) @map("created_at") @db.Timestamp(0)
+  updatedAt           DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamp(0)
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([locationLat, locationLng])
+  @@index([addressSido, addressSigungu])
+  @@map("user_profiles")
+}
+
+model UserSession {
+  id               BigInt   @id @default(autoincrement()) @db.UnsignedBigInt
+  userId           BigInt   @map("user_id") @db.UnsignedBigInt
+  sessionToken     String   @map("session_token") @db.VarChar(255)
+  sessionTokenHash Bytes?   @map("session_token_hash") @db.VarBinary(64)
+  ipAddress        String?  @map("ip_address") @db.VarChar(45)
+  userAgent        String?  @map("user_agent") @db.Text
+  expiresAt        DateTime @map("expires_at") @db.Timestamp(0)
+  createdAt        DateTime @default(now()) @map("created_at") @db.Timestamp(0)
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([sessionTokenHash])
+  @@index([userId, expiresAt])
+  @@map("user_sessions")
+}
+
+// ============================================
+// 센터 관련 테이블
+// ============================================
+
+model Center {
+  id                  BigInt    @id @default(autoincrement()) @db.UnsignedBigInt
+  centerName          String    @map("center_name") @db.VarChar(200)
+  centerType          String    @map("center_type") @db.VarChar(100)
+  centerTypeOriginal  String?   @map("center_type_original") @db.VarChar(100)
+  roadAddress         String    @map("road_address") @db.VarChar(500)
+  jibunAddress        String?   @map("jibun_address") @db.VarChar(500)
+  latitude            Decimal   @db.Decimal(10, 8)
+  longitude           Decimal   @db.Decimal(11, 8)
+  businessContent     String?   @map("business_content") @db.Text
+  buildingArea        Decimal?  @map("building_area") @db.Decimal(10, 2)
+  phoneNumber         String?   @map("phone_number") @db.VarChar(50)
+  operatingOrgName    String?   @map("operating_org_name") @db.VarChar(200)
+  managingOrgName     String?   @map("managing_org_name") @db.VarChar(200)
+  managingOrgPhone    String?   @map("managing_org_phone") @db.VarChar(50)
+  providerCode        String?   @map("provider_code") @db.VarChar(50)
+  providerName        String?   @map("provider_name") @db.VarChar(200)
+  otherInfo           String?   @map("other_info") @db.Text
+  isActive            Boolean   @default(true) @map("is_active")
+  viewCount           Int       @default(0) @map("view_count") @db.UnsignedInt
+  favoriteCount       Int       @default(0) @map("favorite_count") @db.UnsignedInt
+  reviewCount         Int       @default(0) @map("review_count") @db.UnsignedInt
+  avgRating           Decimal   @default(0) @map("avg_rating") @db.Decimal(3, 2)
+  dataReferenceDate   DateTime? @map("data_reference_date") @db.Date
+  source              String?   @db.VarChar(50)
+  externalId          String?   @map("external_id") @db.VarChar(100)
+  rawHoursText        String?   @map("raw_hours_text") @db.VarChar(500)
+  createdAt           DateTime  @default(now()) @map("created_at") @db.Timestamp(0)
+  updatedAt           DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamp(0)
+
+  // Relations
+  operatingHours  CenterOperatingHour[]
+  holidays        CenterHoliday[]
+  staff           CenterStaff[]
+  programs        CenterProgram[]
+  tags            CenterTag[]
+  reviews         Review[]
+  favorites       UserFavorite[]
+  recommendations Recommendation[]
+
+  @@unique([source, externalId])
+  @@index([centerType])
+  @@index([latitude, longitude])
+  @@index([centerName])
+  @@index([isActive, avgRating(sort: Desc)])
+  @@fulltext([centerName, businessContent, roadAddress])
+  @@map("centers")
+}
+
+model CenterOperatingHour {
+  id         BigInt   @id @default(autoincrement()) @db.UnsignedBigInt
+  centerId   BigInt   @map("center_id") @db.UnsignedBigInt
+  dayOfWeek  Int      @map("day_of_week") @db.TinyInt
+  openTime   DateTime? @map("open_time") @db.Time(0)
+  closeTime  DateTime? @map("close_time") @db.Time(0)
+  isHoliday  Boolean  @default(false) @map("is_holiday")
+  isOpen     Boolean  @default(true) @map("is_open")
+
+  // Relations
+  center Center @relation(fields: [centerId], references: [id], onDelete: Cascade)
+
+  @@unique([centerId, dayOfWeek])
+  @@index([dayOfWeek, openTime, closeTime])
+  @@map("center_operating_hours")
+}
+
+model CenterHoliday {
+  id          BigInt    @id @default(autoincrement()) @db.UnsignedBigInt
+  centerId    BigInt    @map("center_id") @db.UnsignedBigInt
+  holidayDate DateTime? @map("holiday_date") @db.Date
+  holidayName String?   @map("holiday_name") @db.VarChar(100)
+  isRegular   Boolean   @default(false) @map("is_regular")
+
+  // Relations
+  center Center @relation(fields: [centerId], references: [id], onDelete: Cascade)
+
+  @@index([centerId, holidayDate])
+  @@index([holidayDate])
+  @@map("center_holidays")
+}
+
+model CenterType {
+  code String @id @db.VarChar(50)
+  name String @db.VarChar(100)
+
+  @@map("center_types")
+}
+
+model StaffType {
+  code String @id @db.VarChar(50)
+  name String @db.VarChar(100)
+
+  @@map("staff_types")
+}
+
+model CenterStaff {
+  id          BigInt  @id @default(autoincrement()) @db.UnsignedBigInt
+  centerId    BigInt  @map("center_id") @db.UnsignedBigInt
+  staffType   String  @map("staff_type") @db.VarChar(50)
+  staffCount  Int     @default(0) @map("staff_count") @db.UnsignedInt
+  description String? @db.Text
+
+  // Relations
+  center Center @relation(fields: [centerId], references: [id], onDelete: Cascade)
+
+  @@unique([centerId, staffType])
+  @@index([staffType])
+  @@map("center_staff")
+}
+
+model CenterProgram {
+  id                BigInt   @id @default(autoincrement()) @db.UnsignedBigInt
+  centerId          BigInt   @map("center_id") @db.UnsignedBigInt
+  programName       String   @map("program_name") @db.VarChar(200)
+  programType       String?  @map("program_type") @db.VarChar(100)
+  targetGroup       String?  @map("target_group") @db.VarChar(200)
+  description       String?  @db.Text
+  isOnlineAvailable Boolean  @default(false) @map("is_online_available")
+  isFree            Boolean  @default(true) @map("is_free")
+  feeAmount         Decimal? @map("fee_amount") @db.Decimal(10, 0)
+  capacity          Int?     @map("capacity") @db.UnsignedInt
+  durationMinutes   Int?     @map("duration_minutes") @db.UnsignedInt
+  isActive          Boolean  @default(true) @map("is_active")
+  createdAt         DateTime @default(now()) @map("created_at") @db.Timestamp(0)
+  updatedAt         DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamp(0)
+
+  // Relations
+  center Center @relation(fields: [centerId], references: [id], onDelete: Cascade)
+
+  @@index([centerId, isActive])
+  @@index([programType])
+  @@fulltext([programName, description])
+  @@map("center_programs")
+}
+
+// ============================================
+// 태그 시스템
+// ============================================
+
+model Tag {
+  id          BigInt   @id @default(autoincrement()) @db.UnsignedBigInt
+  tagName     String   @unique @map("tag_name") @db.VarChar(50)
+  tagCategory String?  @map("tag_category") @db.VarChar(50)
+  usageCount  Int      @default(0) @map("usage_count") @db.UnsignedInt
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamp(0)
+
+  // Relations
+  centerTags CenterTag[]
+
+  @@index([tagCategory])
+  @@index([usageCount(sort: Desc)])
+  @@map("tags")
+}
+
+model CenterTag {
+  centerId  BigInt   @map("center_id") @db.UnsignedBigInt
+  tagId     BigInt   @map("tag_id") @db.UnsignedBigInt
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamp(0)
+
+  // Relations
+  center Center @relation(fields: [centerId], references: [id], onDelete: Cascade)
+  tag    Tag    @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([centerId, tagId])
+  @@index([tagId, centerId])
+  @@map("center_tags")
+}
+
+// ============================================
+// 리뷰 및 평점
+// ============================================
+
+model Review {
+  id            BigInt       @id @default(autoincrement()) @db.UnsignedBigInt
+  centerId      BigInt       @map("center_id") @db.UnsignedBigInt
+  userId        BigInt       @map("user_id") @db.UnsignedBigInt
+  rating        Int          @db.TinyInt
+  title         String?      @db.VarChar(200)
+  content       String       @db.Text
+  visitDate     DateTime?    @map("visit_date") @db.Date
+  isVerified    Boolean      @default(false) @map("is_verified")
+  helpfulCount  Int          @default(0) @map("helpful_count") @db.UnsignedInt
+  reportCount   Int          @default(0) @map("report_count") @db.UnsignedInt
+  status        ReviewStatus @default(ACTIVE)
+  createdAt     DateTime     @default(now()) @map("created_at") @db.Timestamp(0)
+  updatedAt     DateTime     @default(now()) @updatedAt @map("updated_at") @db.Timestamp(0)
+
+  // Relations
+  center    Center           @relation(fields: [centerId], references: [id], onDelete: Cascade)
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  images    ReviewImage[]
+  reactions ReviewReaction[]
+
+  @@index([centerId, rating, createdAt(sort: Desc)])
+  @@index([userId, createdAt(sort: Desc)])
+  @@index([status, createdAt(sort: Desc)])
+  @@fulltext([title, content])
+  @@map("reviews")
+}
+
+model ReviewImage {
+  id           BigInt   @id @default(autoincrement()) @db.UnsignedBigInt
+  reviewId     BigInt   @map("review_id") @db.UnsignedBigInt
+  imageUrl     String   @map("image_url") @db.VarChar(500)
+  thumbnailUrl String?  @map("thumbnail_url") @db.VarChar(500)
+  displayOrder Int      @default(0) @map("display_order") @db.TinyInt
+  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamp(0)
+
+  // Relations
+  review Review @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+
+  @@index([reviewId, displayOrder])
+  @@map("review_images")
+}
+
+model ReviewReaction {
+  reviewId     BigInt         @map("review_id") @db.UnsignedBigInt
+  userId       BigInt         @map("user_id") @db.UnsignedBigInt
+  reactionType ReactionType   @map("reaction_type")
+  createdAt    DateTime       @default(now()) @map("created_at") @db.Timestamp(0)
+
+  // Relations
+  review Review @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([reviewId, userId, reactionType])
+  @@index([userId, reactionType])
+  @@map("review_reactions")
+}
+
+// ============================================
+// 즐겨찾기 및 추천
+// ============================================
+
+model UserFavorite {
+  userId    BigInt   @map("user_id") @db.UnsignedBigInt
+  centerId  BigInt   @map("center_id") @db.UnsignedBigInt
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamp(0)
+
+  // Relations
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  center Center @relation(fields: [centerId], references: [id], onDelete: Cascade)
+
+  @@id([userId, centerId])
+  @@index([centerId])
+  @@index([userId, createdAt(sort: Desc)])
+  @@map("user_favorites")
+}
+
+model Recommendation {
+  id                  BigInt             @id @default(autoincrement()) @db.UnsignedBigInt
+  userId              BigInt?            @map("user_id") @db.UnsignedBigInt
+  sessionId           String?            @map("session_id") @db.VarChar(100)
+  centerId            BigInt             @map("center_id") @db.UnsignedBigInt
+  recommendationType  RecommendationType @map("recommendation_type")
+  totalScore          Decimal            @map("total_score") @db.Decimal(5, 2)
+  distanceScore       Decimal?           @map("distance_score") @db.Decimal(5, 2)
+  operatingScore      Decimal?           @map("operating_score") @db.Decimal(5, 2)
+  specialtyScore      Decimal?           @map("specialty_score") @db.Decimal(5, 2)
+  programMatchScore   Decimal?           @map("program_match_score") @db.Decimal(5, 2)
+  similarityScore     Decimal?           @map("similarity_score") @db.Decimal(5, 2)
+  recommendationRank  Int?               @map("recommendation_rank") @db.UnsignedInt
+  reasonJson          Json?              @map("reason_json")
+  isClicked           Boolean            @default(false) @map("is_clicked")
+  clickedAt           DateTime?          @map("clicked_at") @db.Timestamp(0)
+  createdAt           DateTime           @default(now()) @map("created_at") @db.Timestamp(0)
+
+  // Relations
+  user   User?  @relation(fields: [userId], references: [id], onDelete: SetNull)
+  center Center @relation(fields: [centerId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt(sort: Desc)])
+  @@index([sessionId, createdAt(sort: Desc)])
+  @@index([centerId, createdAt(sort: Desc)])
+  @@index([recommendationType, totalScore(sort: Desc)])
+  @@map("recommendations")
+}
+
+// ============================================
+// 자가진단 관련
+// ============================================
+
+model SelfAssessmentTemplate {
+  id                  BigInt   @id @default(autoincrement()) @db.UnsignedBigInt
+  templateName        String   @map("template_name") @db.VarChar(200)
+  templateType        String   @map("template_type") @db.VarChar(50)
+  description         String?  @db.Text
+  questionsJson       Json     @map("questions_json")
+  scoringRulesJson    Json?    @map("scoring_rules_json")
+  interpretationJson  Json?    @map("interpretation_json")
+  isActive            Boolean  @default(true) @map("is_active")
+  version             String?  @db.VarChar(20)
+  createdAt           DateTime @default(now()) @map("created_at") @db.Timestamp(0)
+  updatedAt           DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamp(0)
+
+  // Relations
+  assessments UserAssessment[]
+
+  @@index([templateType, isActive])
+  @@index([templateName])
+  @@map("self_assessment_templates")
+}
+
+model UserAssessment {
+  id                BigInt        @id @default(autoincrement()) @db.UnsignedBigInt
+  userId            BigInt?       @map("user_id") @db.UnsignedBigInt
+  sessionId         String?       @map("session_id") @db.VarChar(100)
+  templateId        BigInt        @map("template_id") @db.UnsignedBigInt
+  answersJson       Json          @map("answers_json")
+  totalScore        Decimal?      @map("total_score") @db.Decimal(5, 2)
+  severityCode      SeverityCode? @map("severity_code")
+  resultSummary     String?       @map("result_summary") @db.Text
+  recommendedAction String?       @map("recommended_action") @db.Text
+  completedAt       DateTime      @default(now()) @map("completed_at") @db.Timestamp(0)
+
+  // Relations
+  user     User?                   @relation(fields: [userId], references: [id], onDelete: SetNull)
+  template SelfAssessmentTemplate @relation(fields: [templateId], references: [id])
+
+  @@index([userId, completedAt(sort: Desc)])
+  @@index([templateId, completedAt(sort: Desc)])
+  @@index([sessionId])
+  @@map("user_assessments")
+}
+
+// ============================================
+// 정신건강 콘텐츠
+// ============================================
+
+model ContentCategory {
+  id           BigInt    @id @default(autoincrement()) @db.UnsignedBigInt
+  categoryName String    @map("category_name") @db.VarChar(100)
+  parentId     BigInt?   @map("parent_id") @db.UnsignedBigInt
+  displayOrder Int       @default(0) @map("display_order") @db.UnsignedInt
+  isActive     Boolean   @default(true) @map("is_active")
+  createdAt    DateTime  @default(now()) @map("created_at") @db.Timestamp(0)
+
+  // Relations
+  parent   ContentCategory?  @relation("CategoryHierarchy", fields: [parentId], references: [id], onDelete: SetNull)
+  children ContentCategory[] @relation("CategoryHierarchy")
+  contents Content[]
+
+  @@index([parentId, displayOrder])
+  @@index([isActive])
+  @@map("content_categories")
+}
+
+model Content {
+  id           BigInt      @id @default(autoincrement()) @db.UnsignedBigInt
+  categoryId   BigInt      @map("category_id") @db.UnsignedBigInt
+  contentType  ContentType @map("content_type")
+  title        String      @db.VarChar(500)
+  summary      String?     @db.Text
+  contentBody  String      @map("content_body") @db.MediumText
+  thumbnailUrl String?     @map("thumbnail_url") @db.VarChar(500)
+  author       String?     @db.VarChar(100)
+  source       String?     @db.VarChar(200)
+  viewCount    Int         @default(0) @map("view_count") @db.UnsignedInt
+  isFeatured   Boolean     @default(false) @map("is_featured")
+  isActive     Boolean     @default(true) @map("is_active")
+  publishedAt  DateTime?   @map("published_at") @db.Timestamp(0)
+  createdAt    DateTime    @default(now()) @map("created_at") @db.Timestamp(0)
+  updatedAt    DateTime    @default(now()) @updatedAt @map("updated_at") @db.Timestamp(0)
+
+  // Relations
+  category ContentCategory @relation(fields: [categoryId], references: [id])
+
+  @@index([categoryId, contentType, isActive])
+  @@index([isFeatured, publishedAt(sort: Desc)])
+  @@index([publishedAt(sort: Desc)])
+  @@fulltext([title, summary, contentBody])
+  @@map("contents")
+}
+
+// ============================================
+// 검색 및 활동 로그
+// ============================================
+
+model SearchLog {
+  id               BigInt     @id @default(autoincrement()) @db.UnsignedBigInt
+  userId           BigInt?    @map("user_id") @db.UnsignedBigInt
+  sessionId        String?    @map("session_id") @db.VarChar(100)
+  searchType       SearchType @map("search_type")
+  searchQuery      String?    @map("search_query") @db.VarChar(500)
+  filtersJson      Json?      @map("filters_json")
+  resultCount      Int?       @map("result_count") @db.UnsignedInt
+  clickedResultId  BigInt?    @map("clicked_result_id") @db.UnsignedBigInt
+  searchDurationMs Int?       @map("search_duration_ms") @db.UnsignedInt
+  createdAt        DateTime   @default(now()) @map("created_at") @db.Timestamp(0)
+
+  // Relations
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([userId, createdAt(sort: Desc)])
+  @@index([sessionId, createdAt(sort: Desc)])
+  @@index([searchType, createdAt(sort: Desc)])
+  @@index([createdAt])
+  @@map("search_logs")
+}
+
+model PageView {
+  id              BigInt   @id @default(autoincrement()) @db.UnsignedBigInt
+  userId          BigInt?  @map("user_id") @db.UnsignedBigInt
+  sessionId       String?  @map("session_id") @db.VarChar(100)
+  pageType        String   @map("page_type") @db.VarChar(50)
+  pageId          String?  @map("page_id") @db.VarChar(100)
+  referrer        String?  @db.VarChar(500)
+  durationSeconds Int?     @map("duration_seconds") @db.UnsignedInt
+  createdAt       DateTime @default(now()) @map("created_at") @db.Timestamp(0)
+
+  // Relations
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([userId, createdAt(sort: Desc)])
+  @@index([pageType, createdAt(sort: Desc)])
+  @@index([createdAt])
+  @@map("page_views")
+}
+
+// ============================================
+// 관리자 기능
+// ============================================
+
+model AdminUser {
+  id              BigInt    @id @default(autoincrement()) @db.UnsignedBigInt
+  username        String    @unique @db.VarChar(50)
+  passwordHash    String    @map("password_hash") @db.VarChar(255)
+  fullName        String    @map("full_name") @db.VarChar(100)
+  email           String    @unique @db.VarChar(255)
+  role            AdminRole
+  permissionsJson Json?     @map("permissions_json")
+  isActive        Boolean   @default(true) @map("is_active")
+  lastLoginAt     DateTime? @map("last_login_at") @db.Timestamp(0)
+  createdAt       DateTime  @default(now()) @map("created_at") @db.Timestamp(0)
+  updatedAt       DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamp(0)
+
+  // Relations
+  auditLogs AuditLog[]
+
+  @@index([username])
+  @@index([role])
+  @@map("admin_users")
+}
+
+model AuditLog {
+  id          BigInt    @id @default(autoincrement()) @db.UnsignedBigInt
+  adminUserId BigInt?   @map("admin_user_id") @db.UnsignedBigInt
+  actionType  String    @map("action_type") @db.VarChar(100)
+  targetTable String?   @map("target_table") @db.VarChar(100)
+  targetId    BigInt?   @map("target_id") @db.UnsignedBigInt
+  beforeData  Json?     @map("before_data")
+  afterData   Json?     @map("after_data")
+  ipAddress   String?   @map("ip_address") @db.VarChar(45)
+  userAgent   String?   @map("user_agent") @db.Text
+  createdAt   DateTime  @default(now()) @map("created_at") @db.Timestamp(0)
+
+  // Relations
+  adminUser AdminUser? @relation(fields: [adminUserId], references: [id], onDelete: SetNull)
+
+  @@index([adminUserId, createdAt(sort: Desc)])
+  @@index([actionType, createdAt(sort: Desc)])
+  @@index([targetTable, targetId])
+  @@index([createdAt])
+  @@map("audit_logs")
+}
+
+// ============================================
+// 원천 데이터 Staging
+// ============================================
+
+model StagingCentersRaw {
+  id         BigInt   @id @default(autoincrement()) @db.UnsignedBigInt
+  source     String   @db.VarChar(50)
+  externalId String   @map("external_id") @db.VarChar(100)
+  payloadJson Json    @map("payload_json")
+  ingestedAt DateTime @default(now()) @map("ingested_at") @db.Timestamp(0)
+
+  @@unique([source, externalId])
+  @@map("staging_centers_raw")
+}
+
+// ============================================
+// Enums
+// ============================================
+
+enum Gender {
+  M // 남성
+  F // 여성
+  O // 기타
+  N // 미공개
+}
+
+enum UserType {
+  GENERAL
+  PROFESSIONAL
+  ADMIN
+}
+
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+  DELETED
+}
+
+enum AgeGroup {
+  AGE_10s   @map("10s")
+  AGE_20s   @map("20s")
+  AGE_30s   @map("30s")
+  AGE_40s   @map("40s")
+  AGE_50s   @map("50s")
+  AGE_60s   @map("60s")
+  AGE_70plus @map("70s+")
+}
+
+enum SeverityCode {
+  LOW
+  MID
+  HIGH
+}
+
+enum ReviewStatus {
+  ACTIVE
+  HIDDEN
+  DELETED
+}
+
+enum ReactionType {
+  HELPFUL
+  UNHELPFUL
+  REPORT
+}
+
+enum RecommendationType {
+  RULE_BASED
+  AI_BASED
+  HYBRID
+}
+
+enum ContentType {
+  ARTICLE
+  GUIDE
+  FAQ
+  EMERGENCY
+}
+
+enum SearchType {
+  MAP
+  TEXT
+  FILTER
+  RECOMMENDATION
+}
+
+enum AdminRole {
+  SUPER_ADMIN
+  ADMIN
+  MODERATOR
+}
