@@ -8,6 +8,7 @@ const swaggerJsdoc = require('swagger-jsdoc');
 
 const config = require('./config');
 const healthRoutes = require('./routes/health.routes');
+const centersRoutes = require('./routes/centers.routes');
 const { errorHandler, notFoundHandler } = require('./middlewares/errorHandler');
 
 // Initialize Express app
@@ -79,6 +80,9 @@ app.get(config.api.prefix, (req, res) => {
     documentation: '/api-docs'
   });
 });
+
+// Centers routes
+app.use(`${config.api.prefix}/centers`, centersRoutes);
 
 // TODO: Add more API routes here
 // app.use(`${config.api.prefix}/centers`, centerRoutes);

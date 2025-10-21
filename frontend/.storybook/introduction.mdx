@@ -1,0 +1,479 @@
+import { Meta } from '@storybook/blocks';
+
+<Meta title="Introduction" />
+
+# 마음이음 (MindConnect) 컴포넌트 라이브러리
+
+> 정신건강 서비스 통합 플랫폼의 React 컴포넌트 시스템
+
+**Version**: 1.0.0
+**Last Updated**: 2025-01-21
+**Framework**: Next.js 14 + shadcn/ui + Tailwind CSS
+
+---
+
+## 개요
+
+이 Storybook은 마음이음 프로젝트의 모든 React 컴포넌트를 문서화하고 시각화합니다.
+
+### 컴포넌트 카테고리
+
+1. **UI Components** (46개) - shadcn/ui 기반 기본 컴포넌트
+2. **Center Components** (3개) - 센터 상세 페이지 컴포넌트
+3. **Custom Components** (6개) - 프로젝트 전용 합성 컴포넌트
+
+---
+
+## 디자인 시스템
+
+우리의 디자인 시스템은 [`공통_UI_UX_가이드라인.md`](../../context/공통_UI_UX_가이드라인.md)를 기반으로 합니다.
+
+### 색상 팔레트
+
+#### Primary Colors (Lavender)
+```css
+lavender-500: #A855F7  /* 메인 브랜드 색상 */
+lavender-600: #9333EA  /* 호버/액티브 상태 */
+lavender-400: #C084FC  /* 그라디언트 시작점 */
+lavender-100: #F3E8FF  /* 연한 배경 */
+```
+
+#### Semantic Colors
+```css
+status-operating: #10B981   /* 운영 중 (초록) */
+status-closed: #9CA3AF      /* 마감 (회색) */
+status-emergency: #EF4444   /* 긴급 (빨강) */
+status-warning: #F59E0B     /* 경고 (주황) */
+```
+
+#### Neutral Colors
+```css
+neutral-900: #111827  /* 제목, 본문 텍스트 */
+neutral-600: #4B5563  /* 보조 텍스트 */
+neutral-400: #9CA3AF  /* 비활성 텍스트 */
+neutral-200: #E5E7EB  /* 구분선, 테두리 */
+neutral-100: #F3F4F6  /* 배경, 카드 */
+neutral-50: #F9FAFB   /* 페이지 배경 */
+```
+
+### 타이포그래피
+
+| 레벨 | 클래스 | 크기/두께 | 용도 |
+|------|--------|-----------|------|
+| **H1** | `text-h1` | 28px / 700 | 페이지 제목 |
+| **H2** | `text-h2` | 24px / 600 | 섹션 제목 |
+| **H3** | `text-h3` | 20px / 600 | 카드 제목 |
+| **Body** | `text-body` | 16px / 400 | 본문 |
+| **Small** | `text-small` | 14px / 400 | 보조 정보 |
+| **Caption** | `text-caption` | 12px / 400 | 라벨, 태그 |
+
+**Font Family**: Pretendard → Noto Sans KR → System Font
+
+---
+
+## 센터 상세 페이지 컴포넌트
+
+Sprint 1에서 구현된 핵심 컴포넌트들입니다.
+
+### CenterHeader
+
+센터 이름, 유형, 평점 및 액션 버튼을 표시합니다.
+
+**Features**:
+- 센터명 (H1)
+- 센터 유형 Badge
+- 평점 및 리뷰 수
+- 즐겨찾기 수
+- 전화하기/공유 버튼
+
+**Stories**: 9개 (Default, With High Rating, No Reviews, 등)
+
+[View Stories →](/?path=/story/center-centerheader--default)
+
+---
+
+### CenterContactInfo
+
+전화번호, 주소, 거리 정보 및 연락/길찾기 버튼을 표시합니다.
+
+**Features**:
+- 전화번호 (클릭 시 다이얼러 실행)
+- 도로명/지번 주소
+- 주소 복사 버튼
+- 사용자 위치로부터 거리 표시
+- 도보 시간 계산
+- 길찾기 버튼 (Kakao/Naver/Google Maps)
+
+**Stories**: 10개 (Default, With Distance, No Phone, 등)
+
+[View Stories →](/?path=/story/center-centercontactinfo--default)
+
+---
+
+### CenterDescription
+
+센터 소개 및 조회수/즐겨찾기 통계를 표시합니다.
+
+**Features**:
+- 업무 내용
+- 건물 면적
+- 운영/관리 기관
+- 기타 정보
+- 빈 상태 처리
+
+**Stories**: 8개 (Default, Empty Content, Full Information, 등)
+
+[View Stories →](/?path=/story/center-centerdescription--default)
+
+---
+
+## UI Components (shadcn/ui)
+
+### Form Components
+
+| Component | Usage | Stories |
+|-----------|-------|---------|
+| **Button** | 모든 액션 버튼 | 6개 |
+| **Input** | 텍스트 입력 | 5개 |
+| **Checkbox** | 체크박스 선택 | 3개 |
+| **Radio Group** | 단일 선택 | 4개 |
+| **Select** | 드롭다운 선택 | 5개 |
+| **Textarea** | 긴 텍스트 입력 | 4개 |
+| **Slider** | 범위 선택 | 3개 |
+
+### Layout Components
+
+| Component | Usage | Stories |
+|-----------|-------|---------|
+| **Card** | 콘텐츠 카드 | 4개 |
+| **Accordion** | 접기/펴기 목록 | 3개 |
+| **Tabs** | 탭 네비게이션 | 5개 |
+| **Separator** | 구분선 | 2개 |
+| **Scroll Area** | 스크롤 영역 | 3개 |
+
+### Feedback Components
+
+| Component | Usage | Stories |
+|-----------|-------|---------|
+| **Toast** | 알림 메시지 | 4개 |
+| **Alert** | 정보/경고 박스 | 5개 |
+| **Dialog** | 모달 대화상자 | 6개 |
+| **Sheet** | 바텀시트/사이드 패널 | 5개 |
+| **Tooltip** | 도움말 팝업 | 3개 |
+| **Progress** | 진행률 표시 | 3개 |
+| **Skeleton** | 로딩 스켈레톤 | 4개 |
+
+---
+
+## 사용 가이드
+
+### 설치 및 실행
+
+```bash
+# 프로젝트 루트에서
+cd frontend
+
+# 의존성 설치
+npm install
+
+# Storybook 실행
+npm run storybook
+```
+
+Storybook이 `http://localhost:6006`에서 실행됩니다.
+
+---
+
+### 컴포넌트 임포트
+
+#### shadcn/ui 기본 컴포넌트
+
+```tsx
+import { Button } from '@/components/ui/button';
+import { Card, CardHeader, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+
+<Button variant="lavender" size="touch">
+  검색하기
+</Button>
+```
+
+#### 센터 컴포넌트
+
+```tsx
+import { CenterHeader } from '@/components/center/CenterHeader';
+import { CenterContactInfo } from '@/components/center/CenterContactInfo';
+import { CenterDescription } from '@/components/center/CenterDescription';
+
+<CenterHeader center={centerData} />
+<CenterContactInfo center={centerData} />
+<CenterDescription center={centerData} />
+```
+
+#### 커스텀 컴포넌트
+
+```tsx
+import { SearchBar } from '@/components/SearchBar';
+import { QuickAccessGrid } from '@/components/QuickAccessGrid';
+
+<SearchBar placeholder="센터명, 지역, 증상을 검색하세요" />
+```
+
+---
+
+## 접근성 (WCAG AA)
+
+모든 컴포넌트는 WCAG AA 표준을 준수합니다:
+
+### 키보드 네비게이션
+- ✅ 모든 인터랙티브 요소 키보드 접근 가능
+- ✅ Tab 순서가 시각적 순서와 일치
+- ✅ 포커스 링 명확히 표시 (lavender-500, 2px)
+
+### ARIA 레이블
+- ✅ `aria-label` 제공 (아이콘 버튼, 링크)
+- ✅ `role` 속성 적절히 사용
+- ✅ `aria-live` 영역 설정 (동적 콘텐츠)
+
+### 색상 대비
+- ✅ 텍스트 대비 최소 4.5:1 (일반 텍스트)
+- ✅ 큰 텍스트 대비 최소 3:1 (18pt+)
+- ✅ UI 요소 대비 최소 3:1
+
+### 터치 타겟
+- ✅ 최소 크기 44x44px (모바일)
+- ✅ 간격 최소 8px
+- ✅ `touch-target` 유틸리티 클래스 제공
+
+---
+
+## 반응형 디자인
+
+### 브레이크포인트
+
+```css
+default: 320px   /* 모바일 세로 (기본) */
+sm: 640px        /* 모바일 가로, 작은 태블릿 */
+md: 768px        /* 태블릿 */
+lg: 1024px       /* 데스크톱 */
+xl: 1280px       /* 큰 데스크톱 */
+2xl: 1536px      /* 초대형 화면 */
+```
+
+### 모바일 우선 설계
+
+```tsx
+// ✅ 올바른 예시
+<div className="text-body md:text-h3 lg:text-h2">
+
+// ❌ 잘못된 예시
+<div className="text-h2 md:text-body">
+```
+
+---
+
+## 테스트 커버리지
+
+### 단위 테스트 (Jest + React Testing Library)
+
+| Component | Tests | Coverage |
+|-----------|-------|----------|
+| **CenterHeader** | 24 tests | > 90% |
+| **CenterContactInfo** | 27 tests | > 85% |
+| **CenterDescription** | 20 tests | > 85% |
+| **Total** | 71 tests | > 85% |
+
+### 시각적 회귀 테스트 (Storybook)
+
+- **27 Stories** - 센터 컴포넌트
+- **56+ Stories** - shadcn/ui 컴포넌트
+- **자동 스냅샷** 생성 가능
+
+### E2E 테스트 (Playwright)
+
+- **32 tests** - 센터 상세 페이지 시나리오
+- **접근성 검증** (axe-core)
+- **성능 측정** (LCP, FID, CLS)
+
+---
+
+## 스타일 가이드
+
+### Button Variants
+
+```tsx
+// Primary (Lavender)
+<Button variant="lavender">검색하기</Button>
+
+// Secondary (Outline)
+<Button variant="outline">취소</Button>
+
+// Destructive (Red)
+<Button variant="destructive">삭제</Button>
+
+// Ghost (Transparent)
+<Button variant="ghost">더보기</Button>
+
+// Link (Underline)
+<Button variant="link">자세히 보기</Button>
+```
+
+### Button Sizes
+
+```tsx
+<Button size="sm">Small</Button>
+<Button size="default">Default</Button>
+<Button size="lg">Large</Button>
+<Button size="touch">Touch (44px)</Button>
+```
+
+### Badge Variants
+
+```tsx
+<Badge variant="operating">운영 중</Badge>
+<Badge variant="closed">마감</Badge>
+<Badge variant="emergency">긴급</Badge>
+<Badge variant="default">정신건강복지센터</Badge>
+```
+
+---
+
+## 유틸리티 클래스
+
+### 그라디언트
+
+```tsx
+<div className="gradient-lavender">Lavender Gradient</div>
+<h1 className="text-gradient">Gradient Text</h1>
+```
+
+### 호버 효과
+
+```tsx
+<div className="hover-lift">Lift on Hover</div>
+```
+
+### 포커스 링
+
+```tsx
+<button className="focus-ring">Focus Ring</button>
+```
+
+### Safe Area (iOS)
+
+```tsx
+<header className="safe-top">Header</header>
+<footer className="safe-bottom">Footer</footer>
+```
+
+---
+
+## 개발 워크플로우
+
+### 1. 컴포넌트 개발
+
+```tsx
+// components/MyComponent.tsx
+export const MyComponent = ({ title }: Props) => {
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>{title}</CardTitle>
+      </CardHeader>
+    </Card>
+  );
+};
+```
+
+### 2. Stories 작성
+
+```tsx
+// components/MyComponent.stories.tsx
+import type { Meta, StoryObj } from '@storybook/react';
+import { MyComponent } from './MyComponent';
+
+const meta: Meta<typeof MyComponent> = {
+  title: 'Components/MyComponent',
+  component: MyComponent,
+  tags: ['autodocs'],
+};
+
+export default meta;
+type Story = StoryObj<typeof MyComponent>;
+
+export const Default: Story = {
+  args: {
+    title: 'Hello World',
+  },
+};
+```
+
+### 3. 테스트 작성
+
+```tsx
+// components/__tests__/MyComponent.test.tsx
+import { render, screen } from '@testing-library/react';
+import { MyComponent } from '../MyComponent';
+
+describe('MyComponent', () => {
+  it('renders title', () => {
+    render(<MyComponent title="Test" />);
+    expect(screen.getByText('Test')).toBeInTheDocument();
+  });
+});
+```
+
+### 4. Storybook에서 확인
+
+```bash
+npm run storybook
+```
+
+---
+
+## 참고 문서
+
+### 프로젝트 문서
+- [공통 UI/UX 가이드라인](../../context/공통_UI_UX_가이드라인.md)
+- [컴포넌트 API](../../context/컴포넌트_API.md)
+- [PRD](../../context/PRD.md)
+
+### 외부 문서
+- [shadcn/ui](https://ui.shadcn.com/)
+- [Tailwind CSS](https://tailwindcss.com/)
+- [Radix UI](https://www.radix-ui.com/)
+- [WCAG 2.1](https://www.w3.org/WAI/WCAG21/quickref/)
+
+---
+
+## 릴리즈 노트
+
+### Version 1.0.0 (2025-01-21)
+
+**Sprint 1 완료**:
+- ✅ 센터 상세 페이지 3개 컴포넌트 (Header, ContactInfo, Description)
+- ✅ 27개 Storybook stories
+- ✅ 71개 단위 테스트
+- ✅ WCAG AA 접근성 준수
+- ✅ 반응형 디자인 (320px-2560px)
+- ✅ TypeScript 100% 적용
+
+**다음 스프린트 예고** (Sprint 2):
+- OperatingStatusBadge 컴포넌트
+- 실시간 운영시간 표시
+- 운영시간 상세 모달
+
+---
+
+## 문의 및 피드백
+
+**GitHub**: [https://github.com/mindconnect/frontend](https://github.com/mindconnect/frontend)
+**Issues**: [https://github.com/mindconnect/frontend/issues](https://github.com/mindconnect/frontend/issues)
+**Email**: dev@mindconnect.kr
+
+---
+
+**Last Updated**: 2025-01-21
+**Storybook Version**: 8.x
+**React Version**: 18.x
+**Next.js Version**: 14.x

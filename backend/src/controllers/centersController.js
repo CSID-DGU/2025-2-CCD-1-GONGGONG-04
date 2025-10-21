@@ -1,0 +1,189 @@
+const { PrismaClient } = require('@prisma/client');
+const {
+  isPositiveInteger,
+  isValidLatitude,
+  isValidLongitude,
+  createValidationError,
+  createNotFoundError
+} = require('../utils/validation');
+
+const prisma = new PrismaClient();
+
+/**
+ * Get center detail by ID
+ *
+ * @route GET /api/v1/centers/:id
+ * @param {Object} req - Express request object
+ * @param {Object} req.params - Path parameters
+ * @param {string} req.params.id - Center ID
+ * @param {Object} req.query - Query parameters
+ * @param {string} req.query.user_lat - User's latitude (optional)
+ * @param {string} req.query.user_lng - User's longitude (optional)
+ * @param {Object} res - Express response object
+ * @param {Function} next - Express next middleware function
+ *
+ * @returns {Object} Center detail information
+ *
+ * @example
+ * // Without user location
+ * GET /api/v1/centers/1
+ *
+ * // With user location for distance calculation
+ * GET /api/v1/centers/1?user_lat=37.5665&user_lng=126.9780
+ */
+const getCenterDetail = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const { user_lat, user_lng } = req.query;
+
+    // Validate center ID
+    if (!isPositiveInteger(id)) {
+      throw createValidationError('Invalid center ID. Must be a positive integer.', 'id');
+    }
+
+    const centerId = parseInt(id, 10);
+
+    // Validate user location parameters
+    let userLat = null;
+    let userLng = null;
+    let includeDistance = false;
+
+    if (user_lat || user_lng) {
+      // Both parameters must be provided together
+      if (!user_lat || !user_lng) {
+        throw createValidationError(
+          'Both user_lat and user_lng must be provided together.',
+          user_lat ? 'user_lng' : 'user_lat'
+        );
+      }
+
+      // Validate latitude
+      if (!isValidLatitude(user_lat)) {
+        throw createValidationError(
+          'Invalid latitude. Must be between -90 and 90.',
+          'user_lat'
+        );
+      }
+
+      // Validate longitude
+      if (!isValidLongitude(user_lng)) {
+        throw createValidationError(
+          'Invalid longitude. Must be between -180 and 180.',
+          'user_lng'
+        );
+      }
+
+      userLat = parseFloat(user_lat);
+      userLng = parseFloat(user_lng);
+      includeDistance = true;
+    }
+
+    // Query center detail from v_center_detail view
+    let centerDetail;
+
+    if (includeDistance) {
+      // Query with distance calculation using MySQL function
+      const result = await prisma.$queryRaw`
+        SELECT
+          id,
+          center_name,
+          center_type,
+          phone_number,
+          road_address,
+          jibun_address,
+          latitude,
+          longitude,
+          business_content,
+          avg_rating,
+          review_count,
+          favorite_count,
+          view_count,
+          calculate_distance(${userLat}, ${userLng}, latitude, longitude) as distance
+        FROM v_center_detail
+        WHERE id = ${centerId}
+        LIMIT 1
+      `;
+
+      centerDetail = result[0] || null;
+    } else {
+      // Query without distance calculation
+      const result = await prisma.$queryRaw`
+        SELECT
+          id,
+          center_name,
+          center_type,
+          phone_number,
+          road_address,
+          jibun_address,
+          latitude,
+          longitude,
+          business_content,
+          avg_rating,
+          review_count,
+          favorite_count,
+          view_count
+        FROM v_center_detail
+        WHERE id = ${centerId}
+        LIMIT 1
+      `;
+
+      centerDetail = result[0] || null;
+    }
+
+    // Check if center exists
+    if (!centerDetail) {
+      throw createNotFoundError(`Center with ID ${centerId} not found.`);
+    }
+
+    // Increment view count asynchronously (don't wait for it)
+    prisma.center.update({
+      where: { id: BigInt(centerId) },
+      data: { viewCount: { increment: 1 } }
+    }).catch(err => {
+      // Log error but don't fail the request
+      console.error('Failed to increment view count:', err);
+    });
+
+    // Transform database result to API response format
+    const response = {
+      id: Number(centerDetail.id),
+      center_name: centerDetail.center_name,
+      center_type: centerDetail.center_type,
+      contact: {
+        phone: centerDetail.phone_number,
+        road_address: centerDetail.road_address,
+        jibun_address: centerDetail.jibun_address
+      },
+      location: {
+        latitude: parseFloat(centerDetail.latitude),
+        longitude: parseFloat(centerDetail.longitude)
+      },
+      business_content: centerDetail.business_content,
+      stats: {
+        avg_rating: parseFloat(centerDetail.avg_rating),
+        review_count: Number(centerDetail.review_count),
+        favorite_count: Number(centerDetail.favorite_count),
+        view_count: Number(centerDetail.view_count)
+      }
+    };
+
+    // Add distance if calculated
+    if (includeDistance && centerDetail.distance !== null) {
+      response.location.distance = parseFloat(Number(centerDetail.distance).toFixed(2));
+    }
+
+    // Send success response
+    res.status(200).json({
+      success: true,
+      data: response
+    });
+
+  } catch (error) {
+    // Pass error to global error handler
+    next(error);
+  }
+};
+
+module.exports = {
+  getCenterDetail
+};
