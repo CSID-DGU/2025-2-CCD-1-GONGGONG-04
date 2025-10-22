@@ -552,30 +552,64 @@ CREATE TABLE audit_logs (
 
 ## 3. 뷰(View) 설계
 
-### 3.1 실시간 운영 상태 뷰
+### 3.1 센터 운영 상태 통합 뷰 (Sprint 2)
 ```sql
+-- 목적: 요일별 운영시간을 JSON 배열로 효율적으로 조회
+-- 사용처: 센터 상세 페이지 운영시간 표시
+-- 마이그레이션: 20250121120000_add_operating_status_view_and_function
 CREATE VIEW v_center_operating_status AS
-SELECT 
-    c.id,
+SELECT
+    c.id AS center_id,
     c.center_name,
-    c.latitude,
-    c.longitude,
-    CASE 
-        WHEN ch.holiday_date IS NOT NULL THEN 'HOLIDAY'
-        WHEN coh.is_open = TRUE 
-             AND TIME(CONVERT_TZ(NOW(),'UTC','Asia/Seoul')) BETWEEN coh.open_time AND coh.close_time 
-             AND coh.day_of_week = DAYOFWEEK(CONVERT_TZ(NOW(),'UTC','Asia/Seoul')) - 1 THEN 'OPEN'
-        ELSE 'CLOSED'
-    END AS operating_status,
-    coh.open_time,
-    coh.close_time,
-    ch.holiday_name
+    JSON_ARRAYAGG(
+        JSON_OBJECT(
+            'day_of_week', coh.day_of_week,
+            'day_name', CASE coh.day_of_week
+                WHEN 0 THEN '일요일'
+                WHEN 1 THEN '월요일'
+                WHEN 2 THEN '화요일'
+                WHEN 3 THEN '수요일'
+                WHEN 4 THEN '목요일'
+                WHEN 5 THEN '금요일'
+                WHEN 6 THEN '토요일'
+            END,
+            'open_time', TIME_FORMAT(coh.open_time, '%H:%i'),
+            'close_time', TIME_FORMAT(coh.close_time, '%H:%i'),
+            'is_open', coh.is_open
+        )
+        ORDER BY coh.day_of_week
+    ) AS weekly_hours
 FROM centers c
-LEFT JOIN center_operating_hours coh ON c.id = coh.center_id 
-    AND coh.day_of_week = DAYOFWEEK(CURDATE()) - 1
-LEFT JOIN center_holidays ch ON c.id = ch.center_id 
-    AND ch.holiday_date = CURDATE()
-WHERE c.is_active = TRUE;
+LEFT JOIN center_operating_hours coh ON c.id = coh.center_id
+WHERE c.is_active = TRUE
+GROUP BY c.id, c.center_name;
+```
+
+**사용 예시**:
+```sql
+-- 전체 센터 운영시간 조회
+SELECT * FROM v_center_operating_status;
+
+-- 특정 센터 조회
+SELECT * FROM v_center_operating_status WHERE center_id = 1;
+```
+
+**출력 형식**:
+```json
+{
+  "center_id": 1,
+  "center_name": "서울시 정신건강복지센터",
+  "weekly_hours": [
+    {
+      "day_of_week": 0,
+      "day_name": "일요일",
+      "open_time": "09:00",
+      "close_time": "18:00",
+      "is_open": true
+    },
+    ...
+  ]
+}
 ```
 
 ### 3.2 센터 통계 뷰
@@ -702,7 +736,7 @@ END$$
 DELIMITER ;
 ```
 
-## 6. 저장 프로시저
+## 6. 저장 프로시저 및 함수
 
 ### 6.1 센터 추천 프로시저
 ```sql
@@ -715,7 +749,7 @@ CREATE PROCEDURE sp_get_recommended_centers(
     IN p_limit INT
 )
 BEGIN
-    SELECT 
+    SELECT
         c.id,
         c.center_name,
         c.center_type,
@@ -727,10 +761,10 @@ BEGIN
         ST_Distance_Sphere(POINT(c.longitude, c.latitude), POINT(p_longitude, p_latitude)) AS distance_meters
 FROM centers c
 LEFT JOIN v_center_operating_status v ON v.id = c.id
-    LEFT JOIN center_operating_hours coh ON c.id = coh.center_id 
+    LEFT JOIN center_operating_hours coh ON c.id = coh.center_id
         AND coh.day_of_week = DAYOFWEEK(CURDATE()) - 1
     WHERE c.is_active = TRUE
-    ORDER BY 
+    ORDER BY
         (v.operating_status = 'OPEN') DESC,
         distance_meters ASC,
         c.avg_rating DESC
@@ -739,6 +773,96 @@ END$$
 
 DELIMITER ;
 ```
+
+### 6.2 다음 오픈 일시 계산 함수 (Sprint 2)
+```sql
+-- 목적: 센터가 다음에 오픈하는 날짜와 시간 계산
+-- 로직: 최대 14일 탐색, 휴무일 및 정기휴무 고려
+-- 마이그레이션: 20250121120000_add_operating_status_view_and_function
+DELIMITER $$
+
+CREATE FUNCTION get_next_open_date(
+    p_center_id BIGINT,
+    p_current_date DATE
+)
+RETURNS VARCHAR(50)
+DETERMINISTIC
+BEGIN
+    DECLARE v_next_date DATE;
+    DECLARE v_day_of_week TINYINT;
+    DECLARE v_open_time TIME;
+    DECLARE v_is_holiday BOOLEAN;
+    DECLARE v_days_checked INT DEFAULT 0;
+
+    -- 다음 날부터 시작
+    SET v_next_date = DATE_ADD(p_current_date, INTERVAL 1 DAY);
+
+    -- 최대 14일까지 확인
+    WHILE v_days_checked < 14 DO
+        -- 요일 계산 (0=일요일, 1=월요일, ..., 6=토요일)
+        SET v_day_of_week = DAYOFWEEK(v_next_date) - 1;
+
+        -- 해당 날짜가 휴무일인지 확인 (center_holidays 테이블)
+        SELECT EXISTS(
+            SELECT 1 FROM center_holidays
+            WHERE center_id = p_center_id
+              AND holiday_date = v_next_date
+        ) INTO v_is_holiday;
+
+        -- 휴무일이 아니면서 운영하는 요일인지 확인
+        IF NOT v_is_holiday THEN
+            SELECT open_time INTO v_open_time
+            FROM center_operating_hours
+            WHERE center_id = p_center_id
+              AND day_of_week = v_day_of_week
+              AND is_open = TRUE
+            LIMIT 1;
+
+            -- 운영하는 날이면 날짜와 시간 반환
+            IF v_open_time IS NOT NULL THEN
+                RETURN CONCAT(v_next_date, ' ', v_open_time);
+            END IF;
+        END IF;
+
+        -- 다음 날로 이동
+        SET v_next_date = DATE_ADD(v_next_date, INTERVAL 1 DAY);
+        SET v_days_checked = v_days_checked + 1;
+    END WHILE;
+
+    -- 14일 내에 오픈일 없음
+    RETURN NULL;
+END$$
+
+DELIMITER ;
+```
+
+**사용 예시**:
+```sql
+-- 현재 날짜 기준 다음 오픈일 조회
+SELECT get_next_open_date(1, CURDATE()) AS next_open;
+-- 결과: '2025-01-16 09:00:00'
+
+-- 특정 날짜 기준
+SELECT get_next_open_date(1, '2025-01-15') AS next_open;
+
+-- 여러 센터에 대한 다음 오픈일 일괄 조회
+SELECT
+    c.id,
+    c.center_name,
+    get_next_open_date(c.id, CURDATE()) AS next_open_date
+FROM centers c
+WHERE c.is_active = TRUE
+LIMIT 10;
+```
+
+**반환값**:
+- 성공: `'YYYY-MM-DD HH:MM:SS'` 형식 문자열
+- 실패: `NULL` (14일 내에 오픈일 없음)
+
+**성능**:
+- 예상 실행 시간: < 50ms (인덱스 활용 시)
+- 최악의 경우: 14번의 DB 쿼리 실행
+- 권장 사항: 백엔드에서 계산 결과 캐싱 (TTL: 5분)
 
 ## 7. 성능 최적화 전략
 
@@ -867,5 +991,17 @@ SET
 
 ---
 
+## 변경 이력
+
+### 2025-01-21 (Sprint 2)
+- `v_center_operating_status` 뷰 추가 (요일별 운영시간 JSON 조회)
+- `get_next_open_date` 함수 추가 (다음 오픈일 계산)
+- 마이그레이션: `20250121120000_add_operating_status_view_and_function`
+
+### 2024-10-08 (초기 버전)
+- 초기 데이터베이스 설계 문서 작성
+
+---
+
 *이 문서는 프로젝트 진행에 따라 지속적으로 업데이트됩니다.*
-*최종 수정일: 2024-10-08*
+*최종 수정일: 2025-01-21*

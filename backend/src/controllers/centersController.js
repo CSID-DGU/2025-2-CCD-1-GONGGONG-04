@@ -184,6 +184,146 @@ const getCenterDetail = async (req, res, next) => {
   }
 };
 
+/**
+ * Get center staff information
+ *
+ * @route GET /api/v1/centers/:id/staff
+ * @param {Object} req - Express request object
+ * @param {Object} req.params - Path parameters
+ * @param {string} req.params.id - Center ID
+ * @param {Object} res - Express response object
+ * @param {Function} next - Express next middleware function
+ *
+ * @returns {Object} Staff information with total count
+ *
+ * @example
+ * GET /api/v1/centers/1/staff
+ */
+const getCenterStaff = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+
+    // Validate center ID
+    if (!isPositiveInteger(id)) {
+      throw createValidationError('Invalid center ID. Must be a positive integer.', 'id');
+    }
+
+    const centerId = parseInt(id, 10);
+
+    // Check if center exists
+    const center = await prisma.center.findUnique({
+      where: { id: BigInt(centerId) },
+      select: { id: true }
+    });
+
+    if (!center) {
+      throw createNotFoundError(`Center with ID ${centerId} not found.`);
+    }
+
+    // Get staff data using service
+    const { getCenterStaff: getStaffService } = require('../services/staffService');
+    const staffData = await getStaffService(centerId);
+
+    // Send success response
+    res.status(200).json({
+      success: true,
+      data: staffData
+    });
+
+  } catch (error) {
+    // Pass error to global error handler
+    next(error);
+  }
+};
+
+/**
+ * Get center programs with optional filters and pagination
+ *
+ * @route GET /api/v1/centers/:id/programs
+ * @param {Object} req - Express request object
+ * @param {Object} req.params - Path parameters
+ * @param {string} req.params.id - Center ID
+ * @param {Object} req.query - Query parameters
+ * @param {string} req.query.target_group - Target group filter (optional)
+ * @param {string} req.query.is_online - Online availability filter (optional)
+ * @param {string} req.query.is_free - Free program filter (optional)
+ * @param {string} req.query.page - Page number (optional, default: 1)
+ * @param {string} req.query.limit - Items per page (optional, default: 10)
+ * @param {Object} res - Express response object
+ * @param {Function} next - Express next middleware function
+ *
+ * @returns {Object} Program list with pagination
+ *
+ * @example
+ * GET /api/v1/centers/1/programs?is_online=true&page=1&limit=10
+ */
+const getCenterPrograms = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const { target_group, is_online, is_free, page, limit } = req.query;
+
+    // Validate center ID
+    if (!isPositiveInteger(id)) {
+      throw createValidationError('Invalid center ID. Must be a positive integer.', 'id');
+    }
+
+    const centerId = parseInt(id, 10);
+
+    // Check if center exists
+    const center = await prisma.center.findUnique({
+      where: { id: BigInt(centerId) },
+      select: { id: true }
+    });
+
+    if (!center) {
+      throw createNotFoundError(`Center with ID ${centerId} not found.`);
+    }
+
+    // Parse filters
+    const filters = {};
+    if (target_group) {
+      filters.target_group = target_group;
+    }
+    if (is_online !== undefined) {
+      filters.is_online = is_online === 'true';
+    }
+    if (is_free !== undefined) {
+      filters.is_free = is_free === 'true';
+    }
+
+    // Parse pagination
+    const pagination = {};
+    if (page) {
+      const pageNum = parseInt(page, 10);
+      if (pageNum > 0) {
+        pagination.page = pageNum;
+      }
+    }
+    if (limit) {
+      const limitNum = parseInt(limit, 10);
+      if (limitNum > 0 && limitNum <= 100) {
+        pagination.limit = limitNum;
+      }
+    }
+
+    // Get programs data using service
+    const { getCenterPrograms: getProgramsService } = require('../services/programService');
+    const programsData = await getProgramsService(centerId, filters, pagination);
+
+    // Send success response
+    res.status(200).json({
+      success: true,
+      data: programsData
+    });
+
+  } catch (error) {
+    // Pass error to global error handler
+    next(error);
+  }
+};
+
 module.exports = {
-  getCenterDetail
+  getCenterDetail,
+  getCenterStaff,
+  getCenterPrograms
 };

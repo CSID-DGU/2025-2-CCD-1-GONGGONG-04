@@ -50,3 +50,54 @@ export interface UserLocation {
   lat: number;
   lng: number;
 }
+
+/**
+ * Sprint 3: 의료진 정보
+ */
+export interface Staff {
+  staff_type: string;
+  staff_count: number;
+  description: string | null;
+}
+
+/**
+ * Sprint 3: 의료진 정보 API 응답
+ */
+export interface StaffResponse {
+  center_id: number;
+  staff: Staff[];
+  total_staff: number;
+  has_data: boolean;
+}
+
+/**
+ * Sprint 3: 프로그램 정보
+ */
+export interface Program {
+  id: number;
+  program_name: string;
+  program_type: string;
+  target_group: string;
+  description: string | null;
+  is_online_available: boolean;
+  is_free: boolean;
+  fee_amount: number | null;
+  capacity: number | null;
+  duration_minutes: number | null;
+}
+
+/**
+ * Sprint 3: 프로그램 정보 API 응답
+ */
+export interface ProgramResponse {
+  center_id: number;
+  programs: Program[];
+  total_count: number;
+  has_data: boolean;
+  pagination: {
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+  };
+}

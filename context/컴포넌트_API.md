@@ -1429,6 +1429,180 @@ toast({
 
 ---
 
+### 2.6 StaffList
+
+**목적**: 센터의 의료진 현황을 표시하는 컴포넌트 (Sprint 3)
+
+**Props**:
+```typescript
+{
+  staff: Array<{
+    staff_type: string        // 의료진 유형 (예: "정신건강의학과 전문의")
+    staff_count: number       // 인원수
+    description: string | null  // 설명 (선택)
+  }>
+  totalStaff: number          // 총 인원
+  hasData: boolean            // 데이터 존재 여부
+  className?: string
+}
+```
+
+**사용 예시**:
+```tsx
+<StaffList
+  staff={[
+    { staff_type: "정신건강의학과 전문의", staff_count: 2, description: null },
+    { staff_type: "임상심리사", staff_count: 3, description: "청소년 상담 전문" }
+  ]}
+  totalStaff={5}
+  hasData={true}
+/>
+```
+
+**특징**:
+- shadcn Card 컴포넌트 사용
+- 총 인원 배지 표시
+- 빈 상태 처리 (의료진 정보 없을 때)
+- 접근성: 시맨틱 리스트 (`<ul>`, `<li>`)
+- Storybook: 8 stories 제공
+
+---
+
+### 2.7 ProgramCard
+
+**목적**: 개별 프로그램 정보를 카드 형태로 표시 (Sprint 3)
+
+**Props**:
+```typescript
+{
+  program: {
+    id: number
+    program_name: string           // 프로그램 이름
+    program_type: string           // 유형 (예: "집단 상담")
+    target_group: string           // 대상 (예: "직장인")
+    description: string | null
+    is_online_available: boolean   // 온라인 가능 여부
+    is_free: boolean               // 무료 여부
+    fee_amount: number | null      // 비용
+    capacity: number | null        // 정원
+    duration_minutes: number | null  // 소요 시간
+  }
+  onClick: () => void              // 클릭 핸들러
+  className?: string
+}
+```
+
+**사용 예시**:
+```tsx
+<ProgramCard
+  program={{
+    id: 1,
+    program_name: "직장인 스트레스 관리",
+    program_type: "집단 상담",
+    target_group: "직장인",
+    is_online_available: true,
+    is_free: true,
+    capacity: 12,
+    duration_minutes: 90
+  }}
+  onClick={() => console.log('프로그램 클릭')}
+/>
+```
+
+**특징**:
+- 클릭 가능한 카드 (role="button")
+- 온라인/무료 배지 자동 표시
+- 키보드 네비게이션 (Enter, Space)
+- 호버 효과 (border, shadow)
+- Storybook: 6 stories 제공
+
+---
+
+### 2.8 ProgramList
+
+**목적**: 프로그램 카드들을 그리드 레이아웃으로 표시 (Sprint 3)
+
+**Props**:
+```typescript
+{
+  programs: Program[]              // 프로그램 배열
+  hasData: boolean                 // 데이터 존재 여부
+  onProgramClick: (program: Program) => void  // 프로그램 클릭 핸들러
+  className?: string
+}
+```
+
+**사용 예시**:
+```tsx
+<ProgramList
+  programs={programList}
+  hasData={true}
+  onProgramClick={(program) => {
+    console.log('선택된 프로그램:', program)
+  }}
+/>
+```
+
+**특징**:
+- 반응형 그리드 (모바일 1열, 태블릿+ 2열)
+- 초기 5개 표시, "더보기" 버튼으로 전체 표시
+- 빈 상태 처리 (프로그램 없을 때)
+- ProgramCard 컴포넌트 사용
+- Storybook: 6 stories 제공
+
+---
+
+### 2.9 ProgramDetailModal
+
+**목적**: 프로그램 상세 정보를 모달로 표시 (Sprint 3)
+
+**Props**:
+```typescript
+{
+  program: Program | null          // 표시할 프로그램 (null이면 모달 안 보임)
+  open: boolean                    // 모달 열림 상태
+  onOpenChange: (open: boolean) => void  // 상태 변경 핸들러
+}
+```
+
+**사용 예시**:
+```tsx
+const [selectedProgram, setSelectedProgram] = useState<Program | null>(null);
+const [isModalOpen, setIsModalOpen] = useState(false);
+
+// 프로그램 클릭 시
+const handleProgramClick = (program: Program) => {
+  setSelectedProgram(program);
+  setIsModalOpen(true);
+};
+
+// 렌더링
+<>
+  <ProgramList
+    programs={programs}
+    hasData={true}
+    onProgramClick={handleProgramClick}
+  />
+
+  <ProgramDetailModal
+    program={selectedProgram}
+    open={isModalOpen}
+    onOpenChange={setIsModalOpen}
+  />
+</>
+```
+
+**특징**:
+- shadcn Dialog 컴포넌트 사용
+- ESC 키로 닫기 지원
+- 외부 클릭으로 닫기 지원
+- 프로그램 소개, 상세 정보, 신청 안내 섹션
+- 온라인/무료 배지 표시
+- 반응형 (모바일 전체 화면, 데스크톱 중앙)
+- Storybook: 8 stories 제공
+
+---
+
 ## 3. 순수 커스텀 컴포넌트
 
 ### 3.1 ThemeProvider

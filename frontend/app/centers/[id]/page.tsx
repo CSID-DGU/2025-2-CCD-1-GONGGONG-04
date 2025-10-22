@@ -13,9 +13,12 @@ import {
   CenterHeader,
   CenterContactInfo,
   CenterDescription,
+  OperatingInfoSection,
 } from '@/components/center';
-import { Clock, Star, Heart, Share2, ArrowLeft } from 'lucide-react';
+import { Star, Heart, Share2, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
+import { CenterStaffSection } from './components/CenterStaffSection';
+import { CenterProgramsSection } from './components/CenterProgramsSection';
 
 interface PageProps {
   params: {
@@ -160,20 +163,17 @@ export default async function CenterDetailPage({ params }: PageProps) {
           favoriteCount={center.stats.favorite_count}
         />
 
-        {/* 플레이스홀더: 운영 시간 */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-h3 flex items-center gap-2">
-              <Clock className="w-5 h-5" aria-hidden="true" />
-              운영 시간
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-body text-neutral-500">
-              운영 시간 정보는 곧 제공될 예정입니다.
-            </p>
-          </CardContent>
-        </Card>
+        {/* 운영 정보 섹션 - OperatingInfoSection 컴포넌트 (Sprint 2) */}
+        <OperatingInfoSection
+          centerId={center.id}
+          centerName={center.center_name}
+        />
+
+        {/* 의료진 현황 섹션 - Sprint 3 */}
+        <CenterStaffSection centerId={center.id} />
+
+        {/* 프로그램 정보 섹션 - Sprint 3 */}
+        <CenterProgramsSection centerId={center.id} />
 
         {/* 플레이스홀더: 리뷰 */}
         <Card>

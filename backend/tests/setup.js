@@ -1,6 +1,12 @@
 // Test setup file
 require('dotenv').config({ path: '.env.local' });
 
+// Import app for testing
+const app = require('../src/app');
+
+// Make app available globally for all tests
+global.app = app;
+
 // Global test timeout
 jest.setTimeout(30000);
 
