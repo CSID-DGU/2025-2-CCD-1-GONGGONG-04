@@ -33,3 +33,7 @@ yarn-error.log*
 next-env.d.ts
 *storybook.log
 storybook-static
+
+# screenshots and test utilities
+*-home.png
+test-screenshot.mjs
