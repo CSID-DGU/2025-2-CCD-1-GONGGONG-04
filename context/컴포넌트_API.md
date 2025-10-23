@@ -2249,8 +2249,574 @@ import { useVirtualizer } from '@tanstack/react-virtual';
 
 ---
 
+## 8. 리뷰 및 평점 컴포넌트 (Sprint 4)
+
+### 8.1 ReviewSummary
+
+**목적**: 센터의 평균 별점과 전체 리뷰 개수를 표시하는 요약 컴포넌트
+
+**Props**:
+```typescript
+{
+  avgRating: number        // 평균 별점 (0-5)
+  reviewCount: number      // 전체 리뷰 개수
+  className?: string
+}
+```
+
+**사용 예시**:
+```tsx
+<ReviewSummary
+  avgRating={4.5}
+  reviewCount={127}
+  className="mb-6"
+/>
+```
+
+**출력 예시**:
+```
+★★★★☆ 4.5 (127개의 리뷰)
+```
+
+**접근성**:
+- 별점은 `role="img"`와 `aria-label="별점 4.5점"` 사용
+- 스크린 리더: "별점 4.5점, 127개의 리뷰"
+
+**스토리북 변형**:
+- `Default`: 평균 4.5, 리뷰 127개
+- `Perfect`: 평균 5.0, 리뷰 500개
+- `Low`: 평균 2.3, 리뷰 5개
+- `NoReviews`: 평균 0, 리뷰 0개
+
+---
+
+### 8.2 ReviewCard
+
+**목적**: 개별 리뷰를 카드 형태로 표시 (작성자 정보, 별점, 내용, 반응 버튼 포함)
+
+**Props**:
+```typescript
+{
+  review: Review                                          // 리뷰 데이터
+  onReactionClick?: (reviewId: number, reaction: ReactionType) => void  // 반응 클릭 핸들러
+  onEdit?: (review: Review) => void                       // 수정 클릭 핸들러
+  onDelete?: (reviewId: number) => void                   // 삭제 클릭 핸들러
+}
+
+// Review 타입
+interface Review {
+  id: number
+  rating: number                    // 1-5
+  title: string | null              // 선택적 제목
+  content: string                   // 리뷰 내용
+  visit_date: string | null         // 방문 날짜 (YYYY-MM-DD)
+  helpful_count: number             // 도움돼요 수
+  unhelpful_count: number           // 도움안돼요 수
+  my_reaction: 'helpful' | 'unhelpful' | null  // 내 반응
+  is_my_review: boolean             // 내가 작성한 리뷰 여부
+  user: {
+    id: number
+    nickname: string
+    avatar_url: string | null
+  }
+  created_at: string                // ISO 8601 형식
+}
+```
+
+**사용 예시**:
+```tsx
+<ReviewCard
+  review={review}
+  onReactionClick={(id, reaction) => handleReaction(id, reaction)}
+  onEdit={(review) => openEditModal(review)}
+  onDelete={(id) => handleDelete(id)}
+/>
+```
+
+**주요 기능**:
+- 작성자 아바타 및 닉네임
+- 별점 표시 (시각적 + ARIA 라벨)
+- 방문 날짜 배지 (선택적)
+- 제목 및 본문 내용
+- 도움돼요/도움안돼요 반응 버튼
+- 내 리뷰인 경우 수정/삭제 메뉴 표시
+- 삭제 확인 AlertDialog
+
+**접근성**:
+- 각 버튼에 명확한 `aria-label` 제공
+- 반응 버튼은 `aria-pressed` 상태 토글
+- 별점은 `role="img"` with label
+- 더보기 메뉴는 `aria-label="더보기 메뉴"`
+
+**인터랙션**:
+1. **도움돼요 클릭**: 버튼 활성화, 카운트 +1 (이미 누른 경우 취소)
+2. **도움안돼요 클릭**: 버튼 활성화, 카운트 +1 (이미 누른 경우 취소)
+3. **더보기 메뉴 (내 리뷰만)**:
+   - 수정: `onEdit` 콜백 호출
+   - 삭제: AlertDialog 표시 → 확인 시 `onDelete` 호출
+
+**스토리북 변형**:
+- `Default`: 일반 리뷰
+- `MyReview`: 내가 작성한 리뷰 (수정/삭제 가능)
+- `WithTitle`: 제목이 있는 리뷰
+- `WithReaction`: 내가 도움돼요를 누른 리뷰
+- `NoVisitDate`: 방문 날짜 없는 리뷰
+
+---
+
+### 8.3 ReviewList
+
+**목적**: 리뷰 목록을 표시하고 정렬, 무한 스크롤 기능 제공
+
+**Props**:
+```typescript
+{
+  centerId: number                                        // 센터 ID
+  sortBy: SortOption                                      // 정렬 옵션
+  onSortChange: (sort: SortOption) => void                // 정렬 변경 핸들러
+  onReactionClick?: (reviewId: number, reaction: ReactionType) => void
+  onEditReview?: (review: Review) => void
+  onDeleteReview?: (reviewId: number) => void
+}
+
+// SortOption 타입
+type SortOption = 'latest' | 'helpful' | 'rating_desc' | 'rating_asc'
+```
+
+**사용 예시**:
+```tsx
+const [sortBy, setSortBy] = useState<SortOption>('latest');
+
+<ReviewList
+  centerId={1}
+  sortBy={sortBy}
+  onSortChange={setSortBy}
+  onReactionClick={handleReaction}
+  onEditReview={openEditModal}
+  onDeleteReview={handleDelete}
+/>
+```
+
+**주요 기능**:
+- 정렬 셀렉터 (최신순, 도움순, 평점 높은순, 평점 낮은순)
+- 전체 리뷰 개수 표시
+- 리뷰 카드 리스트
+- "더보기" 버튼 (무한 스크롤)
+- 로딩 스켈레톤
+- 빈 상태 (EmptyReviews)
+- 에러 상태
+
+**정렬 옵션**:
+- `latest`: 최신순
+- `helpful`: 도움순 (helpful_count - unhelpful_count DESC)
+- `rating_desc`: 평점 높은순
+- `rating_asc`: 평점 낮은순
+
+**접근성**:
+- 정렬 셀렉터에 `aria-label="정렬 옵션"`
+- 더보기 버튼에 `aria-label="더 많은 리뷰 불러오기"`
+- 로딩 중일 때 버튼 텍스트 "불러오는 중..."
+
+**스토리북 변형**:
+- `Default`: 리뷰 10개 표시
+- `Loading`: 로딩 스켈레톤 상태
+- `Empty`: 빈 상태 (리뷰 없음)
+- `Error`: 에러 상태
+
+---
+
+### 8.4 StarRating
+
+**목적**: 별점 선택 및 표시를 위한 인터랙티브 컴포넌트
+
+**Props**:
+```typescript
+{
+  rating: number                              // 현재 별점 (0-5)
+  onRatingChange?: (rating: number) => void   // 별점 변경 핸들러
+  size?: 'sm' | 'md' | 'lg'                   // 크기 (기본: md)
+  readonly?: boolean                          // 읽기 전용 모드
+  className?: string
+}
+```
+
+**사용 예시**:
+```tsx
+// 인터랙티브 모드 (리뷰 작성)
+<StarRating
+  rating={rating}
+  onRatingChange={(newRating) => setRating(newRating)}
+  size="lg"
+/>
+
+// 읽기 전용 모드 (리뷰 표시)
+<StarRating
+  rating={4.5}
+  readonly
+  size="sm"
+/>
+```
+
+**크기 옵션**:
+- `sm`: 16x16px (h-4 w-4)
+- `md`: 20x20px (h-5 w-5)
+- `lg`: 24x24px (h-6 w-6)
+
+**접근성**:
+- **인터랙티브 모드**:
+  - `role="radiogroup"`
+  - `aria-label="별점 선택"`
+  - 각 별: `role="radio"`, `aria-checked`, `aria-label="X점"`
+  - 키보드 지원: Left/Right 화살표, Home/End
+- **읽기 전용 모드**:
+  - `role="img"`
+  - `aria-label="별점 X점"`
+  - `aria-hidden="true"` on stars
+
+**인터랙션**:
+1. **마우스**: 호버 시 미리보기, 클릭 시 선택
+2. **키보드**:
+   - Left/Right 화살표: 별점 조정
+   - Home: 1점
+   - End: 5점
+   - Enter/Space: 현재 별점 선택
+3. **터치**: 탭하여 선택
+
+**시각적 피드백**:
+- 호버 시 별 확대 (scale-110)
+- 채워진 별: 노란색 (fill-yellow-400)
+- 빈 별: 회색 (fill-neutral-300)
+- 포커스 링: lavender-500
+
+**스토리북 변형**:
+- `Interactive`: 인터랙티브 모드 (lg 크기)
+- `Readonly`: 읽기 전용 모드
+- `Small`: 작은 크기 (sm)
+- `Medium`: 중간 크기 (md)
+- `Large`: 큰 크기 (lg)
+- `ZeroRating`: 별점 0
+
+---
+
+### 8.5 ReviewFormModal
+
+**목적**: 리뷰 작성 및 수정을 위한 모달 폼
+
+**Props**:
+```typescript
+{
+  centerId: number                    // 센터 ID
+  existingReview?: Review | null      // 기존 리뷰 (수정 모드)
+  isOpen: boolean                     // 모달 열림 상태
+  onClose: () => void                 // 모달 닫기 콜백
+  onSuccess?: (review: Review) => void // 성공 시 콜백
+}
+```
+
+**사용 예시**:
+```tsx
+// 신규 작성 모드
+<ReviewFormModal
+  centerId={1}
+  isOpen={isModalOpen}
+  onClose={() => setIsModalOpen(false)}
+  onSuccess={(review) => {
+    toast.success('리뷰가 등록되었습니다');
+    setIsModalOpen(false);
+  }}
+/>
+
+// 수정 모드
+<ReviewFormModal
+  centerId={1}
+  existingReview={reviewToEdit}
+  isOpen={isEditModalOpen}
+  onClose={() => setIsEditModalOpen(false)}
+  onSuccess={(review) => {
+    toast.success('리뷰가 수정되었습니다');
+    setIsEditModalOpen(false);
+  }}
+/>
+```
+
+**폼 필드**:
+1. **별점** (필수):
+   - StarRating 컴포넌트 (lg 크기)
+   - 1-5점 선택
+   - 기본값: 0 (미선택)
+
+2. **제목** (선택):
+   - Input 컴포넌트
+   - 최대 100자
+   - Placeholder: "리뷰 제목을 입력하세요"
+
+3. **리뷰 내용** (필수):
+   - Textarea 컴포넌트
+   - 최소 10자, 최대 1000자
+   - 실시간 문자 수 표시
+   - Placeholder: "센터에 대한 솔직한 리뷰를 작성해주세요"
+
+4. **방문 날짜** (선택):
+   - Input type="date"
+   - 오늘 이전 날짜만 선택 가능
+
+**유효성 검사** (Zod):
+```typescript
+{
+  rating: z.number().min(1, '별점을 선택해주세요').max(5),
+  title: z.string().max(100, '제목은 100자 이내로 입력해주세요').optional(),
+  content: z.string()
+    .min(10, '최소 10자 이상 입력해주세요')
+    .max(1000, '최대 1000자까지 입력 가능합니다'),
+  visit_date: z.string().optional()
+}
+```
+
+**주요 기능**:
+- 신규 작성 / 수정 모드 자동 전환
+- React Hook Form 기반 폼 관리
+- 실시간 유효성 검사
+- 문자 수 카운터 (1000자 초과 시 빨간색)
+- 로딩 상태 (저장 중...)
+- Escape 키로 닫기
+
+**접근성**:
+- 모든 필드에 `<Label>` 연결
+- 필수 필드 `aria-required="true"` + 시각적 별표 (*)
+- 에러 메시지 `role="alert"`
+- 에러 필드 `aria-invalid="true"`, `aria-describedby="error-id"`
+- 모달 포커스 트랩
+- 첫 번째 인터랙티브 요소에 자동 포커스
+
+**스토리북 변형**:
+- `CreateMode`: 신규 작성 모드
+- `EditMode`: 수정 모드 (기존 리뷰 데이터 로드)
+- `WithErrors`: 유효성 검사 에러 상태
+- `Loading`: 저장 중 상태
+
+---
+
+### 8.6 EmptyReviews
+
+**목적**: 리뷰가 없을 때 표시하는 빈 상태 컴포넌트
+
+**Props**:
+```typescript
+{
+  onWriteClick?: () => void    // "첫 리뷰 작성하기" 버튼 클릭 핸들러
+  className?: string
+}
+```
+
+**사용 예시**:
+```tsx
+<EmptyReviews
+  onWriteClick={() => setIsModalOpen(true)}
+/>
+```
+
+**출력 내용**:
+```
+📝 이모지 아이콘
+
+아직 작성된 리뷰가 없습니다
+이 센터의 첫 번째 리뷰를 작성해보세요
+
+[첫 리뷰 작성하기 버튼]
+```
+
+**디자인**:
+- 중앙 정렬 레이아웃
+- 아이콘: 크기 48x48px
+- 제목: text-h3, neutral-900
+- 설명: text-body, neutral-600
+- CTA 버튼: lavender primary variant
+
+**접근성**:
+- 의미론적 구조 (heading + paragraph + button)
+- 버튼에 명확한 레이블
+
+**스토리북 변형**:
+- `Default`: 기본 빈 상태
+
+---
+
+## 9. 리뷰 시스템 통합 가이드
+
+### 9.1 센터 상세 페이지 통합 예시
+
+**전체 플로우**:
+```tsx
+'use client';
+
+import { useState } from 'react';
+import { ReviewSummary } from '@/components/reviews/ReviewSummary';
+import { ReviewList } from '@/components/reviews/ReviewList';
+import { ReviewFormModal } from '@/components/reviews/ReviewFormModal';
+import { Button } from '@/components/ui/button';
+import { useAuth } from '@/hooks/useAuth';
+import { useReviews } from '@/hooks/useReviews';
+import { useCreateReview, useUpdateReview, useDeleteReview } from '@/hooks/useReviewMutation';
+import type { SortOption } from '@/types/review';
+
+export default function CenterDetailPage({ params }: { params: { id: string } }) {
+  const centerId = parseInt(params.id);
+  const { user, isAuthenticated } = useAuth();
+  const [sortBy, setSortBy] = useState<SortOption>('latest');
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingReview, setEditingReview] = useState<Review | null>(null);
+
+  // Fetch center data
+  const { data: center } = useCenter(centerId);
+
+  // Review mutations
+  const createMutation = useCreateReview(centerId);
+  const updateMutation = useUpdateReview();
+  const deleteMutation = useDeleteReview();
+  const reactionMutation = useReactionMutation();
+
+  const handleReaction = (reviewId: number, reaction: ReactionType) => {
+    reactionMutation.mutate({ reviewId, reaction });
+  };
+
+  const handleEdit = (review: Review) => {
+    setEditingReview(review);
+    setIsModalOpen(true);
+  };
+
+  const handleDelete = async (reviewId: number) => {
+    await deleteMutation.mutateAsync(reviewId);
+  };
+
+  return (
+    <div className="container mx-auto px-4 py-8">
+      {/* Center Info */}
+      <CenterHeader center={center} />
+
+      {/* Review Summary */}
+      <section className="mt-8">
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-h2">리뷰</h2>
+          {isAuthenticated && (
+            <Button
+              variant="lavender"
+              onClick={() => setIsModalOpen(true)}
+            >
+              리뷰 작성
+            </Button>
+          )}
+        </div>
+
+        <ReviewSummary
+          avgRating={center.stats.avg_rating}
+          reviewCount={center.stats.review_count}
+        />
+      </section>
+
+      {/* Review List */}
+      <section className="mt-6">
+        <ReviewList
+          centerId={centerId}
+          sortBy={sortBy}
+          onSortChange={setSortBy}
+          onReactionClick={handleReaction}
+          onEditReview={handleEdit}
+          onDeleteReview={handleDelete}
+        />
+      </section>
+
+      {/* Review Form Modal */}
+      <ReviewFormModal
+        centerId={centerId}
+        existingReview={editingReview}
+        isOpen={isModalOpen}
+        onClose={() => {
+          setIsModalOpen(false);
+          setEditingReview(null);
+        }}
+        onSuccess={() => {
+          setIsModalOpen(false);
+          setEditingReview(null);
+        }}
+      />
+    </div>
+  );
+}
+```
+
+### 9.2 필요한 API Hooks
+
+**useReviews** (TanStack Query):
+```typescript
+export function useReviews(centerId: number, sortBy: SortOption) {
+  return useInfiniteQuery({
+    queryKey: ['reviews', centerId, sortBy],
+    queryFn: ({ pageParam = 1 }) => fetchReviews(centerId, sortBy, pageParam),
+    getNextPageParam: (lastPage) =>
+      lastPage.pagination.has_next
+        ? lastPage.pagination.current_page + 1
+        : undefined,
+    staleTime: 60 * 1000, // 1 minute
+  });
+}
+```
+
+**useReviewMutation**:
+```typescript
+export function useCreateReview(centerId: number) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (data: ReviewFormValues) => createReview(centerId, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries(['reviews', centerId]);
+      toast.success('리뷰가 등록되었습니다');
+    },
+    onError: (error) => {
+      toast.error('리뷰 등록에 실패했습니다');
+    },
+  });
+}
+```
+
+### 9.3 성능 최적화 권장사항
+
+1. **코드 스플리팅**:
+```typescript
+const ReviewFormModal = dynamic(
+  () => import('@/components/reviews/ReviewFormModal'),
+  { ssr: false }
+);
+```
+
+2. **React.memo 적용**:
+```typescript
+export const ReviewCard = React.memo(ReviewCard);
+```
+
+3. **useCallback 사용**:
+```typescript
+const handleReaction = useCallback((reviewId: number, reaction: ReactionType) => {
+  reactionMutation.mutate({ reviewId, reaction });
+}, [reactionMutation]);
+```
+
+4. **Optimistic Updates**:
+- 반응 클릭 시 즉시 UI 업데이트
+- TanStack Query의 optimistic update 사용
+
+---
+
 ## 문서 버전
 
-**최종 업데이트**: 2025-10-14
-**컴포넌트 수**: 58개
-**문서 버전**: 2.0.0
+**최종 업데이트**: 2025-10-23
+**컴포넌트 수**: 64개 (Sprint 4: +6개)
+**문서 버전**: 2.1.0
+
+**Sprint 4 추가 컴포넌트**:
+- ReviewSummary
+- ReviewCard
+- ReviewList
+- StarRating
+- ReviewFormModal
+- EmptyReviews

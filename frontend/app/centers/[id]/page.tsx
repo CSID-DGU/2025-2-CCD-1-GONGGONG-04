@@ -19,6 +19,7 @@ import { Star, Heart, Share2, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import { CenterStaffSection } from './components/CenterStaffSection';
 import { CenterProgramsSection } from './components/CenterProgramsSection';
+import { CenterReviewsSection } from './components/CenterReviewsSection';
 
 interface PageProps {
   params: {
@@ -175,25 +176,19 @@ export default async function CenterDetailPage({ params }: PageProps) {
         {/* 프로그램 정보 섹션 - Sprint 3 */}
         <CenterProgramsSection centerId={center.id} />
 
-        {/* 플레이스홀더: 리뷰 */}
-        <Card>
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-h3 flex items-center gap-2">
-                <Star className="w-5 h-5" aria-hidden="true" />
-                리뷰
-              </CardTitle>
-              <span className="text-small text-neutral-500">
-                {center.stats.review_count}개의 리뷰
-              </span>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <p className="text-body text-neutral-500">
-              리뷰 기능은 곧 제공될 예정입니다.
-            </p>
-          </CardContent>
-        </Card>
+        {/* 리뷰 및 평점 섹션 - Sprint 4 */}
+        <CenterReviewsSection
+          centerId={center.id}
+          avgRating={center.stats.avg_rating}
+          totalReviews={center.stats.review_count}
+          ratingDistribution={{
+            5: 0, // TODO: Fetch from API in Week 2
+            4: 0,
+            3: 0,
+            2: 0,
+            1: 0,
+          }}
+        />
 
         {/* 플레이스홀더: 지도 */}
         <Card>
