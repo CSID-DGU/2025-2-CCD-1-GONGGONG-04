@@ -105,8 +105,8 @@ model Center {
   centerTypeOriginal  String?   @map("center_type_original") @db.VarChar(100)
   roadAddress         String    @map("road_address") @db.VarChar(500)
   jibunAddress        String?   @map("jibun_address") @db.VarChar(500)
-  latitude            Decimal   @db.Decimal(10, 8)
-  longitude           Decimal   @db.Decimal(11, 8)
+  latitude            Decimal?  @db.Decimal(10, 8)
+  longitude           Decimal?  @db.Decimal(11, 8)
   businessContent     String?   @map("business_content") @db.Text
   buildingArea        Decimal?  @map("building_area") @db.Decimal(10, 2)
   phoneNumber         String?   @map("phone_number") @db.VarChar(50)

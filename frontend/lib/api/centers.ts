@@ -6,7 +6,35 @@
 import { CenterDetail, ApiError, UserLocation, StaffResponse, ProgramResponse } from '@/types/center';
 import { OperatingStatusResponse } from '@/types/operatingStatus';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8080/api/v1';
+/**
+ * API Base URL 결정
+ * - 개발 환경: 항상 localhost 사용
+ * - 프로덕션 (Docker): 서버 사이드는 내부 네트워크(backend:8080), 클라이언트는 브라우저용 URL
+ */
+const getApiBaseUrl = (): string => {
+  const isServer = typeof window === 'undefined';
+  const isDevelopment = process.env.NODE_ENV === 'development';
+
+  const envBaseUrl = (
+    (isServer ? process.env.API_BASE_URL : undefined) ||
+    process.env.NEXT_PUBLIC_API_BASE_URL ||
+    process.env.NEXT_PUBLIC_API_URL
+  );
+
+  if (envBaseUrl) {
+    return envBaseUrl.replace(/\/$/, '');
+  }
+
+  if (isServer) {
+    return isDevelopment
+      ? 'http://localhost:8080/api/v1'
+      : 'http://backend:8080/api/v1';
+  }
+
+  return 'http://localhost:8080/api/v1';
+};
+
+const API_BASE_URL = getApiBaseUrl();
 
 /**
  * API 에러 클래스
@@ -74,8 +102,10 @@ export async function getCenterDetail(
     }
 
     // 성공 응답 파싱
-    const data: CenterDetail = await response.json();
-    return data;
+    const responseBody = await response.json();
+
+    // 백엔드 응답 형식: { success: true, data: {...} }
+    return responseBody.data;
 
   } catch (error) {
     // CenterApiError는 그대로 throw
@@ -155,8 +185,8 @@ export async function fetchOperatingStatus(
     }
 
     // 성공 응답 파싱
-    const data: OperatingStatusResponse = await response.json();
-    return data;
+    const responseBody = await response.json();
+    return responseBody.data;
 
   } catch (error) {
     // CenterApiError는 그대로 throw
@@ -217,8 +247,8 @@ export async function getCenterStaff(centerId: number): Promise<StaffResponse> {
       );
     }
 
-    const data: StaffResponse = await response.json();
-    return data;
+    const responseBody = await response.json();
+    return responseBody.data;
 
   } catch (error) {
     if (error instanceof CenterApiError) {
@@ -297,8 +327,8 @@ export async function getCenterPrograms(
       );
     }
 
-    const data: ProgramResponse = await response.json();
-    return data;
+    const responseBody = await response.json();
+    return responseBody.data;
 
   } catch (error) {
     if (error instanceof CenterApiError) {

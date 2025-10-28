@@ -259,11 +259,11 @@ test.describe('Review Creation Flow', () => {
           status: 201,
           contentType: 'application/json',
           body: JSON.stringify({
+            ...mockReviews[0],
             id: 3,
             rating: 5,
             title: '테스트 리뷰',
             content: '이것은 테스트 리뷰입니다. 최소 10자 이상 작성.',
-            ...mockReviews[0],
           }),
         });
       } else {

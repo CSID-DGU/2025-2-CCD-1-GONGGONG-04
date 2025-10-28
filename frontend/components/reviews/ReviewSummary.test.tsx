@@ -30,12 +30,12 @@ describe('ReviewSummary', () => {
   it('renders all star ratings (5-1)', () => {
     render(<ReviewSummary {...mockProps} />);
 
-    // Check that all rating labels are present
-    expect(screen.getByText('5')).toBeInTheDocument();
-    expect(screen.getByText('4')).toBeInTheDocument();
-    expect(screen.getByText('3')).toBeInTheDocument();
-    expect(screen.getByText('2')).toBeInTheDocument();
-    expect(screen.getByText('1')).toBeInTheDocument();
+    // Check that all rating labels are present (some numbers may appear multiple times)
+    expect(screen.getAllByText('5').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('4').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('3').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('2').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('1').length).toBeGreaterThan(0);
   });
 
   it('renders rating distribution counts', () => {
@@ -44,7 +44,9 @@ describe('ReviewSummary', () => {
     expect(screen.getByText('60')).toBeInTheDocument();
     expect(screen.getByText('20')).toBeInTheDocument();
     expect(screen.getByText('10')).toBeInTheDocument();
-    expect(screen.getByText('5')).toBeInTheDocument(); // Both 2-star and 1-star are 5
+    // '5' appears multiple times (both as rating label and as count for 2-star and 1-star)
+    const fives = screen.getAllByText('5');
+    expect(fives.length).toBeGreaterThanOrEqual(2);
   });
 
   it('handles zero reviews', () => {

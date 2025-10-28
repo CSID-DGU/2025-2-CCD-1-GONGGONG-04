@@ -1,3 +1,5 @@
+'use client';
+
 /**
  * UpdateIndicator 컴포넌트
  * 실시간 업데이트 상태 표시기
@@ -8,8 +10,6 @@
  * - 업데이트 진행 중 표시 (스피너)
  * - 자동 업데이트 간격 표시
  */
-
-'use client';
 
 import { useEffect, useState } from 'react';
 import { formatDistanceToNow } from 'date-fns';

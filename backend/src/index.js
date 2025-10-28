@@ -15,6 +15,7 @@ process.on('unhandledRejection', (err) => {
 
 // Start server
 const server = app.listen(config.port, config.host, () => {
+  // eslint-disable-next-line no-console
   console.log(`
 ╔═══════════════════════════════════════════════════════════════╗
 ║                                                               ║
@@ -32,14 +33,17 @@ const server = app.listen(config.port, config.host, () => {
 
 // Graceful shutdown
 const gracefulShutdown = (signal) => {
+  // eslint-disable-next-line no-console
   console.log(`\n${signal} received. Starting graceful shutdown...`);
 
   server.close(() => {
+    // eslint-disable-next-line no-console
     console.log('✅ HTTP server closed');
 
     // Close database connections, etc.
     // TODO: Add cleanup logic here
 
+    // eslint-disable-next-line no-console
     console.log('✅ Graceful shutdown completed');
     process.exit(0);
   });

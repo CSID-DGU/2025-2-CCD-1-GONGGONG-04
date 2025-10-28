@@ -23,7 +23,8 @@ describe('HolidayList', () => {
       render(<HolidayList holidays={sampleHolidays} />);
 
       expect(screen.getByText('신정')).toBeInTheDocument();
-      expect(screen.getByText('설날 연휴')).toBeInTheDocument();
+      const lunarNewYearHolidays = screen.getAllByText('설날 연휴');
+      expect(lunarNewYearHolidays).toHaveLength(2); // 설날 연휴 2일
       expect(screen.getByText('설날')).toBeInTheDocument();
       expect(screen.getByText('삼일절')).toBeInTheDocument();
     });

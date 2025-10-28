@@ -1,4 +1,4 @@
-const { PrismaClient } = require('@prisma/client');
+import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
@@ -117,7 +117,7 @@ async function getCenterPrograms(
     ]);
 
     // Transform the data to match API response format
-    const programItems: ProgramItem[] = programs.map((item) => ({
+    const programItems: ProgramItem[] = programs.map((item: any) => ({
       id: Number(item.id),
       program_name: item.programName,
       program_type: item.programType,

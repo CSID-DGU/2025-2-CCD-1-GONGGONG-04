@@ -6,6 +6,7 @@
  */
 
 import { render, screen, fireEvent } from '@testing-library/react';
+import { vi } from 'vitest';
 import { StarRating } from './StarRating';
 
 describe('StarRating', () => {
@@ -48,7 +49,7 @@ describe('StarRating', () => {
 
   describe('Hover Interaction', () => {
     it('shows preview rating on hover', () => {
-      render(<StarRating rating={2} onRatingChange={jest.fn()} />);
+      render(<StarRating rating={2} onRatingChange={vi.fn()} />);
       const buttons = screen.getAllByRole('radio');
 
       // Hover over 4th star
@@ -66,7 +67,7 @@ describe('StarRating', () => {
     });
 
     it('returns to original rating when mouse leaves', () => {
-      render(<StarRating rating={2} onRatingChange={jest.fn()} />);
+      render(<StarRating rating={2} onRatingChange={vi.fn()} />);
       const container = screen.getByRole('radiogroup');
       const buttons = screen.getAllByRole('radio');
 
@@ -87,7 +88,7 @@ describe('StarRating', () => {
 
   describe('Click Interaction', () => {
     it('calls onRatingChange when star is clicked', () => {
-      const handleRatingChange = jest.fn();
+      const handleRatingChange = vi.fn();
       render(<StarRating rating={0} onRatingChange={handleRatingChange} />);
 
       const buttons = screen.getAllByRole('radio');
@@ -99,7 +100,7 @@ describe('StarRating', () => {
     });
 
     it('allows changing rating multiple times', () => {
-      const handleRatingChange = jest.fn();
+      const handleRatingChange = vi.fn();
       render(<StarRating rating={2} onRatingChange={handleRatingChange} />);
 
       const buttons = screen.getAllByRole('radio');
@@ -118,7 +119,7 @@ describe('StarRating', () => {
 
   describe('Readonly Mode', () => {
     it('does not respond to clicks when readonly', () => {
-      const handleRatingChange = jest.fn();
+      const handleRatingChange = vi.fn();
       render(<StarRating rating={3} onRatingChange={handleRatingChange} readonly />);
 
       const buttons = screen.queryAllByRole('radio');
@@ -153,7 +154,7 @@ describe('StarRating', () => {
 
   describe('Accessibility', () => {
     it('has correct ARIA labels in interactive mode', () => {
-      render(<StarRating rating={3} onRatingChange={jest.fn()} />);
+      render(<StarRating rating={3} onRatingChange={vi.fn()} />);
 
       const radioGroup = screen.getByRole('radiogroup', { name: '별점 선택' });
       expect(radioGroup).toBeInTheDocument();
@@ -172,7 +173,7 @@ describe('StarRating', () => {
     });
 
     it('is keyboard accessible', () => {
-      const handleRatingChange = jest.fn();
+      const handleRatingChange = vi.fn();
       render(<StarRating rating={0} onRatingChange={handleRatingChange} />);
 
       const buttons = screen.getAllByRole('radio');

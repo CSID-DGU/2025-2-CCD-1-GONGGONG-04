@@ -7,24 +7,25 @@
 
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { vi } from 'vitest';
 import { ReviewFormModal } from './ReviewFormModal';
 import type { Review } from '@/types/review';
 
 // Mock toast hook
-jest.mock('@/components/ui/use-toast', () => ({
+vi.mock('@/components/ui/use-toast', () => ({
   useToast: () => ({
-    toast: jest.fn(),
+    toast: vi.fn(),
   }),
 }));
 
 // Mock mutation hooks
-jest.mock('@/hooks/useReviewMutation', () => ({
+vi.mock('@/hooks/useReviewMutation', () => ({
   useCreateReview: () => ({
-    mutateAsync: jest.fn().mockResolvedValue({ id: 1, rating: 5 }),
+    mutateAsync: vi.fn().mockResolvedValue({ id: 1, rating: 5 }),
     isPending: false,
   }),
   useUpdateReview: () => ({
-    mutateAsync: jest.fn().mockResolvedValue({ id: 1, rating: 4 }),
+    mutateAsync: vi.fn().mockResolvedValue({ id: 1, rating: 4 }),
     isPending: false,
   }),
 }));
@@ -63,12 +64,12 @@ describe('ReviewFormModal', () => {
   const defaultProps = {
     centerId: 1,
     isOpen: true,
-    onClose: jest.fn(),
-    onSuccess: jest.fn(),
+    onClose: vi.fn(),
+    onSuccess: vi.fn(),
   };
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   describe('Rendering', () => {
@@ -187,7 +188,7 @@ describe('ReviewFormModal', () => {
 
   describe('Form Submission', () => {
     it('submits form with valid data in create mode', async () => {
-      const onSuccess = jest.fn();
+      const onSuccess = vi.fn();
       render(<ReviewFormModal {...defaultProps} onSuccess={onSuccess} />, { wrapper });
 
       // Fill form
@@ -210,7 +211,7 @@ describe('ReviewFormModal', () => {
     });
 
     it('submits form with valid data in edit mode', async () => {
-      const onSuccess = jest.fn();
+      const onSuccess = vi.fn();
       render(
         <ReviewFormModal {...defaultProps} existingReview={mockReview} onSuccess={onSuccess} />,
         { wrapper }
@@ -227,7 +228,7 @@ describe('ReviewFormModal', () => {
 
   describe('Dialog Controls', () => {
     it('calls onClose when cancel button is clicked', () => {
-      const onClose = jest.fn();
+      const onClose = vi.fn();
       render(<ReviewFormModal {...defaultProps} onClose={onClose} />, { wrapper });
 
       const cancelButton = screen.getByRole('button', { name: '취소' });

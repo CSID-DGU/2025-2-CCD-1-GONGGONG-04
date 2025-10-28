@@ -4,6 +4,7 @@ import { GeistSans } from "geist/font/sans"
 import { GeistMono } from "geist/font/mono"
 import { Analytics } from "@vercel/analytics/next"
 import { Suspense } from "react"
+import { Providers } from "./providers"
 import "./globals.css"
 
 export const metadata: Metadata = {
@@ -23,7 +24,9 @@ export default function RootLayout({
   return (
     <html lang="ko" className="font-korean">
       <body className={`font-sans antialiased ${GeistSans.variable} ${GeistMono.variable}`}>
-        <Suspense fallback={<div>Loading...</div>}>{children}</Suspense>
+        <Providers>
+          <Suspense fallback={<div>Loading...</div>}>{children}</Suspense>
+        </Providers>
         <Analytics />
       </body>
     </html>

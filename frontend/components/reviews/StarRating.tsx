@@ -1,3 +1,5 @@
+'use client';
+
 /**
  * StarRating Component
  *

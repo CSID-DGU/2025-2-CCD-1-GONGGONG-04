@@ -132,7 +132,10 @@ export const OperatingStatusBadge: React.FC<OperatingStatusBadgeProps> = ({
   size = 'md',
   className,
 }) => {
-  const config = statusConfig[status];
+  // status가 undefined이거나 유효하지 않을 경우 기본값으로 'NO_INFO' 사용
+  const safeStatus: OperatingStatus = (status && statusConfig[status]) ? status : 'NO_INFO';
+  const config = statusConfig[safeStatus];
+  console.log(config)
   const Icon = config.icon;
   const sizeStyle = sizeStyles[size];
 

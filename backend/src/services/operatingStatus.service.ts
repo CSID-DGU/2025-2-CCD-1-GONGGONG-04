@@ -18,7 +18,7 @@ import {
   setHours,
   setMinutes
 } from 'date-fns';
-import { zonedTimeToUtc, utcToZonedTime } from 'date-fns-tz';
+import { toZonedTime } from 'date-fns-tz';
 
 const prisma = new PrismaClient();
 const TIMEZONE = 'Asia/Seoul';
@@ -236,7 +236,7 @@ export async function calculateOperatingStatus(
   const startTime = Date.now();
 
   // Convert to Seoul timezone
-  const seoulTime = utcToZonedTime(targetDate, TIMEZONE);
+  const seoulTime = toZonedTime(targetDate, TIMEZONE);
 
   // 1. Fetch operating hours and holidays in parallel
   const [hours, holidays] = await Promise.all([

@@ -33,7 +33,8 @@ describe('OperatingHoursTable', () => {
     it('운영시간을 올바른 형식으로 표시해야 함', () => {
       render(<OperatingHoursTable operatingHours={sampleOperatingHours} />);
 
-      expect(screen.getByText('09:00 ~ 18:00')).toBeInTheDocument();
+      const standardHours = screen.getAllByText('09:00 ~ 18:00');
+      expect(standardHours.length).toBeGreaterThan(0); // 여러 요일이 동일 시간
       expect(screen.getByText('09:00 ~ 13:00')).toBeInTheDocument(); // 토요일
     });
 

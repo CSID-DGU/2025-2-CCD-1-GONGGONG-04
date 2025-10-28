@@ -10,24 +10,7 @@
 
 **목적**: 접을 수 있는 아코디언 패널
 
-**Props**:
-```typescript
-{
-  type?: 'single' | 'multiple'  // 단일/다중 확장
-  collapsible?: boolean          // 축소 가능 여부
-  className?: string
-}
-```
-
-**사용 예시**:
-```tsx
-<Accordion type="single" collapsible>
-  <AccordionItem value="item-1">
-    <AccordionTrigger>FAQ 1</AccordionTrigger>
-    <AccordionContent>답변 내용</AccordionContent>
-  </AccordionItem>
-</Accordion>
-```
+**Storybook**: `frontend/components/ui/accordion.stories.tsx`
 
 ---
 
@@ -35,22 +18,7 @@
 
 **목적**: 경고 메시지 표시
 
-**Props**:
-```typescript
-{
-  variant?: 'default' | 'destructive'  // 변형 스타일
-  className?: string
-}
-```
-
-**사용 예시**:
-```tsx
-<Alert>
-  <AlertCircle className="h-4 w-4" />
-  <AlertTitle>알림</AlertTitle>
-  <AlertDescription>중요한 메시지입니다.</AlertDescription>
-</Alert>
-```
+**Storybook**: `frontend/components/ui/alert.stories.tsx`
 
 ---
 
@@ -58,30 +26,7 @@
 
 **목적**: 확인/취소가 필요한 경고 대화상자
 
-**Props**:
-```typescript
-{
-  open?: boolean                        // 제어 모드
-  onOpenChange?: (open: boolean) => void  // 상태 변경 콜백
-}
-```
-
-**사용 예시**:
-```tsx
-<AlertDialog>
-  <AlertDialogTrigger>삭제</AlertDialogTrigger>
-  <AlertDialogContent>
-    <AlertDialogHeader>
-      <AlertDialogTitle>정말 삭제하시겠습니까?</AlertDialogTitle>
-      <AlertDialogDescription>이 작업은 되돌릴 수 없습니다.</AlertDialogDescription>
-    </AlertDialogHeader>
-    <AlertDialogFooter>
-      <AlertDialogCancel>취소</AlertDialogCancel>
-      <AlertDialogAction>삭제</AlertDialogAction>
-    </AlertDialogFooter>
-  </AlertDialogContent>
-</AlertDialog>
-```
+**Storybook**: `frontend/components/ui/alert-dialog.stories.tsx`
 
 ---
 
@@ -89,19 +34,7 @@
 
 **목적**: 이미지나 비디오의 종횡비 유지
 
-**Props**:
-```typescript
-{
-  ratio?: number  // 종횡비 (예: 16/9)
-}
-```
-
-**사용 예시**:
-```tsx
-<AspectRatio ratio={16 / 9}>
-  <img src="/image.jpg" alt="이미지" className="object-cover" />
-</AspectRatio>
-```
+**Storybook**: `frontend/components/ui/aspect-ratio.stories.tsx`
 
 ---
 
@@ -109,20 +42,7 @@
 
 **목적**: 사용자 프로필 아바타
 
-**Props**:
-```typescript
-{
-  className?: string
-}
-```
-
-**사용 예시**:
-```tsx
-<Avatar>
-  <AvatarImage src="/avatar.jpg" alt="사용자" />
-  <AvatarFallback>홍길동</AvatarFallback>
-</Avatar>
-```
+**Storybook**: `frontend/components/ui/avatar.stories.tsx`
 
 ---
 
@@ -130,26 +50,7 @@
 
 **목적**: 상태나 카테고리를 표시하는 배지
 
-**Props**:
-```typescript
-{
-  variant?: 'default' | 'operating' | 'closed' | 'emergency' | 'secondary' | 'destructive'
-  className?: string
-  children: React.ReactNode
-}
-```
-
-**사용 예시**:
-```tsx
-// 운영중 배지
-<Badge variant="operating">운영중</Badge>
-
-// 마감 배지
-<Badge variant="closed">마감</Badge>
-
-// 긴급 배지
-<Badge variant="emergency">긴급</Badge>
-```
+**Storybook**: `frontend/components/ui/badge.stories.tsx`
 
 ---
 
@@ -157,31 +58,7 @@
 
 **목적**: 계층적 네비게이션 경로 표시
 
-**Props**:
-```typescript
-{
-  className?: string
-}
-```
-
-**사용 예시**:
-```tsx
-<Breadcrumb>
-  <BreadcrumbList>
-    <BreadcrumbItem>
-      <BreadcrumbLink href="/">홈</BreadcrumbLink>
-    </BreadcrumbItem>
-    <BreadcrumbSeparator />
-    <BreadcrumbItem>
-      <BreadcrumbLink href="/centers">센터</BreadcrumbLink>
-    </BreadcrumbItem>
-    <BreadcrumbSeparator />
-    <BreadcrumbItem>
-      <BreadcrumbPage>상세</BreadcrumbPage>
-    </BreadcrumbItem>
-  </BreadcrumbList>
-</Breadcrumb>
-```
+**Storybook**: `frontend/components/ui/breadcrumb.stories.tsx`
 
 ---
 
@@ -189,31 +66,7 @@
 
 **목적**: 사용자 액션을 위한 버튼 컴포넌트
 
-**Props**:
-```typescript
-{
-  variant?: 'default' | 'lavender' | 'operating' | 'emergency' | 'destructive' | 'outline' | 'ghost'
-  size?: 'default' | 'sm' | 'lg' | 'touch'
-  className?: string
-  onClick?: () => void
-  children: React.ReactNode
-}
-```
-
-**사용 예시**:
-```tsx
-// 기본 버튼
-<Button>클릭하세요</Button>
-
-// 라벤더 그라데이션 버튼
-<Button variant="lavender">예약하기</Button>
-
-// 모바일 터치 친화적 버튼
-<Button size="touch">큰 버튼</Button>
-
-// 운영 상태 버튼
-<Button variant="operating">운영중</Button>
-```
+**Storybook**: `frontend/components/ui/button.stories.tsx`
 
 ---
 
@@ -221,27 +74,7 @@
 
 **목적**: 날짜 선택 달력
 
-**Props**:
-```typescript
-{
-  mode?: 'single' | 'multiple' | 'range'  // 선택 모드
-  selected?: Date | Date[]                // 선택된 날짜
-  onSelect?: (date: Date | Date[]) => void  // 날짜 선택 콜백
-  showOutsideDays?: boolean               // 이전/다음 월 날짜 표시 (기본값: true)
-  disabled?: Date[]                       // 비활성화할 날짜
-  className?: string
-}
-```
-
-**사용 예시**:
-```tsx
-<Calendar
-  mode="single"
-  selected={date}
-  onSelect={setDate}
-  disabled={(date) => date < new Date()}
-/>
-```
+**Storybook**: `frontend/components/ui/calendar.stories.tsx`
 
 ---
 
@@ -249,25 +82,7 @@
 
 **목적**: 컨텐츠를 담는 카드 컨테이너
 
-**Props**:
-```typescript
-{
-  className?: string
-  children: React.ReactNode
-}
-```
-
-**사용 예시**:
-```tsx
-<Card>
-  <CardHeader>
-    <CardTitle>제목</CardTitle>
-  </CardHeader>
-  <CardContent>
-    카드 내용이 들어갑니다.
-  </CardContent>
-</Card>
-```
+**Storybook**: `frontend/components/ui/card.stories.tsx`
 
 ---
 
@@ -275,30 +90,7 @@
 
 **목적**: 이미지/콘텐츠 캐러셀
 
-**Props**:
-```typescript
-{
-  opts?: {
-    align?: 'start' | 'center' | 'end'  // 정렬
-    loop?: boolean                       // 무한 루프
-  }
-  orientation?: 'horizontal' | 'vertical'  // 방향 (기본값: 'horizontal')
-  className?: string
-}
-```
-
-**사용 예시**:
-```tsx
-<Carousel opts={{ loop: true }}>
-  <CarouselContent>
-    <CarouselItem>슬라이드 1</CarouselItem>
-    <CarouselItem>슬라이드 2</CarouselItem>
-    <CarouselItem>슬라이드 3</CarouselItem>
-  </CarouselContent>
-  <CarouselPrevious />
-  <CarouselNext />
-</Carousel>
-```
+**Storybook**: `frontend/components/ui/carousel.stories.tsx`
 
 ---
 
@@ -306,30 +98,7 @@
 
 **목적**: 차트 시각화
 
-**Props**:
-```typescript
-{
-  config: {
-    [key: string]: {
-      label?: React.ReactNode    // 레이블
-      color?: string             // 색상
-      icon?: ComponentType       // 아이콘
-    }
-  }
-  className?: string
-}
-```
-
-**사용 예시**:
-```tsx
-<ChartContainer config={{
-  visitors: { label: "방문자", color: "hsl(var(--chart-1))" }
-}}>
-  <BarChart data={data}>
-    <Bar dataKey="visitors" fill="var(--color-visitors)" />
-  </BarChart>
-</ChartContainer>
-```
+**Storybook**: `frontend/components/ui/chart.stories.tsx`
 
 ---
 
@@ -337,23 +106,7 @@
 
 **목적**: 체크박스 입력
 
-**Props**:
-```typescript
-{
-  checked?: boolean                        // 체크 상태
-  onCheckedChange?: (checked: boolean) => void  // 상태 변경 콜백
-  disabled?: boolean                       // 비활성화 여부
-  className?: string
-}
-```
-
-**사용 예시**:
-```tsx
-<div className="flex items-center space-x-2">
-  <Checkbox id="terms" />
-  <Label htmlFor="terms">약관에 동의합니다</Label>
-</div>
-```
+**Storybook**: `frontend/components/ui/checkbox.stories.tsx`
 
 ---
 
@@ -361,24 +114,7 @@
 
 **목적**: 접을 수 있는 영역
 
-**Props**:
-```typescript
-{
-  open?: boolean                         // 확장 상태
-  onOpenChange?: (open: boolean) => void  // 상태 변경 콜백
-  className?: string
-}
-```
-
-**사용 예시**:
-```tsx
-<Collapsible>
-  <CollapsibleTrigger>더 보기</CollapsibleTrigger>
-  <CollapsibleContent>
-    숨겨진 내용이 여기에 표시됩니다.
-  </CollapsibleContent>
-</Collapsible>
-```
+**Storybook**: `frontend/components/ui/collapsible.stories.tsx`
 
 ---
 
@@ -386,26 +122,7 @@
 
 **목적**: 커맨드 팔레트 (검색 및 명령 실행)
 
-**Props**:
-```typescript
-{
-  className?: string
-}
-```
-
-**사용 예시**:
-```tsx
-<Command>
-  <CommandInput placeholder="검색..." />
-  <CommandList>
-    <CommandEmpty>결과 없음</CommandEmpty>
-    <CommandGroup heading="제안">
-      <CommandItem>상담 예약</CommandItem>
-      <CommandItem>센터 찾기</CommandItem>
-    </CommandGroup>
-  </CommandList>
-</Command>
-```
+**Storybook**: `frontend/components/ui/command.stories.tsx`
 
 ---
 
@@ -413,25 +130,7 @@
 
 **목적**: 컨텍스트 메뉴 (우클릭 메뉴)
 
-**Props**:
-```typescript
-{
-  className?: string
-}
-```
-
-**사용 예시**:
-```tsx
-<ContextMenu>
-  <ContextMenuTrigger>우클릭하세요</ContextMenuTrigger>
-  <ContextMenuContent>
-    <ContextMenuItem>복사</ContextMenuItem>
-    <ContextMenuItem>붙여넣기</ContextMenuItem>
-    <ContextMenuSeparator />
-    <ContextMenuItem variant="destructive">삭제</ContextMenuItem>
-  </ContextMenuContent>
-</ContextMenu>
-```
+**Storybook**: `frontend/components/ui/context-menu.stories.tsx`
 
 ---
 
@@ -439,30 +138,7 @@
 
 **목적**: 모달 대화상자
 
-**Props**:
-```typescript
-{
-  open?: boolean                        // 제어 모드
-  onOpenChange?: (open: boolean) => void  // 상태 변경 콜백
-}
-```
-
-**사용 예시**:
-```tsx
-<Dialog>
-  <DialogTrigger>열기</DialogTrigger>
-  <DialogContent>
-    <DialogHeader>
-      <DialogTitle>제목</DialogTitle>
-      <DialogDescription>설명</DialogDescription>
-    </DialogHeader>
-    {/* 콘텐츠 */}
-    <DialogFooter>
-      <Button>확인</Button>
-    </DialogFooter>
-  </DialogContent>
-</Dialog>
-```
+**Storybook**: `frontend/components/ui/dialog.stories.tsx`
 
 ---
 
@@ -470,30 +146,7 @@
 
 **목적**: 하단/측면 드로어
 
-**Props**:
-```typescript
-{
-  open?: boolean                        // 제어 모드
-  onOpenChange?: (open: boolean) => void  // 상태 변경 콜백
-}
-```
-
-**사용 예시**:
-```tsx
-<Drawer>
-  <DrawerTrigger>열기</DrawerTrigger>
-  <DrawerContent>
-    <DrawerHeader>
-      <DrawerTitle>제목</DrawerTitle>
-      <DrawerDescription>설명</DrawerDescription>
-    </DrawerHeader>
-    {/* 콘텐츠 */}
-    <DrawerFooter>
-      <Button>확인</Button>
-    </DrawerFooter>
-  </DrawerContent>
-</Drawer>
-```
+**Storybook**: `frontend/components/ui/drawer.stories.tsx`
 
 ---
 
@@ -501,26 +154,7 @@
 
 **목적**: 드롭다운 메뉴
 
-**Props**:
-```typescript
-{
-  open?: boolean                        // 제어 모드
-  onOpenChange?: (open: boolean) => void  // 상태 변경 콜백
-}
-```
-
-**사용 예시**:
-```tsx
-<DropdownMenu>
-  <DropdownMenuTrigger>메뉴</DropdownMenuTrigger>
-  <DropdownMenuContent>
-    <DropdownMenuItem>프로필</DropdownMenuItem>
-    <DropdownMenuItem>설정</DropdownMenuItem>
-    <DropdownMenuSeparator />
-    <DropdownMenuItem variant="destructive">로그아웃</DropdownMenuItem>
-  </DropdownMenuContent>
-</DropdownMenu>
-```
+**Storybook**: `frontend/components/ui/dropdown-menu.stories.tsx`
 
 ---
 
@@ -528,33 +162,7 @@
 
 **목적**: 폼 관리 (react-hook-form 통합)
 
-**Props**:
-```typescript
-{
-  // react-hook-form의 useForm 반환값 사용
-}
-```
-
-**사용 예시**:
-```tsx
-<Form {...form}>
-  <form onSubmit={form.handleSubmit(onSubmit)}>
-    <FormField
-      control={form.control}
-      name="email"
-      render={({ field }) => (
-        <FormItem>
-          <FormLabel>이메일</FormLabel>
-          <FormControl>
-            <Input {...field} />
-          </FormControl>
-          <FormMessage />
-        </FormItem>
-      )}
-    />
-  </form>
-</Form>
-```
+**Storybook**: `frontend/components/ui/form.stories.tsx`
 
 ---
 
@@ -562,23 +170,7 @@
 
 **목적**: 호버 시 카드 표시
 
-**Props**:
-```typescript
-{
-  openDelay?: number     // 오픈 지연 시간 (ms)
-  closeDelay?: number    // 닫기 지연 시간 (ms)
-}
-```
-
-**사용 예시**:
-```tsx
-<HoverCard>
-  <HoverCardTrigger>호버하세요</HoverCardTrigger>
-  <HoverCardContent>
-    추가 정보가 여기에 표시됩니다.
-  </HoverCardContent>
-</HoverCard>
-```
+**Storybook**: `frontend/components/ui/hover-card.stories.tsx`
 
 ---
 
@@ -586,27 +178,7 @@
 
 **목적**: 텍스트 입력 필드
 
-**Props**:
-```typescript
-{
-  type?: string          // input 타입
-  placeholder?: string   // 플레이스홀더
-  value?: string         // 제어 값
-  onChange?: (e: ChangeEvent<HTMLInputElement>) => void  // 변경 콜백
-  disabled?: boolean     // 비활성화 여부
-  className?: string
-}
-```
-
-**사용 예시**:
-```tsx
-<Input
-  type="email"
-  placeholder="이메일을 입력하세요"
-  value={email}
-  onChange={(e) => setEmail(e.target.value)}
-/>
-```
+**Storybook**: `frontend/components/ui/input.stories.tsx`
 
 ---
 
@@ -614,31 +186,7 @@
 
 **목적**: OTP(일회용 비밀번호) 입력
 
-**Props**:
-```typescript
-{
-  maxLength: number      // OTP 자릿수 (필수)
-  value?: string         // 제어 값
-  onChange?: (value: string) => void  // 변경 콜백
-}
-```
-
-**사용 예시**:
-```tsx
-<InputOTP maxLength={6} value={otp} onChange={setOtp}>
-  <InputOTPGroup>
-    <InputOTPSlot index={0} />
-    <InputOTPSlot index={1} />
-    <InputOTPSlot index={2} />
-  </InputOTPGroup>
-  <InputOTPSeparator />
-  <InputOTPGroup>
-    <InputOTPSlot index={3} />
-    <InputOTPSlot index={4} />
-    <InputOTPSlot index={5} />
-  </InputOTPGroup>
-</InputOTP>
-```
+**Storybook**: `frontend/components/ui/input-otp.stories.tsx`
 
 ---
 
@@ -646,19 +194,7 @@
 
 **목적**: 폼 레이블
 
-**Props**:
-```typescript
-{
-  htmlFor?: string       // 연결할 input ID
-  className?: string
-}
-```
-
-**사용 예시**:
-```tsx
-<Label htmlFor="email">이메일</Label>
-<Input id="email" type="email" />
-```
+**Storybook**: `frontend/components/ui/label.stories.tsx`
 
 ---
 
@@ -666,34 +202,7 @@
 
 **목적**: 수평 메뉴바 (데스크톱 앱 스타일)
 
-**Props**:
-```typescript
-{
-  className?: string
-}
-```
-
-**사용 예시**:
-```tsx
-<Menubar>
-  <MenubarMenu>
-    <MenubarTrigger>파일</MenubarTrigger>
-    <MenubarContent>
-      <MenubarItem>새 파일</MenubarItem>
-      <MenubarItem>열기</MenubarItem>
-      <MenubarSeparator />
-      <MenubarItem>저장</MenubarItem>
-    </MenubarContent>
-  </MenubarMenu>
-  <MenubarMenu>
-    <MenubarTrigger>편집</MenubarTrigger>
-    <MenubarContent>
-      <MenubarItem>복사</MenubarItem>
-      <MenubarItem>붙여넣기</MenubarItem>
-    </MenubarContent>
-  </MenubarMenu>
-</Menubar>
-```
+**Storybook**: `frontend/components/ui/menubar.stories.tsx`
 
 ---
 
@@ -701,27 +210,7 @@
 
 **목적**: 복잡한 네비게이션 메뉴 구조
 
-**Props**:
-```typescript
-{
-  className?: string
-}
-```
-
-**사용 예시**:
-```tsx
-<NavigationMenu>
-  <NavigationMenuList>
-    <NavigationMenuItem>
-      <NavigationMenuTrigger>서비스</NavigationMenuTrigger>
-      <NavigationMenuContent>
-        <NavigationMenuLink href="/counseling">상담</NavigationMenuLink>
-        <NavigationMenuLink href="/booking">예약</NavigationMenuLink>
-      </NavigationMenuContent>
-    </NavigationMenuItem>
-  </NavigationMenuList>
-</NavigationMenu>
-```
+**Storybook**: `frontend/components/ui/navigation-menu.stories.tsx`
 
 ---
 
@@ -729,35 +218,7 @@
 
 **목적**: 페이지네이션 UI
 
-**Props**:
-```typescript
-{
-  className?: string
-}
-```
-
-**사용 예시**:
-```tsx
-<Pagination>
-  <PaginationContent>
-    <PaginationItem>
-      <PaginationPrevious href="#" />
-    </PaginationItem>
-    <PaginationItem>
-      <PaginationLink href="#" isActive>1</PaginationLink>
-    </PaginationItem>
-    <PaginationItem>
-      <PaginationLink href="#">2</PaginationLink>
-    </PaginationItem>
-    <PaginationItem>
-      <PaginationEllipsis />
-    </PaginationItem>
-    <PaginationItem>
-      <PaginationNext href="#" />
-    </PaginationItem>
-  </PaginationContent>
-</Pagination>
-```
+**Storybook**: `frontend/components/ui/pagination.stories.tsx`
 
 ---
 
@@ -765,23 +226,7 @@
 
 **목적**: 경량 팝오버
 
-**Props**:
-```typescript
-{
-  open?: boolean                        // 제어 모드
-  onOpenChange?: (open: boolean) => void  // 상태 변경 콜백
-}
-```
-
-**사용 예시**:
-```tsx
-<Popover>
-  <PopoverTrigger>열기</PopoverTrigger>
-  <PopoverContent>
-    팝오버 내용이 여기에 표시됩니다.
-  </PopoverContent>
-</Popover>
-```
+**Storybook**: `frontend/components/ui/popover.stories.tsx`
 
 ---
 
@@ -789,18 +234,7 @@
 
 **목적**: 진행 표시줄
 
-**Props**:
-```typescript
-{
-  value?: number         // 진행률 (0-100)
-  className?: string
-}
-```
-
-**사용 예시**:
-```tsx
-<Progress value={66} />
-```
+**Storybook**: `frontend/components/ui/progress.stories.tsx`
 
 ---
 
@@ -808,28 +242,7 @@
 
 **목적**: 라디오 버튼 그룹
 
-**Props**:
-```typescript
-{
-  value?: string                       // 선택된 값
-  onValueChange?: (value: string) => void  // 값 변경 콜백
-  className?: string
-}
-```
-
-**사용 예시**:
-```tsx
-<RadioGroup value={value} onValueChange={setValue}>
-  <div className="flex items-center space-x-2">
-    <RadioGroupItem value="option1" id="option1" />
-    <Label htmlFor="option1">옵션 1</Label>
-  </div>
-  <div className="flex items-center space-x-2">
-    <RadioGroupItem value="option2" id="option2" />
-    <Label htmlFor="option2">옵션 2</Label>
-  </div>
-</RadioGroup>
-```
+**Storybook**: `frontend/components/ui/radio-group.stories.tsx`
 
 ---
 
@@ -837,22 +250,7 @@
 
 **목적**: 크기 조정 가능한 패널 레이아웃
 
-**Props**:
-```typescript
-{
-  direction?: 'horizontal' | 'vertical'  // 방향
-  className?: string
-}
-```
-
-**사용 예시**:
-```tsx
-<ResizablePanelGroup direction="horizontal">
-  <ResizablePanel defaultSize={50}>패널 1</ResizablePanel>
-  <ResizableHandle />
-  <ResizablePanel defaultSize={50}>패널 2</ResizablePanel>
-</ResizablePanelGroup>
-```
+**Storybook**: `frontend/components/ui/resizable.stories.tsx`
 
 ---
 
@@ -860,21 +258,7 @@
 
 **목적**: 커스텀 스크롤 영역
 
-**Props**:
-```typescript
-{
-  className?: string
-}
-```
-
-**사용 예시**:
-```tsx
-<ScrollArea className="h-72">
-  <div className="p-4">
-    긴 콘텐츠가 여기에...
-  </div>
-</ScrollArea>
-```
+**Storybook**: `frontend/components/ui/scroll-area.stories.tsx`
 
 ---
 
@@ -882,28 +266,7 @@
 
 **목적**: 드롭다운 선택 메뉴
 
-**Props**:
-```typescript
-{
-  value?: string                       // 선택된 값
-  onValueChange?: (value: string) => void  // 값 변경 콜백
-  disabled?: boolean                   // 비활성화 여부
-}
-```
-
-**사용 예시**:
-```tsx
-<Select value={value} onValueChange={setValue}>
-  <SelectTrigger>
-    <SelectValue placeholder="선택하세요" />
-  </SelectTrigger>
-  <SelectContent>
-    <SelectItem value="option1">옵션 1</SelectItem>
-    <SelectItem value="option2">옵션 2</SelectItem>
-    <SelectItem value="option3">옵션 3</SelectItem>
-  </SelectContent>
-</Select>
-```
+**Storybook**: `frontend/components/ui/select.stories.tsx`
 
 ---
 
@@ -911,23 +274,7 @@
 
 **목적**: 시각적 구분선 제공
 
-**Props**:
-```typescript
-{
-  orientation?: 'horizontal' | 'vertical'  // 방향 (기본값: 'horizontal')
-  decorative?: boolean                     // 장식용 여부 (기본값: true)
-  className?: string
-}
-```
-
-**사용 예시**:
-```tsx
-<div>
-  <p>콘텐츠 1</p>
-  <Separator className="my-4" />
-  <p>콘텐츠 2</p>
-</div>
-```
+**Storybook**: `frontend/components/ui/separator.stories.tsx`
 
 ---
 
@@ -935,28 +282,7 @@
 
 **목적**: 슬라이드인 패널
 
-**Props**:
-```typescript
-{
-  side?: 'top' | 'right' | 'bottom' | 'left'  // 슬라이드 방향 (기본값: 'right')
-  open?: boolean                              // 제어 모드
-  onOpenChange?: (open: boolean) => void      // 상태 변경 콜백
-}
-```
-
-**사용 예시**:
-```tsx
-<Sheet>
-  <SheetTrigger>열기</SheetTrigger>
-  <SheetContent side="right">
-    <SheetHeader>
-      <SheetTitle>제목</SheetTitle>
-      <SheetDescription>설명</SheetDescription>
-    </SheetHeader>
-    {/* 콘텐츠 */}
-  </SheetContent>
-</Sheet>
-```
+**Storybook**: `frontend/components/ui/sheet.stories.tsx`
 
 ---
 
@@ -964,39 +290,7 @@
 
 **목적**: 복잡한 사이드바 레이아웃
 
-**Props**:
-```typescript
-{
-  side?: 'left' | 'right'                                // 위치 (기본값: 'left')
-  variant?: 'sidebar' | 'floating' | 'inset'             // 변형 (기본값: 'sidebar')
-  collapsible?: 'offcanvas' | 'icon' | 'none'            // 축소 모드 (기본값: 'offcanvas')
-  defaultOpen?: boolean                                   // 기본 열림 상태 (기본값: true)
-}
-```
-
-**사용 예시**:
-```tsx
-<SidebarProvider>
-  <Sidebar collapsible="icon">
-    <SidebarHeader>
-      <h2>마음이음</h2>
-    </SidebarHeader>
-    <SidebarContent>
-      <SidebarMenu>
-        <SidebarMenuItem>
-          <SidebarMenuButton>
-            <Home />
-            <span>홈</span>
-          </SidebarMenuButton>
-        </SidebarMenuItem>
-      </SidebarMenu>
-    </SidebarContent>
-  </Sidebar>
-  <SidebarInset>
-    <main>메인 콘텐츠</main>
-  </SidebarInset>
-</SidebarProvider>
-```
+**Storybook**: `frontend/components/ui/sidebar.stories.tsx`
 
 ---
 
@@ -1004,21 +298,7 @@
 
 **목적**: 로딩 스켈레톤
 
-**Props**:
-```typescript
-{
-  className?: string
-}
-```
-
-**사용 예시**:
-```tsx
-<div className="space-y-2">
-  <Skeleton className="h-4 w-full" />
-  <Skeleton className="h-4 w-3/4" />
-  <Skeleton className="h-4 w-1/2" />
-</div>
-```
+**Storybook**: `frontend/components/ui/skeleton.stories.tsx`
 
 ---
 
@@ -1026,28 +306,7 @@
 
 **목적**: 슬라이더 입력
 
-**Props**:
-```typescript
-{
-  min?: number              // 최소값 (기본값: 0)
-  max?: number              // 최대값 (기본값: 100)
-  step?: number             // 스텝
-  value?: number[]          // 제어 값
-  onValueChange?: (value: number[]) => void  // 값 변경 콜백
-  className?: string
-}
-```
-
-**사용 예시**:
-```tsx
-<Slider
-  min={0}
-  max={100}
-  step={1}
-  value={[value]}
-  onValueChange={([v]) => setValue(v)}
-/>
-```
+**Storybook**: `frontend/components/ui/slider.stories.tsx`
 
 ---
 
@@ -1055,23 +314,7 @@
 
 **목적**: 토글 스위치
 
-**Props**:
-```typescript
-{
-  checked?: boolean                        // 체크 상태
-  onCheckedChange?: (checked: boolean) => void  // 상태 변경 콜백
-  disabled?: boolean                       // 비활성화 여부
-  className?: string
-}
-```
-
-**사용 예시**:
-```tsx
-<div className="flex items-center space-x-2">
-  <Switch id="notifications" checked={enabled} onCheckedChange={setEnabled} />
-  <Label htmlFor="notifications">알림 받기</Label>
-</div>
-```
+**Storybook**: `frontend/components/ui/switch.stories.tsx`
 
 ---
 
@@ -1079,33 +322,7 @@
 
 **목적**: 데이터 테이블
 
-**Props**:
-```typescript
-{
-  className?: string
-}
-```
-
-**사용 예시**:
-```tsx
-<Table>
-  <TableCaption>센터 목록</TableCaption>
-  <TableHeader>
-    <TableRow>
-      <TableHead>이름</TableHead>
-      <TableHead>주소</TableHead>
-      <TableHead>상태</TableHead>
-    </TableRow>
-  </TableHeader>
-  <TableBody>
-    <TableRow>
-      <TableCell>서울센터</TableCell>
-      <TableCell>서울시 강남구</TableCell>
-      <TableCell>운영중</TableCell>
-    </TableRow>
-  </TableBody>
-</Table>
-```
+**Storybook**: `frontend/components/ui/table.stories.tsx`
 
 ---
 
@@ -1113,26 +330,7 @@
 
 **목적**: 탭 인터페이스
 
-**Props**:
-```typescript
-{
-  value?: string                       // 현재 탭
-  onValueChange?: (value: string) => void  // 탭 변경 콜백
-  className?: string
-}
-```
-
-**사용 예시**:
-```tsx
-<Tabs value={tab} onValueChange={setTab}>
-  <TabsList>
-    <TabsTrigger value="tab1">탭 1</TabsTrigger>
-    <TabsTrigger value="tab2">탭 2</TabsTrigger>
-  </TabsList>
-  <TabsContent value="tab1">탭 1 콘텐츠</TabsContent>
-  <TabsContent value="tab2">탭 2 콘텐츠</TabsContent>
-</Tabs>
-```
+**Storybook**: `frontend/components/ui/tabs.stories.tsx`
 
 ---
 
@@ -1140,26 +338,7 @@
 
 **목적**: 여러 줄 텍스트 입력
 
-**Props**:
-```typescript
-{
-  placeholder?: string   // 플레이스홀더
-  value?: string         // 제어 값
-  onChange?: (e: ChangeEvent<HTMLTextAreaElement>) => void  // 변경 콜백
-  rows?: number          // 행 수
-  className?: string
-}
-```
-
-**사용 예시**:
-```tsx
-<Textarea
-  placeholder="메시지를 입력하세요"
-  value={message}
-  onChange={(e) => setMessage(e.target.value)}
-  rows={4}
-/>
-```
+**Storybook**: `frontend/components/ui/textarea.stories.tsx`
 
 ---
 
@@ -1167,30 +346,7 @@
 
 **목적**: 알림 토스트
 
-**Props**:
-```typescript
-{
-  variant?: 'default' | 'destructive'  // 변형 스타일
-}
-```
-
-**사용 예시**:
-```tsx
-// useToast 훅 사용
-const { toast } = useToast();
-
-toast({
-  title: "알림",
-  description: "작업이 완료되었습니다.",
-  variant: "default"
-});
-
-toast({
-  title: "오류",
-  description: "문제가 발생했습니다.",
-  variant: "destructive"
-});
-```
+**Storybook**: `frontend/components/ui/toast.stories.tsx`
 
 ---
 
@@ -1198,23 +354,7 @@ toast({
 
 **목적**: 토글 버튼
 
-**Props**:
-```typescript
-{
-  variant?: 'default' | 'outline'      // 변형 (기본값: 'default')
-  size?: 'default' | 'sm' | 'lg'       // 크기 (기본값: 'default')
-  pressed?: boolean                     // 눌림 상태
-  onPressedChange?: (pressed: boolean) => void  // 상태 변경 콜백
-  className?: string
-}
-```
-
-**사용 예시**:
-```tsx
-<Toggle pressed={bold} onPressedChange={setBold}>
-  <Bold className="h-4 w-4" />
-</Toggle>
-```
+**Storybook**: `frontend/components/ui/toggle.stories.tsx`
 
 ---
 
@@ -1222,32 +362,7 @@ toast({
 
 **목적**: 토글 버튼 그룹
 
-**Props**:
-```typescript
-{
-  type: 'single' | 'multiple'          // 선택 타입 (필수)
-  value?: string | string[]             // 선택된 값
-  onValueChange?: (value: string | string[]) => void  // 값 변경 콜백
-  variant?: 'default' | 'outline'
-  size?: 'default' | 'sm' | 'lg'
-  className?: string
-}
-```
-
-**사용 예시**:
-```tsx
-<ToggleGroup type="single" value={align} onValueChange={setAlign}>
-  <ToggleGroupItem value="left">
-    <AlignLeft className="h-4 w-4" />
-  </ToggleGroupItem>
-  <ToggleGroupItem value="center">
-    <AlignCenter className="h-4 w-4" />
-  </ToggleGroupItem>
-  <ToggleGroupItem value="right">
-    <AlignRight className="h-4 w-4" />
-  </ToggleGroupItem>
-</ToggleGroup>
-```
+**Storybook**: `frontend/components/ui/toggle-group.stories.tsx`
 
 ---
 
@@ -1255,24 +370,7 @@ toast({
 
 **목적**: 간단한 툴팁
 
-**Props**:
-```typescript
-{
-  delayDuration?: number  // 지연 시간 (ms, 기본값: 0)
-}
-```
-
-**사용 예시**:
-```tsx
-<TooltipProvider>
-  <Tooltip>
-    <TooltipTrigger>호버하세요</TooltipTrigger>
-    <TooltipContent>
-      <p>툴팁 내용</p>
-    </TooltipContent>
-  </Tooltip>
-</TooltipProvider>
-```
+**Storybook**: `frontend/components/ui/tooltip.stories.tsx`
 
 ---
 
@@ -1282,53 +380,13 @@ toast({
 
 **목적**: 센터 정보를 표시하는 카드 컴포넌트
 
-**Props**:
-```typescript
-{
-  name: string           // 센터 이름
-  category: string       // 센터 카테고리
-  address: string        // 센터 주소
-  isOperating: boolean   // 운영 여부
-  distance?: string      // 거리 (선택)
-  rating?: number        // 평점 (선택)
-}
-```
-
-**사용 예시**:
-```tsx
-<CenterCard
-  name="서울시립청소년상담복지센터"
-  category="청소년상담"
-  address="서울시 중구 세종대로 21"
-  isOperating={true}
-  distance="1.2km"
-  rating={4.5}
-/>
-```
-
 ---
 
 ### 2.2 SearchBar
 
 **목적**: 센터 검색을 위한 검색바
 
-**Props**:
-```typescript
-{
-  placeholder?: string                      // 검색창 플레이스홀더
-  onSearch: (query: string) => void        // 검색 실행 콜백
-  onLocationChange?: (location: string) => void  // 위치 변경 콜백
-}
-```
-
-**사용 예시**:
-```tsx
-<SearchBar
-  placeholder="센터 이름이나 서비스를 검색하세요"
-  onSearch={(query) => console.log('검색:', query)}
-  onLocationChange={(location) => console.log('위치 변경:', location)}
-/>
-```
+**Storybook**: `frontend/components/search-bar.stories.tsx`
 
 ---
 
@@ -1336,31 +394,7 @@ toast({
 
 **목적**: 주요 기능에 빠르게 접근할 수 있는 그리드
 
-**Props**:
-```typescript
-{
-  items: QuickAccessItem[]  // 빠른 접근 아이템 배열
-}
-
-// QuickAccessItem 타입:
-{
-  icon: React.ReactNode   // 아이콘
-  label: string          // 라벨 텍스트
-  href: string          // 링크 URL
-  color?: string        // Tailwind 색상 클래스
-}
-```
-
-**사용 예시**:
-```tsx
-<QuickAccessGrid
-  items={[
-    { icon: <Phone />, label: '긴급전화', href: '/emergency', color: 'bg-red-500' },
-    { icon: <Calendar />, label: '예약', href: '/booking', color: 'bg-blue-500' },
-    { icon: <MessageCircle />, label: '상담', href: '/counseling', color: 'bg-green-500' },
-  ]}
-/>
-```
+**Storybook**: `frontend/components/quick-access-grid.stories.tsx`
 
 ---
 
@@ -1368,96 +402,84 @@ toast({
 
 **목적**: 센터의 운영 상태를 표시
 
-**Props**:
-```typescript
-{
-  openTime: string       // 오픈 시간 (예: "09:00")
-  closeTime: string      // 마감 시간 (예: "18:00")
-  holidayInfo?: string   // 휴무일 정보
-  size?: 'sm' | 'md' | 'lg'  // 크기
-}
-```
-
-**사용 예시**:
-```tsx
-<OperatingStatus
-  openTime="09:00"
-  closeTime="18:00"
-  holidayInfo="토요일, 일요일"
-  size="md"
-/>
-```
-
 ---
 
 ### 2.5 CenterMap
 
 **목적**: 센터 위치를 지도에 표시
 
-**Props**:
-```typescript
-{
-  centers: Center[]                        // 표시할 센터 목록
-  userLocation?: Coordinates               // 사용자 위치
-  onCenterSelect: (center: Center) => void // 센터 선택 콜백
-}
+---
 
-// Center 타입:
-{
-  id: string
-  name: string
-  latitude: number
-  longitude: number
-  // ... 기타 센터 정보
-}
+### 2.6 OperatingStatusBadge
 
-// Coordinates 타입:
-{
-  latitude: number
-  longitude: number
-}
-```
+**목적**: 센터의 현재 운영 상태를 시각적 배지로 표시 (Sprint 2)
 
-**사용 예시**:
-```tsx
-<CenterMap
-  centers={centerList}
-  userLocation={{ latitude: 37.5665, longitude: 126.9780 }}
-  onCenterSelect={(center) => console.log('선택된 센터:', center)}
-/>
-```
+**상태별 색상 및 아이콘**:
+- `OPEN`: 초록색 (green-600) + CheckCircle 아이콘 + 펄스 애니메이션
+- `CLOSING_SOON`: 노란색 (yellow-600) + Clock 아이콘 + 펄스 애니메이션
+- `CLOSED`: 회색 (gray-600) + AlertCircle 아이콘
+- `HOLIDAY`: 회색 (gray-600) + Calendar 아이콘
+- `TEMP_CLOSED`: 빨간색 (red-600) + XCircle 아이콘
+- `NO_INFO`: 회색 테두리 (gray-400) + Info 아이콘
+
+**접근성**:
+- `role="status"` 적용
+- `aria-label="현재 상태: {message}"` 포함
+- 스크린리더 친화적 메시지
+- 색상만으로 정보 전달하지 않음 (아이콘 + 텍스트)
+
+**Storybook**: `frontend/components/center/OperatingStatusBadge.stories.tsx`
 
 ---
 
-### 2.6 StaffList
+### 2.7 OperatingHoursTable
+
+**목적**: 센터의 요일별 운영시간을 테이블 형식으로 표시 (Sprint 2)
+
+**주요 기능**:
+- 7일 운영시간 표시 (일요일 ~ 토요일)
+- 현재 요일 강조 표시 (lavender-50 배경 + lavender-500 왼쪽 테두리)
+- 휴무일 "휴무" 텍스트 표시
+- 반응형 디자인 (모바일 최적화)
+
+**접근성**:
+- `<table>` 시맨틱 마크업 사용
+- `<th>` 헤더 셀로 테이블 구조 명확화
+- 현재 요일에 `(오늘)` 스크린리더용 텍스트 추가
+- 키보드 네비게이션 지원
+
+**Storybook**: `frontend/components/center/OperatingHoursTable.stories.tsx`
+
+---
+
+### 2.8 HolidayList
+
+**목적**: 센터의 예정된 휴무일 목록을 표시 (Sprint 2)
+
+**타입별 배지 색상**:
+- `public` (공휴일): 빨간색 (red-100 배경 + red-700 텍스트)
+- `regular` (정기휴무): 파란색 (blue-100 배경 + blue-700 텍스트)
+- `temporary` (임시휴무): 주황색 (orange-100 배경 + orange-700 텍스트)
+
+**주요 기능**:
+- 날짜 포맷팅 (date-fns, 한국어 로케일): "1월 1일 (수)"
+- 날짜순 자동 정렬
+- 더보기/접기 버튼 (maxItems 초과 시)
+- 빈 상태 처리 (휴무일 없음 메시지)
+
+**접근성**:
+- `<ul role="list">` 시맨틱 마크업
+- 더보기 버튼: `aria-label="2개 더보기"` 포함
+- 스크린리더 친화적 날짜 포맷
+- 키보드 네비게이션 지원
+
+**Storybook**: `frontend/components/center/HolidayList.stories.tsx`
+
+---
+
+### 2.9 StaffList
 
 **목적**: 센터의 의료진 현황을 표시하는 컴포넌트 (Sprint 3)
-
-**Props**:
-```typescript
-{
-  staff: Array<{
-    staff_type: string        // 의료진 유형 (예: "정신건강의학과 전문의")
-    staff_count: number       // 인원수
-    description: string | null  // 설명 (선택)
-  }>
-  totalStaff: number          // 총 인원
-  hasData: boolean            // 데이터 존재 여부
-  className?: string
-}
-```
-
-**사용 예시**:
-```tsx
-<StaffList
-  staff={[
-    { staff_type: "정신건강의학과 전문의", staff_count: 2, description: null },
-    { staff_type: "임상심리사", staff_count: 3, description: "청소년 상담 전문" }
-  ]}
-  totalStaff={5}
-  hasData={true}
-/>
-```
 
 **특징**:
 - shadcn Card 컴포넌트 사용
@@ -1466,48 +488,13 @@ toast({
 - 접근성: 시맨틱 리스트 (`<ul>`, `<li>`)
 - Storybook: 8 stories 제공
 
+**Storybook**: `frontend/components/center/StaffList.stories.tsx`
+
 ---
 
-### 2.7 ProgramCard
+### 2.10 ProgramCard
 
 **목적**: 개별 프로그램 정보를 카드 형태로 표시 (Sprint 3)
-
-**Props**:
-```typescript
-{
-  program: {
-    id: number
-    program_name: string           // 프로그램 이름
-    program_type: string           // 유형 (예: "집단 상담")
-    target_group: string           // 대상 (예: "직장인")
-    description: string | null
-    is_online_available: boolean   // 온라인 가능 여부
-    is_free: boolean               // 무료 여부
-    fee_amount: number | null      // 비용
-    capacity: number | null        // 정원
-    duration_minutes: number | null  // 소요 시간
-  }
-  onClick: () => void              // 클릭 핸들러
-  className?: string
-}
-```
-
-**사용 예시**:
-```tsx
-<ProgramCard
-  program={{
-    id: 1,
-    program_name: "직장인 스트레스 관리",
-    program_type: "집단 상담",
-    target_group: "직장인",
-    is_online_available: true,
-    is_free: true,
-    capacity: 12,
-    duration_minutes: 90
-  }}
-  onClick={() => console.log('프로그램 클릭')}
-/>
-```
 
 **특징**:
 - 클릭 가능한 카드 (role="button")
@@ -1516,32 +503,13 @@ toast({
 - 호버 효과 (border, shadow)
 - Storybook: 6 stories 제공
 
+**Storybook**: `frontend/components/center/ProgramCard.stories.tsx`
+
 ---
 
-### 2.8 ProgramList
+### 2.11 ProgramList
 
 **목적**: 프로그램 카드들을 그리드 레이아웃으로 표시 (Sprint 3)
-
-**Props**:
-```typescript
-{
-  programs: Program[]              // 프로그램 배열
-  hasData: boolean                 // 데이터 존재 여부
-  onProgramClick: (program: Program) => void  // 프로그램 클릭 핸들러
-  className?: string
-}
-```
-
-**사용 예시**:
-```tsx
-<ProgramList
-  programs={programList}
-  hasData={true}
-  onProgramClick={(program) => {
-    console.log('선택된 프로그램:', program)
-  }}
-/>
-```
 
 **특징**:
 - 반응형 그리드 (모바일 1열, 태블릿+ 2열)
@@ -1550,47 +518,13 @@ toast({
 - ProgramCard 컴포넌트 사용
 - Storybook: 6 stories 제공
 
+**Storybook**: `frontend/components/center/ProgramList.stories.tsx`
+
 ---
 
-### 2.9 ProgramDetailModal
+### 2.12 ProgramDetailModal
 
 **목적**: 프로그램 상세 정보를 모달로 표시 (Sprint 3)
-
-**Props**:
-```typescript
-{
-  program: Program | null          // 표시할 프로그램 (null이면 모달 안 보임)
-  open: boolean                    // 모달 열림 상태
-  onOpenChange: (open: boolean) => void  // 상태 변경 핸들러
-}
-```
-
-**사용 예시**:
-```tsx
-const [selectedProgram, setSelectedProgram] = useState<Program | null>(null);
-const [isModalOpen, setIsModalOpen] = useState(false);
-
-// 프로그램 클릭 시
-const handleProgramClick = (program: Program) => {
-  setSelectedProgram(program);
-  setIsModalOpen(true);
-};
-
-// 렌더링
-<>
-  <ProgramList
-    programs={programs}
-    hasData={true}
-    onProgramClick={handleProgramClick}
-  />
-
-  <ProgramDetailModal
-    program={selectedProgram}
-    open={isModalOpen}
-    onOpenChange={setIsModalOpen}
-  />
-</>
-```
 
 **특징**:
 - shadcn Dialog 컴포넌트 사용
@@ -1601,6 +535,8 @@ const handleProgramClick = (program: Program) => {
 - 반응형 (모바일 전체 화면, 데스크톱 중앙)
 - Storybook: 8 stories 제공
 
+**Storybook**: `frontend/components/center/ProgramDetailModal.stories.tsx`
+
 ---
 
 ## 3. 순수 커스텀 컴포넌트
@@ -1609,36 +545,7 @@ const handleProgramClick = (program: Program) => {
 
 **목적**: Next.js 애플리케이션의 다크/라이트 테마 관리
 
-**Props**:
-```typescript
-{
-  attribute?: string              // 테마 속성 (기본값: 'class')
-  defaultTheme?: string           // 기본 테마 (기본값: 'system')
-  enableSystem?: boolean          // 시스템 테마 사용 (기본값: true)
-  disableTransitionOnChange?: boolean  // 테마 전환 애니메이션 비활성화
-  children: React.ReactNode
-}
-```
-
-**사용 예시**:
-```tsx
-// app/layout.tsx
-export default function RootLayout({ children }) {
-  return (
-    <html lang="ko" suppressHydrationMismatch>
-      <body>
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-        >
-          {children}
-        </ThemeProvider>
-      </body>
-    </html>
-  );
-}
-```
+**Storybook**: `frontend/components/theme-provider.stories.tsx`
 
 ---
 
@@ -1646,42 +553,7 @@ export default function RootLayout({ children }) {
 
 **목적**: 홍보 섹션 카드 (긴급전화, 상담 예약 등)
 
-**Props**:
-```typescript
-{
-  title: string                    // 카드 제목
-  description: string              // 카드 설명
-  buttonText: string               // 버튼 텍스트
-  buttonVariant?: 'default' | 'lavender' | 'operating' | 'emergency'  // 버튼 스타일
-  icon?: React.ReactNode           // 아이콘 (선택)
-  href?: string                    // 링크 URL (선택)
-  onClick?: () => void             // 클릭 콜백 (선택)
-  className?: string
-}
-```
-
-**사용 예시**:
-```tsx
-<div className="grid md:grid-cols-2 gap-4">
-  <PromotionalSection
-    title="24시간 긴급전화"
-    description="위기 상황 시 언제든지 연락하세요"
-    buttonText="1388 전화하기"
-    buttonVariant="emergency"
-    icon={<Phone className="h-5 w-5" />}
-    href="tel:1388"
-  />
-
-  <PromotionalSection
-    title="온라인 상담 예약"
-    description="편리한 시간에 상담을 예약하세요"
-    buttonText="예약하기"
-    buttonVariant="lavender"
-    icon={<Calendar className="h-5 w-5" />}
-    href="/booking"
-  />
-</div>
-```
+**Storybook**: `frontend/components/promotional-section.stories.tsx`
 
 ---
 
@@ -1689,45 +561,7 @@ export default function RootLayout({ children }) {
 
 **목적**: 메인 페이지 히어로 배너
 
-**Props**:
-```typescript
-{
-  title: string                    // 메인 제목
-  subtitle?: string                // 부제목 (선택)
-  description: string              // 설명 텍스트
-  primaryAction?: {
-    text: string                   // 주 버튼 텍스트
-    href?: string                  // 링크 URL
-    onClick?: () => void           // 클릭 콜백
-  }
-  secondaryAction?: {
-    text: string                   // 보조 버튼 텍스트
-    href?: string                  // 링크 URL
-    onClick?: () => void           // 클릭 콜백
-  }
-  backgroundImage?: string         // 배경 이미지 URL (선택)
-  gradient?: boolean               // 라벤더 그라데이션 배경 (기본값: true)
-  className?: string
-}
-```
-
-**사용 예시**:
-```tsx
-<HeroBanner
-  title="마음이음"
-  subtitle="당신의 마음을 이어주는 상담 플랫폼"
-  description="전국의 청소년상담복지센터와 Wee센터를 쉽게 찾고 예약하세요"
-  primaryAction={{
-    text: "센터 찾기",
-    href: "/search"
-  }}
-  secondaryAction={{
-    text: "긴급 상담",
-    href: "/emergency"
-  }}
-  gradient={true}
-/>
-```
+**Storybook**: `frontend/components/hero-banner.stories.tsx`
 
 ---
 
@@ -1735,47 +569,7 @@ export default function RootLayout({ children }) {
 
 **목적**: 앱 상단 헤더 (네비게이션 및 사용자 메뉴)
 
-**Props**:
-```typescript
-{
-  user?: {
-    name: string                   // 사용자 이름
-    email?: string                 // 이메일 (선택)
-    avatar?: string                // 아바타 이미지 URL (선택)
-  }
-  navigationItems?: NavItem[]      // 네비게이션 아이템 (선택)
-  onLogin?: () => void             // 로그인 콜백
-  onLogout?: () => void            // 로그아웃 콜백
-  showThemeToggle?: boolean        // 테마 토글 표시 (기본값: true)
-  className?: string
-}
-
-// NavItem 타입:
-{
-  label: string                    // 라벨
-  href: string                     // 링크 URL
-  icon?: React.ReactNode           // 아이콘 (선택)
-}
-```
-
-**사용 예시**:
-```tsx
-<Header
-  user={{
-    name: "홍길동",
-    email: "hong@example.com",
-    avatar: "/avatar.jpg"
-  }}
-  navigationItems={[
-    { label: "홈", href: "/", icon: <Home /> },
-    { label: "센터 찾기", href: "/search", icon: <Search /> },
-    { label: "예약", href: "/booking", icon: <Calendar /> },
-    { label: "내 정보", href: "/profile", icon: <User /> }
-  ]}
-  onLogout={() => console.log("로그아웃")}
-  showThemeToggle={true}
-/>
-```
+**Storybook**: `frontend/components/header.stories.tsx`
 
 ---
 
@@ -1783,59 +577,13 @@ export default function RootLayout({ children }) {
 
 **목적**: 아이콘과 라벨이 있는 터치 친화적 버튼
 
-**Props**:
-```typescript
-{
-  icon: React.ReactNode     // 아이콘
-  label: string            // 라벨 텍스트
-  onClick?: () => void     // 클릭 콜백
-  className?: string       // 추가 스타일
-  gradient?: boolean       // 그라데이션 효과 여부
-}
-```
-
-**사용 예시**:
-```tsx
-<IconButton
-  icon={<Phone />}
-  label="전화하기"
-  onClick={() => console.log('전화하기')}
-  gradient={true}
-/>
-```
-
 ---
 
 ### 3.6 BottomNavigation
 
 **목적**: 모바일 하단 네비게이션 바
 
-**Props**:
-```typescript
-{
-  items: NavItem[]  // 네비게이션 아이템 배열
-}
-
-// NavItem 타입:
-{
-  icon: React.ReactNode   // 아이콘
-  label: string          // 라벨
-  href: string          // 링크 URL
-  badge?: number        // 알림 배지 숫자
-}
-```
-
-**사용 예시**:
-```tsx
-<BottomNavigation
-  items={[
-    { icon: <Home />, label: '홈', href: '/' },
-    { icon: <Search />, label: '검색', href: '/search' },
-    { icon: <Heart />, label: '찜', href: '/favorites', badge: 3 },
-    { icon: <User />, label: '내 정보', href: '/profile' },
-  ]}
-/>
-```
+**Storybook**: `frontend/components/bottom-navigation.stories.tsx`
 
 ---
 
@@ -1843,62 +591,11 @@ export default function RootLayout({ children }) {
 
 **목적**: 현재 위치를 선택하는 드롭다운
 
-**Props**:
-```typescript
-{
-  currentLocation: string              // 현재 선택된 위치
-  locations: string[]                  // 선택 가능한 위치 목록
-  onLocationChange: (location: string) => void  // 위치 변경 콜백
-}
-```
-
-**사용 예시**:
-```tsx
-<LocationSelector
-  currentLocation="서울시 강남구"
-  locations={['서울시 강남구', '서울시 서초구', '서울시 송파구']}
-  onLocationChange={(location) => console.log('위치 변경:', location)}
-/>
-```
-
 ---
 
 ### 3.8 FilterPanel
 
 **목적**: 센터 검색 필터 패널
-
-**Props**:
-```typescript
-{
-  filters: FilterOptions              // 현재 필터 옵션
-  onFilterChange: (filters: FilterOptions) => void  // 필터 변경 콜백
-  onApply: () => void                // 필터 적용 콜백
-  onReset: () => void                // 필터 초기화 콜백
-}
-
-// FilterOptions 타입:
-{
-  categories?: string[]    // 선택된 카테고리
-  distance?: number       // 거리 (km)
-  openNow?: boolean      // 현재 운영중만
-  rating?: number        // 최소 평점
-}
-```
-
-**사용 예시**:
-```tsx
-<FilterPanel
-  filters={{
-    categories: ['청소년상담', '가족상담'],
-    distance: 5,
-    openNow: true,
-    rating: 4.0
-  }}
-  onFilterChange={(filters) => setFilters(filters)}
-  onApply={() => console.log('필터 적용')}
-  onReset={() => console.log('필터 초기화')}
-/>
-```
 
 ---
 
@@ -1955,15 +652,6 @@ export default function RootLayout({ children }) {
 - `md:` (768px) - 작은 데스크톱
 - `lg:` (1024px) - 데스크톱
 - `xl:` (1280px) - 큰 데스크톱
-
-**사용 예시**:
-```tsx
-<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-  {/* 모바일: 1열, 태블릿: 2열, 데스크톱: 3열 */}
-</div>
-```
-
-### 4.4 타이포그래피
 
 **제목**:
 - `text-3xl` / `text-4xl` - 페이지 제목
@@ -2255,24 +943,6 @@ import { useVirtualizer } from '@tanstack/react-virtual';
 
 **목적**: 센터의 평균 별점과 전체 리뷰 개수를 표시하는 요약 컴포넌트
 
-**Props**:
-```typescript
-{
-  avgRating: number        // 평균 별점 (0-5)
-  reviewCount: number      // 전체 리뷰 개수
-  className?: string
-}
-```
-
-**사용 예시**:
-```tsx
-<ReviewSummary
-  avgRating={4.5}
-  reviewCount={127}
-  className="mb-6"
-/>
-```
-
 **출력 예시**:
 ```
 ★★★★☆ 4.5 (127개의 리뷰)
@@ -2288,50 +958,13 @@ import { useVirtualizer } from '@tanstack/react-virtual';
 - `Low`: 평균 2.3, 리뷰 5개
 - `NoReviews`: 평균 0, 리뷰 0개
 
+**Storybook**: `frontend/components/reviews/ReviewSummary.stories.tsx`
+
 ---
 
 ### 8.2 ReviewCard
 
 **목적**: 개별 리뷰를 카드 형태로 표시 (작성자 정보, 별점, 내용, 반응 버튼 포함)
-
-**Props**:
-```typescript
-{
-  review: Review                                          // 리뷰 데이터
-  onReactionClick?: (reviewId: number, reaction: ReactionType) => void  // 반응 클릭 핸들러
-  onEdit?: (review: Review) => void                       // 수정 클릭 핸들러
-  onDelete?: (reviewId: number) => void                   // 삭제 클릭 핸들러
-}
-
-// Review 타입
-interface Review {
-  id: number
-  rating: number                    // 1-5
-  title: string | null              // 선택적 제목
-  content: string                   // 리뷰 내용
-  visit_date: string | null         // 방문 날짜 (YYYY-MM-DD)
-  helpful_count: number             // 도움돼요 수
-  unhelpful_count: number           // 도움안돼요 수
-  my_reaction: 'helpful' | 'unhelpful' | null  // 내 반응
-  is_my_review: boolean             // 내가 작성한 리뷰 여부
-  user: {
-    id: number
-    nickname: string
-    avatar_url: string | null
-  }
-  created_at: string                // ISO 8601 형식
-}
-```
-
-**사용 예시**:
-```tsx
-<ReviewCard
-  review={review}
-  onReactionClick={(id, reaction) => handleReaction(id, reaction)}
-  onEdit={(review) => openEditModal(review)}
-  onDelete={(id) => handleDelete(id)}
-/>
-```
 
 **주요 기능**:
 - 작성자 아바타 및 닉네임
@@ -2362,40 +995,13 @@ interface Review {
 - `WithReaction`: 내가 도움돼요를 누른 리뷰
 - `NoVisitDate`: 방문 날짜 없는 리뷰
 
+**Storybook**: `frontend/components/reviews/ReviewCard.stories.tsx`
+
 ---
 
 ### 8.3 ReviewList
 
 **목적**: 리뷰 목록을 표시하고 정렬, 무한 스크롤 기능 제공
-
-**Props**:
-```typescript
-{
-  centerId: number                                        // 센터 ID
-  sortBy: SortOption                                      // 정렬 옵션
-  onSortChange: (sort: SortOption) => void                // 정렬 변경 핸들러
-  onReactionClick?: (reviewId: number, reaction: ReactionType) => void
-  onEditReview?: (review: Review) => void
-  onDeleteReview?: (reviewId: number) => void
-}
-
-// SortOption 타입
-type SortOption = 'latest' | 'helpful' | 'rating_desc' | 'rating_asc'
-```
-
-**사용 예시**:
-```tsx
-const [sortBy, setSortBy] = useState<SortOption>('latest');
-
-<ReviewList
-  centerId={1}
-  sortBy={sortBy}
-  onSortChange={setSortBy}
-  onReactionClick={handleReaction}
-  onEditReview={openEditModal}
-  onDeleteReview={handleDelete}
-/>
-```
 
 **주요 기능**:
 - 정렬 셀렉터 (최신순, 도움순, 평점 높은순, 평점 낮은순)
@@ -2423,39 +1029,13 @@ const [sortBy, setSortBy] = useState<SortOption>('latest');
 - `Empty`: 빈 상태 (리뷰 없음)
 - `Error`: 에러 상태
 
+**Storybook**: `frontend/components/reviews/ReviewList.stories.tsx`
+
 ---
 
 ### 8.4 StarRating
 
 **목적**: 별점 선택 및 표시를 위한 인터랙티브 컴포넌트
-
-**Props**:
-```typescript
-{
-  rating: number                              // 현재 별점 (0-5)
-  onRatingChange?: (rating: number) => void   // 별점 변경 핸들러
-  size?: 'sm' | 'md' | 'lg'                   // 크기 (기본: md)
-  readonly?: boolean                          // 읽기 전용 모드
-  className?: string
-}
-```
-
-**사용 예시**:
-```tsx
-// 인터랙티브 모드 (리뷰 작성)
-<StarRating
-  rating={rating}
-  onRatingChange={(newRating) => setRating(newRating)}
-  size="lg"
-/>
-
-// 읽기 전용 모드 (리뷰 표시)
-<StarRating
-  rating={4.5}
-  readonly
-  size="sm"
-/>
-```
 
 **크기 옵션**:
 - `sm`: 16x16px (h-4 w-4)
@@ -2496,48 +1076,13 @@ const [sortBy, setSortBy] = useState<SortOption>('latest');
 - `Large`: 큰 크기 (lg)
 - `ZeroRating`: 별점 0
 
+**Storybook**: `frontend/components/reviews/StarRating.stories.tsx`
+
 ---
 
 ### 8.5 ReviewFormModal
 
 **목적**: 리뷰 작성 및 수정을 위한 모달 폼
-
-**Props**:
-```typescript
-{
-  centerId: number                    // 센터 ID
-  existingReview?: Review | null      // 기존 리뷰 (수정 모드)
-  isOpen: boolean                     // 모달 열림 상태
-  onClose: () => void                 // 모달 닫기 콜백
-  onSuccess?: (review: Review) => void // 성공 시 콜백
-}
-```
-
-**사용 예시**:
-```tsx
-// 신규 작성 모드
-<ReviewFormModal
-  centerId={1}
-  isOpen={isModalOpen}
-  onClose={() => setIsModalOpen(false)}
-  onSuccess={(review) => {
-    toast.success('리뷰가 등록되었습니다');
-    setIsModalOpen(false);
-  }}
-/>
-
-// 수정 모드
-<ReviewFormModal
-  centerId={1}
-  existingReview={reviewToEdit}
-  isOpen={isEditModalOpen}
-  onClose={() => setIsEditModalOpen(false)}
-  onSuccess={(review) => {
-    toast.success('리뷰가 수정되었습니다');
-    setIsEditModalOpen(false);
-  }}
-/>
-```
 
 **폼 필드**:
 1. **별점** (필수):
@@ -2559,18 +1104,6 @@ const [sortBy, setSortBy] = useState<SortOption>('latest');
 4. **방문 날짜** (선택):
    - Input type="date"
    - 오늘 이전 날짜만 선택 가능
-
-**유효성 검사** (Zod):
-```typescript
-{
-  rating: z.number().min(1, '별점을 선택해주세요').max(5),
-  title: z.string().max(100, '제목은 100자 이내로 입력해주세요').optional(),
-  content: z.string()
-    .min(10, '최소 10자 이상 입력해주세요')
-    .max(1000, '최대 1000자까지 입력 가능합니다'),
-  visit_date: z.string().optional()
-}
-```
 
 **주요 기능**:
 - 신규 작성 / 수정 모드 자동 전환
@@ -2594,26 +1127,13 @@ const [sortBy, setSortBy] = useState<SortOption>('latest');
 - `WithErrors`: 유효성 검사 에러 상태
 - `Loading`: 저장 중 상태
 
+**Storybook**: `frontend/components/reviews/ReviewFormModal.stories.tsx`
+
 ---
 
 ### 8.6 EmptyReviews
 
 **목적**: 리뷰가 없을 때 표시하는 빈 상태 컴포넌트
-
-**Props**:
-```typescript
-{
-  onWriteClick?: () => void    // "첫 리뷰 작성하기" 버튼 클릭 핸들러
-  className?: string
-}
-```
-
-**사용 예시**:
-```tsx
-<EmptyReviews
-  onWriteClick={() => setIsModalOpen(true)}
-/>
-```
 
 **출력 내용**:
 ```
@@ -2639,171 +1159,13 @@ const [sortBy, setSortBy] = useState<SortOption>('latest');
 **스토리북 변형**:
 - `Default`: 기본 빈 상태
 
+**Storybook**: `frontend/components/reviews/EmptyReviews.stories.tsx`
+
 ---
 
 ## 9. 리뷰 시스템 통합 가이드
 
-### 9.1 센터 상세 페이지 통합 예시
-
-**전체 플로우**:
-```tsx
-'use client';
-
-import { useState } from 'react';
-import { ReviewSummary } from '@/components/reviews/ReviewSummary';
-import { ReviewList } from '@/components/reviews/ReviewList';
-import { ReviewFormModal } from '@/components/reviews/ReviewFormModal';
-import { Button } from '@/components/ui/button';
-import { useAuth } from '@/hooks/useAuth';
-import { useReviews } from '@/hooks/useReviews';
-import { useCreateReview, useUpdateReview, useDeleteReview } from '@/hooks/useReviewMutation';
-import type { SortOption } from '@/types/review';
-
-export default function CenterDetailPage({ params }: { params: { id: string } }) {
-  const centerId = parseInt(params.id);
-  const { user, isAuthenticated } = useAuth();
-  const [sortBy, setSortBy] = useState<SortOption>('latest');
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingReview, setEditingReview] = useState<Review | null>(null);
-
-  // Fetch center data
-  const { data: center } = useCenter(centerId);
-
-  // Review mutations
-  const createMutation = useCreateReview(centerId);
-  const updateMutation = useUpdateReview();
-  const deleteMutation = useDeleteReview();
-  const reactionMutation = useReactionMutation();
-
-  const handleReaction = (reviewId: number, reaction: ReactionType) => {
-    reactionMutation.mutate({ reviewId, reaction });
-  };
-
-  const handleEdit = (review: Review) => {
-    setEditingReview(review);
-    setIsModalOpen(true);
-  };
-
-  const handleDelete = async (reviewId: number) => {
-    await deleteMutation.mutateAsync(reviewId);
-  };
-
-  return (
-    <div className="container mx-auto px-4 py-8">
-      {/* Center Info */}
-      <CenterHeader center={center} />
-
-      {/* Review Summary */}
-      <section className="mt-8">
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-h2">리뷰</h2>
-          {isAuthenticated && (
-            <Button
-              variant="lavender"
-              onClick={() => setIsModalOpen(true)}
-            >
-              리뷰 작성
-            </Button>
-          )}
-        </div>
-
-        <ReviewSummary
-          avgRating={center.stats.avg_rating}
-          reviewCount={center.stats.review_count}
-        />
-      </section>
-
-      {/* Review List */}
-      <section className="mt-6">
-        <ReviewList
-          centerId={centerId}
-          sortBy={sortBy}
-          onSortChange={setSortBy}
-          onReactionClick={handleReaction}
-          onEditReview={handleEdit}
-          onDeleteReview={handleDelete}
-        />
-      </section>
-
-      {/* Review Form Modal */}
-      <ReviewFormModal
-        centerId={centerId}
-        existingReview={editingReview}
-        isOpen={isModalOpen}
-        onClose={() => {
-          setIsModalOpen(false);
-          setEditingReview(null);
-        }}
-        onSuccess={() => {
-          setIsModalOpen(false);
-          setEditingReview(null);
-        }}
-      />
-    </div>
-  );
-}
-```
-
-### 9.2 필요한 API Hooks
-
-**useReviews** (TanStack Query):
-```typescript
-export function useReviews(centerId: number, sortBy: SortOption) {
-  return useInfiniteQuery({
-    queryKey: ['reviews', centerId, sortBy],
-    queryFn: ({ pageParam = 1 }) => fetchReviews(centerId, sortBy, pageParam),
-    getNextPageParam: (lastPage) =>
-      lastPage.pagination.has_next
-        ? lastPage.pagination.current_page + 1
-        : undefined,
-    staleTime: 60 * 1000, // 1 minute
-  });
-}
-```
-
-**useReviewMutation**:
-```typescript
-export function useCreateReview(centerId: number) {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: (data: ReviewFormValues) => createReview(centerId, data),
-    onSuccess: () => {
-      queryClient.invalidateQueries(['reviews', centerId]);
-      toast.success('리뷰가 등록되었습니다');
-    },
-    onError: (error) => {
-      toast.error('리뷰 등록에 실패했습니다');
-    },
-  });
-}
-```
-
-### 9.3 성능 최적화 권장사항
-
-1. **코드 스플리팅**:
-```typescript
-const ReviewFormModal = dynamic(
-  () => import('@/components/reviews/ReviewFormModal'),
-  { ssr: false }
-);
-```
-
-2. **React.memo 적용**:
-```typescript
-export const ReviewCard = React.memo(ReviewCard);
-```
-
-3. **useCallback 사용**:
-```typescript
-const handleReaction = useCallback((reviewId: number, reaction: ReactionType) => {
-  reactionMutation.mutate({ reviewId, reaction });
-}, [reactionMutation]);
-```
-
-4. **Optimistic Updates**:
-- 반응 클릭 시 즉시 UI 업데이트
-- TanStack Query의 optimistic update 사용
+자세한 통합 예시는 Storybook 문서와 각 컴포넌트의 stories 파일을 참조하세요.
 
 ---
 

@@ -1,0 +1,116 @@
+name: mindconnect-dev
+
+services:
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+    container_name: mindconnect-frontend-dev
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+      - API_BASE_URL=http://backend:8080/api/v1
+      - NEXT_PUBLIC_API_BASE_URL=http://localhost:8080/api/v1
+      - NEXT_PUBLIC_API_URL=http://localhost:8080/api/v1
+    volumes:
+      # 소스코드 볼륨 마운트 (호스트 변경사항 실시간 반영)
+      - ./frontend:/app
+      # node_modules는 컨테이너 내부 볼륨 사용 (호스트와 격리)
+      - frontend_node_modules:/app/node_modules
+      # .next 빌드 캐시도 컨테이너 내부 볼륨 사용
+      - frontend_next:/app/.next
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      - mindconnect-network
+    restart: unless-stopped
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.dev
+    container_name: mindconnect-backend-dev
+    ports:
+      - "8080:8080"
+    environment:
+      - NODE_ENV=development
+      - PORT=8080
+      - HOST=0.0.0.0
+      - DATABASE_URL=mysql://mindconnect_user:mindconnect_pass@mysql:3306/mindconnect
+      - REDIS_URL=redis://redis:6379
+      - JWT_SECRET=dev_jwt_secret_change_in_production
+      - CORS_ORIGIN=http://localhost:3000
+    volumes:
+      # 소스코드 볼륨 마운트 (호스트 변경사항 실시간 반영)
+      - ./backend:/app
+      # node_modules는 컨테이너 내부 볼륨 사용 (호스트와 격리)
+      - backend_node_modules:/app/node_modules
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    networks:
+      - mindconnect-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  mysql:
+    image: mysql:8.0
+    container_name: mindconnect-mysql-dev
+    environment:
+      - MYSQL_ROOT_PASSWORD=root_password_change_me
+      - MYSQL_DATABASE=mindconnect
+      - MYSQL_USER=mindconnect_user
+      - MYSQL_PASSWORD=mindconnect_pass
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql_data_dev:/var/lib/mysql
+    networks:
+      - mindconnect-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-proot_password_change_me"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  redis:
+    image: redis:7-alpine
+    container_name: mindconnect-redis-dev
+    ports:
+      - "6380:6379"
+    volumes:
+      - redis_data_dev:/data
+    networks:
+      - mindconnect-network
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+networks:
+  mindconnect-network:
+    driver: bridge
+
+volumes:
+  # 데이터베이스 볼륨
+  mysql_data_dev:
+  redis_data_dev:
+  # node_modules 볼륨 (호스트와 격리하여 플랫폼 호환성 확보)
+  frontend_node_modules:
+  backend_node_modules:
+  # Next.js 빌드 캐시 볼륨
+  frontend_next:

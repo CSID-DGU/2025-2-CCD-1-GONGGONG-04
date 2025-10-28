@@ -17,13 +17,13 @@ import {
   selectByKeyboard,
   mockApiResponse,
   simulateOffline,
-} from './helpers/setup';
+} from '../helpers/setup';
 import {
   testCenters,
   viewports,
   errorMessages,
   successMessages,
-} from './helpers/fixtures';
+} from '../helpers/fixtures';
 
 /**
  * 1. PAGE LOAD AND RENDERING TESTS (6 tests)

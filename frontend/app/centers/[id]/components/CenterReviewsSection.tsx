@@ -13,6 +13,7 @@ import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ReviewSummary, ReviewList } from '@/components/reviews';
 import { Star } from 'lucide-react';
+import type { SortOption, ReactionType } from '@/types/review';
 
 interface CenterReviewsSectionProps {
   centerId: number;
@@ -27,11 +28,9 @@ export function CenterReviewsSection({
   totalReviews,
   ratingDistribution,
 }: CenterReviewsSectionProps) {
-  const [sortBy, setSortBy] = useState<'latest' | 'rating_high' | 'rating_low' | 'helpful'>(
-    'latest'
-  );
+  const [sortBy, setSortBy] = useState<SortOption>('latest');
 
-  const handleReactionClick = (reviewId: number, reaction: 'like' | 'report') => {
+  const handleReactionClick = (reviewId: number, reaction: ReactionType) => {
     // TODO: Implement in Week 2
     console.log('Reaction clicked:', { reviewId, reaction });
   };

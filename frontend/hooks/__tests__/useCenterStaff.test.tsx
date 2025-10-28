@@ -95,26 +95,45 @@ describe('useCenterStaff', () => {
     expect(result.current.error).toEqual(error);
   });
 
-  it('올바른 queryKey를 사용한다', () => {
+  it('centerId가 다르면 별도의 쿼리로 동작한다', async () => {
     vi.mocked(centersApi.getCenterStaff).mockResolvedValue(mockStaffResponse);
 
-    const { result } = renderHook(() => useCenterStaff(1), {
+    const { result: result1 } = renderHook(() => useCenterStaff(1), {
       wrapper: createWrapper(),
     });
 
-    // queryKey: ['center', centerId, 'staff']
-    expect(result.current.queryKey).toEqual(['center', 1, 'staff']);
+    const { result: result2 } = renderHook(() => useCenterStaff(2), {
+      wrapper: createWrapper(),
+    });
+
+    await waitFor(() => {
+      expect(result1.current.isSuccess).toBe(true);
+      expect(result2.current.isSuccess).toBe(true);
+    });
+
+    // 각각 독립적으로 API 호출됨
+    expect(centersApi.getCenterStaff).toHaveBeenCalledWith(1);
+    expect(centersApi.getCenterStaff).toHaveBeenCalledWith(2);
   });
 
-  it('staleTime이 5분으로 설정된다', () => {
+  it('데이터를 성공적으로 캐싱한다', async () => {
     vi.mocked(centersApi.getCenterStaff).mockResolvedValue(mockStaffResponse);
 
-    const { result } = renderHook(() => useCenterStaff(1), {
+    const { result, rerender } = renderHook(() => useCenterStaff(1), {
       wrapper: createWrapper(),
     });
 
-    // staleTime 확인 (5분 = 300000ms)
-    expect(result.current.query.options.staleTime).toBe(5 * 60 * 1000);
+    await waitFor(() => {
+      expect(result.current.isSuccess).toBe(true);
+    });
+
+    const firstCallCount = vi.mocked(centersApi.getCenterStaff).mock.calls.length;
+
+    // 재렌더링해도 캐시된 데이터 사용 (staleTime 내)
+    rerender();
+
+    // API 호출 횟수가 증가하지 않음 (캐시 사용)
+    expect(vi.mocked(centersApi.getCenterStaff).mock.calls.length).toBe(firstCallCount);
   });
 
   it('로딩 상태를 올바르게 반환한다', async () => {

@@ -3,6 +3,7 @@
  */
 
 import { render, screen, fireEvent } from '@testing-library/react';
+import { vi } from 'vitest';
 import { ProgramCard } from '../ProgramCard';
 import type { Program } from '@/types/center';
 
@@ -20,7 +21,7 @@ describe('ProgramCard', () => {
     duration_minutes: 90,
   };
 
-  const mockOnClick = jest.fn();
+  const mockOnClick = vi.fn();
 
   beforeEach(() => {
     mockOnClick.mockClear();

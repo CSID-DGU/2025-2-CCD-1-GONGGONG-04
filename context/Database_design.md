@@ -100,8 +100,8 @@ CREATE TABLE centers (
     center_type_original VARCHAR(100) COMMENT '센터구분(원본)',
     road_address VARCHAR(500) NOT NULL,
     jibun_address VARCHAR(500),
-    latitude DECIMAL(10, 8) NOT NULL,
-    longitude DECIMAL(11, 8) NOT NULL,
+    latitude DECIMAL(10, 8) NULL COMMENT '위도 (일부 센터는 위치정보 미제공)',
+    longitude DECIMAL(11, 8) NULL COMMENT '경도 (일부 센터는 위치정보 미제공)',
     business_content TEXT COMMENT '건강증진업무내용',
     building_area DECIMAL(10, 2) COMMENT '건물면적(㎡)',
     phone_number VARCHAR(50),
@@ -993,6 +993,17 @@ SET
 
 ## 변경 이력
 
+### 2025-10-27 (데이터 임포트)
+- **centers 테이블 스키마 수정**: `latitude`, `longitude` 칼럼을 NULL 허용으로 변경
+  - 이유: 전국 건강증진센터 표준 데이터 중 일부 센터(약 3개)가 위치 정보를 제공하지 않음
+  - 영향: 위치 기반 검색 시 NULL 값 필터링 필요
+- **초기 데이터 삽입 완료**:
+  - centers: 1,028개 레코드
+  - center_operating_hours: 7,196개 레코드 (센터당 7개 요일)
+  - center_staff: 944개 레코드
+- **데이터 소스**: 전국 건강증진센터 표준 데이터 (MOHW_표준데이터)
+- **한국어 인코딩**: UTF-8 (utf8mb4) 정상 처리 확인
+
 ### 2025-01-21 (Sprint 2)
 - `v_center_operating_status` 뷰 추가 (요일별 운영시간 JSON 조회)
 - `get_next_open_date` 함수 추가 (다음 오픈일 계산)
@@ -1004,4 +1015,4 @@ SET
 ---
 
 *이 문서는 프로젝트 진행에 따라 지속적으로 업데이트됩니다.*
-*최종 수정일: 2025-01-21*
+*최종 수정일: 2025-10-27*

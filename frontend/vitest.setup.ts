@@ -40,3 +40,10 @@ global.ResizeObserver = class ResizeObserver {
   observe() {}
   unobserve() {}
 } as any;
+
+// Mock Pointer Capture API for Radix UI components
+if (!HTMLElement.prototype.hasPointerCapture) {
+  HTMLElement.prototype.hasPointerCapture = function() { return false; };
+  HTMLElement.prototype.setPointerCapture = function() {};
+  HTMLElement.prototype.releasePointerCapture = function() {};
+}

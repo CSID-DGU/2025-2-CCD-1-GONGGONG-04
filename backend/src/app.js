@@ -35,7 +35,7 @@ if (config.env === 'development') {
 const limiter = rateLimit({
   windowMs: config.rateLimit.windowMs,
   max: config.rateLimit.maxRequests,
-  message: 'Too many requests from this IP, please try again later.'
+  message: 'Too many requests from this IP, please try again later.',
 });
 app.use('/api', limiter);
 
@@ -49,21 +49,21 @@ const swaggerOptions = {
       description: '마음이음 (MindConnect) - 정신건강 관련 공공기관 통합 검색 및 추천 플랫폼 API',
       contact: {
         name: 'MindConnect Team',
-        email: 'contact@mindconnect.com'
-      }
+        email: 'contact@mindconnect.com',
+      },
     },
     servers: [
       {
         url: `http://localhost:${config.port}${config.api.prefix}`,
-        description: 'Development server'
+        description: 'Development server',
       },
       {
         url: `http://localhost:${config.port}`,
-        description: 'Base server'
-      }
-    ]
+        description: 'Base server',
+      },
+    ],
   },
-  apis: ['./src/routes/*.js']
+  apis: ['./src/routes/*.js'],
 };
 
 const swaggerSpec = swaggerJsdoc(swaggerOptions);
@@ -77,7 +77,7 @@ app.get(config.api.prefix, (req, res) => {
   res.json({
     message: 'MindConnect API',
     version: '1.0.0',
-    documentation: '/api-docs'
+    documentation: '/api-docs',
   });
 });
 

@@ -113,7 +113,7 @@ export function OperatingInfoSection({
       <div className="flex items-center justify-between gap-4">
         <h2 className="text-h2 text-neutral-900">운영 정보</h2>
         <UpdateIndicator
-          lastUpdate={data.currentTime}
+          lastUpdate={new Date().toISOString()}
           isRefetching={isRefetching}
           refetchInterval={60}
           compact
@@ -127,7 +127,7 @@ export function OperatingInfoSection({
             <div>
               <h3 className="text-h3 text-neutral-900 mb-2">현재 운영 상태</h3>
               <p className="text-small text-neutral-500">
-                {new Date(data.currentTime).toLocaleString('ko-KR', {
+                {new Date().toLocaleString('ko-KR', {
                   year: 'numeric',
                   month: 'long',
                   day: 'numeric',
@@ -139,24 +139,18 @@ export function OperatingInfoSection({
               </p>
             </div>
             <OperatingStatusBadge
-              status={data.status}
-              message={data.message}
+              status={data.current_status.status}
+              message={data.current_status.message}
               size="lg"
             />
           </div>
 
           {/* 다음 오픈 일시 (마감 시에만 표시) */}
-          {data.nextOpenDate && (
+          {data.next_open?.date && (
             <div className="mt-4 pt-4 border-t border-neutral-200">
               <p className="text-small text-neutral-600">
                 <span className="font-medium">다음 운영일:</span>{' '}
-                {new Date(data.nextOpenDate).toLocaleString('ko-KR', {
-                  month: 'long',
-                  day: 'numeric',
-                  weekday: 'long',
-                  hour: '2-digit',
-                  minute: '2-digit',
-                })}
+                {data.next_open.day_name} {data.next_open.open_time && `(${data.next_open.open_time})`}
               </p>
             </div>
           )}
@@ -164,20 +158,22 @@ export function OperatingInfoSection({
       </Card>
 
       {/* 운영시간 테이블 */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-h3 flex items-center gap-2">
-            <Clock className="w-5 h-5" aria-hidden="true" />
-            요일별 운영시간
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <OperatingHoursTable operatingHours={data.operatingHours} />
-        </CardContent>
-      </Card>
+      {data.weekly_hours && data.weekly_hours.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-h3 flex items-center gap-2">
+              <Clock className="w-5 h-5" aria-hidden="true" />
+              요일별 운영시간
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <OperatingHoursTable operatingHours={data.weekly_hours} />
+          </CardContent>
+        </Card>
+      )}
 
       {/* 휴무일 목록 */}
-      {data.holidays && data.holidays.length > 0 && (
+      {data.upcoming_holidays && data.upcoming_holidays.length > 0 && (
         <Card>
           <CardHeader>
             <CardTitle className="text-h3 flex items-center gap-2">
@@ -187,9 +183,9 @@ export function OperatingInfoSection({
           </CardHeader>
           <CardContent>
             <HolidayList
-              holidays={data.holidays}
+              holidays={data.upcoming_holidays}
               maxItems={5}
-              showTypeBadge
+              showType
             />
           </CardContent>
         </Card>
@@ -197,7 +193,7 @@ export function OperatingInfoSection({
 
       {/* 업데이트 정보 (전체 버전) */}
       <UpdateIndicator
-        lastUpdate={data.currentTime}
+        lastUpdate={new Date().toISOString()}
         isRefetching={isRefetching}
         refetchInterval={60}
       />

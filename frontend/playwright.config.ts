@@ -17,6 +17,8 @@ import * as path from 'path';
  */
 export default defineConfig({
   testDir: './tests/e2e',
+  testMatch: '**/*.spec.ts',
+  testIgnore: '**/helpers/**',
 
   /* Run tests in files in parallel */
   fullyParallel: false,

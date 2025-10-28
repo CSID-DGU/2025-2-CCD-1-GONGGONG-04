@@ -1,3 +1,5 @@
+'use client';
+
 /**
  * ReviewFormModal Component
  *

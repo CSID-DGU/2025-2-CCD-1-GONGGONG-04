@@ -61,5 +61,5 @@ module.exports = {
   isValidLatitude,
   isValidLongitude,
   createValidationError,
-  createNotFoundError
+  createNotFoundError,
 };

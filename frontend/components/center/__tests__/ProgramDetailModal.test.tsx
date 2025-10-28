@@ -79,9 +79,9 @@ describe('ProgramDetailModal', () => {
 
     // 배지 표시
     expect(screen.getByText('온라인')).toBeInTheDocument();
-    expect(screen.getByText('무료')).toBeInTheDocument();
-    expect(screen.getByText('집단 상담')).toBeInTheDocument();
-    expect(screen.getByText('직장인')).toBeInTheDocument();
+    expect(screen.getAllByText('무료')).toHaveLength(2); // 배지 + 상세정보
+    expect(screen.getAllByText('집단 상담').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('직장인').length).toBeGreaterThan(0);
 
     // 설명 표시
     expect(
@@ -93,9 +93,6 @@ describe('ProgramDetailModal', () => {
 
     // 시간 표시
     expect(screen.getByText('90분')).toBeInTheDocument();
-
-    // 비용 표시
-    expect(screen.getAllByText('무료')).toHaveLength(2); // 배지 + 상세정보
   });
 
   it('모달이 닫힘 상태일 때 렌더링하지 않는다', () => {
@@ -147,8 +144,8 @@ describe('ProgramDetailModal', () => {
     // 온라인 배지가 표시되지 않음
     expect(screen.queryByText('온라인')).not.toBeInTheDocument();
 
-    // 무료 배지 표시
-    expect(screen.getByText('무료')).toBeInTheDocument();
+    // 무료 배지 표시 (배지 + 상세정보)
+    expect(screen.getAllByText('무료').length).toBeGreaterThan(0);
   });
 
   it('설명이 없을 경우 기본 메시지를 표시한다', () => {

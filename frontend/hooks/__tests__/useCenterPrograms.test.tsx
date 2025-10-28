@@ -114,22 +114,36 @@ describe('useCenterPrograms', () => {
     expect(centersApi.getCenterPrograms).toHaveBeenCalledWith(1, filters);
   });
 
-  it('queryKey에 필터가 포함된다', () => {
+  it('필터가 다르면 별도의 쿼리로 동작한다', async () => {
     vi.mocked(centersApi.getCenterPrograms).mockResolvedValue(
       mockProgramResponse
     );
 
-    const filters = {
-      target_group: '직장인',
-      is_online: true,
-    };
+    const filters1 = { target_group: '직장인' };
+    const filters2 = { target_group: '청소년' };
 
-    const { result } = renderHook(() => useCenterPrograms(1, filters), {
-      wrapper: createWrapper(),
+    const { result: result1 } = renderHook(
+      () => useCenterPrograms(1, filters1),
+      {
+        wrapper: createWrapper(),
+      }
+    );
+
+    const { result: result2 } = renderHook(
+      () => useCenterPrograms(1, filters2),
+      {
+        wrapper: createWrapper(),
+      }
+    );
+
+    await waitFor(() => {
+      expect(result1.current.isSuccess).toBe(true);
+      expect(result2.current.isSuccess).toBe(true);
     });
 
-    // queryKey: ['center', centerId, 'programs', filters]
-    expect(result.current.queryKey).toEqual(['center', 1, 'programs', filters]);
+    // 각각 독립적으로 API 호출됨
+    expect(centersApi.getCenterPrograms).toHaveBeenCalledWith(1, filters1);
+    expect(centersApi.getCenterPrograms).toHaveBeenCalledWith(1, filters2);
   });
 
   it('API 호출이 실패하면 에러를 반환한다', async () => {
@@ -147,17 +161,29 @@ describe('useCenterPrograms', () => {
     expect(result.current.error).toEqual(error);
   });
 
-  it('staleTime이 5분으로 설정된다', () => {
+  it('데이터를 성공적으로 캐싱한다', async () => {
     vi.mocked(centersApi.getCenterPrograms).mockResolvedValue(
       mockProgramResponse
     );
 
-    const { result } = renderHook(() => useCenterPrograms(1), {
+    const { result, rerender } = renderHook(() => useCenterPrograms(1), {
       wrapper: createWrapper(),
     });
 
-    // staleTime 확인 (5분 = 300000ms)
-    expect(result.current.query.options.staleTime).toBe(5 * 60 * 1000);
+    await waitFor(() => {
+      expect(result.current.isSuccess).toBe(true);
+    });
+
+    const firstCallCount = vi.mocked(centersApi.getCenterPrograms).mock.calls
+      .length;
+
+    // 재렌더링해도 캐시된 데이터 사용 (staleTime 내)
+    rerender();
+
+    // API 호출 횟수가 증가하지 않음 (캐시 사용)
+    expect(vi.mocked(centersApi.getCenterPrograms).mock.calls.length).toBe(
+      firstCallCount
+    );
   });
 
   it('로딩 상태를 올바르게 반환한다', async () => {

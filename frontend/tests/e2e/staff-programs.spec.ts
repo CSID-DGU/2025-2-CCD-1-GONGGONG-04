@@ -10,8 +10,8 @@ import {
   setViewport,
   expectAriaAttribute,
   waitForPageLoad,
-} from './helpers/setup';
-import { testCenters, viewports, keyboardKeys } from './helpers/fixtures';
+} from '../helpers/setup';
+import { testCenters, viewports, keyboardKeys } from '../helpers/fixtures';
 
 /**
  * Mock Staff Data

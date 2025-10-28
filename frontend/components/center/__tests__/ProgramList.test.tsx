@@ -3,6 +3,7 @@
  */
 
 import { render, screen, fireEvent } from '@testing-library/react';
+import { vi } from 'vitest';
 import { ProgramList } from '../ProgramList';
 import type { Program } from '@/types/center';
 
@@ -46,7 +47,7 @@ describe('ProgramList', () => {
     },
   ];
 
-  const mockOnProgramClick = jest.fn();
+  const mockOnProgramClick = vi.fn();
 
   beforeEach(() => {
     mockOnProgramClick.mockClear();

@@ -4,7 +4,7 @@ const {
   isValidLatitude,
   isValidLongitude,
   createValidationError,
-  createNotFoundError
+  createNotFoundError,
 } = require('../utils/validation');
 
 const prisma = new PrismaClient();
@@ -53,7 +53,7 @@ const getCenterDetail = async (req, res, next) => {
       if (!user_lat || !user_lng) {
         throw createValidationError(
           'Both user_lat and user_lng must be provided together.',
-          user_lat ? 'user_lng' : 'user_lat'
+          user_lat ? 'user_lng' : 'user_lat',
         );
       }
 
@@ -61,7 +61,7 @@ const getCenterDetail = async (req, res, next) => {
       if (!isValidLatitude(user_lat)) {
         throw createValidationError(
           'Invalid latitude. Must be between -90 and 90.',
-          'user_lat'
+          'user_lat',
         );
       }
 
@@ -69,7 +69,7 @@ const getCenterDetail = async (req, res, next) => {
       if (!isValidLongitude(user_lng)) {
         throw createValidationError(
           'Invalid longitude. Must be between -180 and 180.',
-          'user_lng'
+          'user_lng',
         );
       }
 
@@ -138,7 +138,7 @@ const getCenterDetail = async (req, res, next) => {
     // Increment view count asynchronously (don't wait for it)
     prisma.center.update({
       where: { id: BigInt(centerId) },
-      data: { viewCount: { increment: 1 } }
+      data: { viewCount: { increment: 1 } },
     }).catch(err => {
       // Log error but don't fail the request
       console.error('Failed to increment view count:', err);
@@ -152,19 +152,19 @@ const getCenterDetail = async (req, res, next) => {
       contact: {
         phone: centerDetail.phone_number,
         road_address: centerDetail.road_address,
-        jibun_address: centerDetail.jibun_address
+        jibun_address: centerDetail.jibun_address,
       },
       location: {
         latitude: parseFloat(centerDetail.latitude),
-        longitude: parseFloat(centerDetail.longitude)
+        longitude: parseFloat(centerDetail.longitude),
       },
       business_content: centerDetail.business_content,
       stats: {
         avg_rating: parseFloat(centerDetail.avg_rating),
         review_count: Number(centerDetail.review_count),
         favorite_count: Number(centerDetail.favorite_count),
-        view_count: Number(centerDetail.view_count)
-      }
+        view_count: Number(centerDetail.view_count),
+      },
     };
 
     // Add distance if calculated
@@ -175,7 +175,7 @@ const getCenterDetail = async (req, res, next) => {
     // Send success response
     res.status(200).json({
       success: true,
-      data: response
+      data: response,
     });
 
   } catch (error) {
@@ -213,7 +213,7 @@ const getCenterStaff = async (req, res, next) => {
     // Check if center exists
     const center = await prisma.center.findUnique({
       where: { id: BigInt(centerId) },
-      select: { id: true }
+      select: { id: true },
     });
 
     if (!center) {
@@ -227,7 +227,7 @@ const getCenterStaff = async (req, res, next) => {
     // Send success response
     res.status(200).json({
       success: true,
-      data: staffData
+      data: staffData,
     });
 
   } catch (error) {
@@ -272,7 +272,7 @@ const getCenterPrograms = async (req, res, next) => {
     // Check if center exists
     const center = await prisma.center.findUnique({
       where: { id: BigInt(centerId) },
-      select: { id: true }
+      select: { id: true },
     });
 
     if (!center) {
@@ -313,7 +313,7 @@ const getCenterPrograms = async (req, res, next) => {
     // Send success response
     res.status(200).json({
       success: true,
-      data: programsData
+      data: programsData,
     });
 
   } catch (error) {
@@ -325,5 +325,5 @@ const getCenterPrograms = async (req, res, next) => {
 module.exports = {
   getCenterDetail,
   getCenterStaff,
-  getCenterPrograms
+  getCenterPrograms,
 };

@@ -1,4 +1,4 @@
-const { PrismaClient } = require('@prisma/client');
+import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
@@ -46,7 +46,7 @@ async function getCenterStaff(centerId: number): Promise<StaffResponse> {
     });
 
     // Transform the data to match API response format
-    const staffItems: StaffItem[] = staff.map((item) => ({
+    const staffItems: StaffItem[] = staff.map((item: any) => ({
       staff_type: item.staffType,
       staff_count: item.staffCount,
       description: item.description,

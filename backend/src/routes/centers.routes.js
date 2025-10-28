@@ -3,7 +3,7 @@ const router = express.Router();
 const { getCenterDetail, getCenterStaff, getCenterPrograms } = require('../controllers/centersController');
 const {
   getOperatingStatus,
-  invalidateOperatingStatusCache
+  invalidateOperatingStatusCache,
 } = require('../controllers/operatingStatus.controller');
 
 /**

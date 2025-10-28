@@ -2,3 +2,21 @@
 .playwright-mcp
 claudedocs
 CLAUDE.md
+
+# 백업 파일
+*.backup
+backups/
+
+# 데이터 파일 (CSV)
+*.csv
+
+# 시스템 파일
+.DS_Store
+Thumbs.db
+
+# 로그 파일
+*.log
+
+# 임시 파일
+*.tmp
+*.temp
