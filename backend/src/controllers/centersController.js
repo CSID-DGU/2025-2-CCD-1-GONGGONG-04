@@ -53,24 +53,18 @@ const getCenterDetail = async (req, res, next) => {
       if (!user_lat || !user_lng) {
         throw createValidationError(
           'Both user_lat and user_lng must be provided together.',
-          user_lat ? 'user_lng' : 'user_lat',
+          user_lat ? 'user_lng' : 'user_lat'
         );
       }
 
       // Validate latitude
       if (!isValidLatitude(user_lat)) {
-        throw createValidationError(
-          'Invalid latitude. Must be between -90 and 90.',
-          'user_lat',
-        );
+        throw createValidationError('Invalid latitude. Must be between -90 and 90.', 'user_lat');
       }
 
       // Validate longitude
       if (!isValidLongitude(user_lng)) {
-        throw createValidationError(
-          'Invalid longitude. Must be between -180 and 180.',
-          'user_lng',
-        );
+        throw createValidationError('Invalid longitude. Must be between -180 and 180.', 'user_lng');
       }
 
       userLat = parseFloat(user_lat);
@@ -136,13 +130,15 @@ const getCenterDetail = async (req, res, next) => {
     }
 
     // Increment view count asynchronously (don't wait for it)
-    prisma.center.update({
-      where: { id: BigInt(centerId) },
-      data: { viewCount: { increment: 1 } },
-    }).catch(err => {
-      // Log error but don't fail the request
-      console.error('Failed to increment view count:', err);
-    });
+    prisma.center
+      .update({
+        where: { id: BigInt(centerId) },
+        data: { viewCount: { increment: 1 } },
+      })
+      .catch(err => {
+        // Log error but don't fail the request
+        console.error('Failed to increment view count:', err);
+      });
 
     // Transform database result to API response format
     const response = {
@@ -177,7 +173,6 @@ const getCenterDetail = async (req, res, next) => {
       success: true,
       data: response,
     });
-
   } catch (error) {
     // Pass error to global error handler
     next(error);
@@ -229,7 +224,6 @@ const getCenterStaff = async (req, res, next) => {
       success: true,
       data: staffData,
     });
-
   } catch (error) {
     // Pass error to global error handler
     next(error);
@@ -315,7 +309,6 @@ const getCenterPrograms = async (req, res, next) => {
       success: true,
       data: programsData,
     });
-
   } catch (error) {
     // Pass error to global error handler
     next(error);

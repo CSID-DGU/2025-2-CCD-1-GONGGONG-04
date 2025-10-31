@@ -1,0 +1,10 @@
+{
+  "sessionId": "test-session-456",
+  "location": {
+    "latitude": 37.5665,
+    "longitude": 126.9780
+  },
+  "filters": {
+    "maxDistance": 10
+  }
+}

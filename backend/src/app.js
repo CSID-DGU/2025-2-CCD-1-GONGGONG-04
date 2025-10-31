@@ -10,6 +10,8 @@ const config = require('./config');
 const healthRoutes = require('./routes/health.routes');
 const centersRoutes = require('./routes/centers.routes');
 const reviewsRoutes = require('./routes/reviews.routes');
+const recommendationRoutes = require('./routes/recommendation.routes');
+const selfAssessmentRoutes = require('./routes/selfAssessment.routes');
 const { errorHandler, notFoundHandler } = require('./middlewares/errorHandler');
 
 // Initialize Express app
@@ -88,9 +90,14 @@ app.use(`${config.api.prefix}/centers`, centersRoutes);
 // Reviews routes
 app.use(config.api.prefix, reviewsRoutes);
 
+// Recommendation routes
+app.use(`${config.api.prefix}/recommendations`, recommendationRoutes);
+
+// Self-Assessment routes
+app.use(`${config.api.prefix}/self-assessments`, selfAssessmentRoutes);
+
 // TODO: Add more API routes here
 // app.use(`${config.api.prefix}/auth`, authRoutes);
-// app.use(`${config.api.prefix}/recommendations`, recommendationRoutes);
 
 // 404 handler
 app.use(notFoundHandler);

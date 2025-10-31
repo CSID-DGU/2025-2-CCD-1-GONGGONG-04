@@ -1,6 +1,10 @@
 const express = require('express');
 const router = express.Router();
-const { getCenterDetail, getCenterStaff, getCenterPrograms } = require('../controllers/centersController');
+const {
+  getCenterDetail,
+  getCenterStaff,
+  getCenterPrograms,
+} = require('../controllers/centersController');
 const {
   getOperatingStatus,
   invalidateOperatingStatusCache,

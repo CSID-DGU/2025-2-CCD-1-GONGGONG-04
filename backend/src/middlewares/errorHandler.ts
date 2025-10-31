@@ -8,17 +8,25 @@
  * Distinguishes between operational errors (AppError) and programming errors.
  */
 
-const { InternalError, isOperationalError } = require('../utils/errors');
+import { Request, Response, NextFunction } from 'express';
+import { AppError, ValidationError, InternalError, isOperationalError } from '../utils/errors';
+
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 const config = require('../config');
 
 /**
  * Global error handler middleware
  * Express의 전역 에러 핸들러
  */
-const errorHandler = (err, req, res, _next) => {
+export const errorHandler = (
+  err: Error | AppError,
+  req: Request,
+  res: Response,
+  _next: NextFunction
+): void => {
   // 1. 운영 에러 (Operational Error) 처리
   if (isOperationalError(err)) {
-    const appError = err;
+    const appError = err as AppError;
 
     // 개발 환경에서는 콘솔에 로그 출력
     if (config.env === 'development') {
@@ -35,11 +43,7 @@ const errorHandler = (err, req, res, _next) => {
     const response = appError.toJSON();
 
     // InternalError의 경우 개발 환경에서만 originalError 포함
-    if (
-      appError instanceof InternalError &&
-      config.env === 'development' &&
-      appError.originalError
-    ) {
+    if (appError instanceof InternalError && config.env === 'development' && appError.originalError) {
       response.error.originalError = {
         message: appError.originalError.message,
         stack: appError.originalError.stack,
@@ -85,7 +89,7 @@ const errorHandler = (err, req, res, _next) => {
  * 404 Not Found handler
  * 존재하지 않는 라우트 처리
  */
-const notFoundHandler = (req, res) => {
+export const notFoundHandler = (req: Request, res: Response): void => {
   res.status(404).json({
     success: false,
     error: {
@@ -93,9 +97,4 @@ const notFoundHandler = (req, res) => {
       message: `Route not found: ${req.method} ${req.path}`,
     },
   });
-};
-
-module.exports = {
-  errorHandler,
-  notFoundHandler,
 };

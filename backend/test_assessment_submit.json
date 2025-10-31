@@ -1,0 +1,16 @@
+{
+  "sessionId": "test-session-123",
+  "templateId": 2,
+  "answers": [
+    {"questionId": 1, "selectedOption": 2},
+    {"questionId": 2, "selectedOption": 1},
+    {"questionId": 3, "selectedOption": 2},
+    {"questionId": 4, "selectedOption": 1},
+    {"questionId": 5, "selectedOption": 2},
+    {"questionId": 6, "selectedOption": 1},
+    {"questionId": 7, "selectedOption": 2},
+    {"questionId": 8, "selectedOption": 1},
+    {"questionId": 9, "selectedOption": 2},
+    {"questionId": 10, "selectedOption": 1}
+  ]
+}

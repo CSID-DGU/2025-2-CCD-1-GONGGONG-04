@@ -2,13 +2,13 @@ const app = require('./app');
 const config = require('./config');
 
 // Handle uncaught exceptions
-process.on('uncaughtException', (err) => {
+process.on('uncaughtException', err => {
   console.error('Uncaught Exception:', err);
   process.exit(1);
 });
 
 // Handle unhandled promise rejections
-process.on('unhandledRejection', (err) => {
+process.on('unhandledRejection', err => {
   console.error('Unhandled Rejection:', err);
   process.exit(1);
 });
@@ -32,7 +32,7 @@ const server = app.listen(config.port, config.host, () => {
 });
 
 // Graceful shutdown
-const gracefulShutdown = (signal) => {
+const gracefulShutdown = signal => {
   // eslint-disable-next-line no-console
   console.log(`\n${signal} received. Starting graceful shutdown...`);
 

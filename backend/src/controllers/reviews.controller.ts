@@ -17,7 +17,7 @@ import {
   deleteReviewWithRatingUpdate,
   upsertReaction,
 } from '../services/reviews.service';
-import { ValidationError, ApiError } from '../utils/errors';
+import { ValidationError, AppError } from '../utils/errors';
 
 /**
  * Validation schema for GET /api/centers/:id/reviews
@@ -500,7 +500,7 @@ export async function addReaction(
 
 /**
  * Express error handling middleware
- * Converts ApiError instances to appropriate HTTP responses
+ * Converts AppError instances to appropriate HTTP responses
  *
  * @param err - Error object
  * @param req - Express request object
@@ -508,7 +508,7 @@ export async function addReaction(
  * @param next - Express next middleware function
  */
 export function errorHandler(
-  err: Error | ApiError,
+  err: Error | AppError,
   req: Request,
   res: Response,
   next: NextFunction
@@ -516,7 +516,7 @@ export function errorHandler(
   console.error('[Error]', err.name, err.message, err.stack);
 
   // Handle custom API errors
-  if (err instanceof ApiError) {
+  if (err instanceof AppError) {
     const statusCode = err.statusCode;
     const response: any = {
       error: err.name.replace('Error', '').toUpperCase(),

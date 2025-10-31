@@ -1,73 +1,173 @@
 /**
  * Custom Error Classes
  *
- * Provides structured error handling for the API with HTTP status codes.
- * Used across controllers to ensure consistent error responses.
+ * Sprint 1: 규칙 기반 추천 시스템
+ * Task 2.9: 에러 클래스 작성
  *
- * @module utils/errors
+ * Provides structured error handling for the API with HTTP status codes.
+ * All errors inherit from AppError and are marked as operational.
  */
 
 /**
- * Base API Error class
+ * Base application error class
+ * 기본 애플리케이션 에러 클래스
  */
-export class ApiError extends Error {
+export class AppError extends Error {
   statusCode: number;
+  code: string;
+  details: any;
+  isOperational: boolean;
 
-  constructor(message: string, statusCode: number) {
+  constructor(
+    message: string = 'Application Error',
+    statusCode: number = 500,
+    code: string = 'APP_ERROR',
+    details: any = null
+  ) {
     super(message);
     this.name = this.constructor.name;
     this.statusCode = statusCode;
+    this.code = code;
+    this.details = details;
+    this.isOperational = true;
     Error.captureStackTrace(this, this.constructor);
   }
-}
 
-/**
- * 400 Bad Request - Invalid input data
- */
-export class ValidationError extends ApiError {
-  details?: any;
+  toJSON() {
+    const result: any = {
+      success: false,
+      error: {
+        code: this.code,
+        message: this.message,
+      },
+    };
 
-  constructor(message: string, details?: any) {
-    super(message, 400);
-    this.details = details;
+    if (this.details) {
+      result.error.details = this.details;
+    }
+
+    return result;
   }
 }
 
 /**
- * 404 Not Found - Resource does not exist
+ * Validation Error (400 Bad Request)
+ * 검증 에러
  */
-export class NotFoundError extends ApiError {
-  constructor(message: string) {
-    super(message, 404);
+export class ValidationError extends AppError {
+  constructor(message: string = '입력 데이터가 유효하지 않습니다', details: any = null) {
+    super(message, 400, 'VALIDATION_ERROR', details);
+  }
+
+  /**
+   * Create ValidationError from Zod error
+   * Zod 에러에서 ValidationError 생성
+   */
+  static fromZodError(zodError: any): ValidationError {
+    const details = zodError.errors.map((err: any) => ({
+      field: err.path.join('.'),
+      message: err.message,
+      code: err.code,
+    }));
+
+    return new ValidationError('입력 데이터가 유효하지 않습니다', details);
   }
 }
 
 /**
- * 403 Forbidden - User does not have permission
+ * Not Found Error (404 Not Found)
+ * 리소스 없음 에러
  */
-export class ForbiddenError extends ApiError {
-  constructor(message: string) {
-    super(message, 403);
+export class NotFoundError extends AppError {
+  resource: string;
+  identifier: string | number | null;
+
+  constructor(resource: string = 'Resource', identifier: string | number | null = null) {
+    const resourceName = resource;
+    const message = identifier
+      ? `${resourceName}를 찾을 수 없습니다 (ID: ${identifier})`
+      : `${resourceName}를 찾을 수 없습니다`;
+
+    super(message, 404, 'NOT_FOUND', null);
+    this.resource = resourceName;
+    this.identifier = identifier;
   }
 }
 
 /**
- * 409 Conflict - Resource already exists
+ * Internal Server Error (500 Internal Server Error)
+ * 내부 서버 에러
  */
-export class ConflictError extends ApiError {
+export class InternalError extends AppError {
+  originalError: Error | null;
+
+  constructor(message: string = '서버 내부 에러가 발생했습니다', originalError: Error | null = null) {
+    let errorMessage = message;
+
+    // 프로덕션에서는 상세 에러 숨김
+    if (process.env.NODE_ENV === 'production' && originalError) {
+      errorMessage = '서버 내부 에러가 발생했습니다';
+    }
+
+    super(errorMessage, 500, 'INTERNAL_ERROR', null);
+    this.originalError = originalError;
+  }
+
+  toJSON() {
+    const json = super.toJSON();
+
+    // 개발 환경에서만 원본 에러 정보 포함
+    if (process.env.NODE_ENV === 'development' && this.originalError) {
+      json.error.originalError = {
+        message: this.originalError.message,
+        stack: this.originalError.stack,
+      };
+    }
+
+    return json;
+  }
+}
+
+/**
+ * Unauthorized Error (401 Unauthorized)
+ * 인증 에러
+ */
+export class UnauthorizedError extends AppError {
+  constructor(message: string = '인증이 필요합니다.') {
+    super(message, 401, 'UNAUTHORIZED', null);
+  }
+}
+
+/**
+ * Forbidden Error (403 Forbidden)
+ * 권한 에러
+ */
+export class ForbiddenError extends AppError {
+  constructor(message: string = '권한이 없습니다.') {
+    super(message, 403, 'FORBIDDEN', null);
+  }
+}
+
+/**
+ * Conflict Error (409 Conflict)
+ * 충돌 에러
+ */
+export class ConflictError extends AppError {
   existingId?: number;
 
   constructor(message: string, existingId?: number) {
-    super(message, 409);
+    super(message, 409, 'CONFLICT', null);
     this.existingId = existingId;
   }
 }
 
 /**
- * 401 Unauthorized - Authentication required
+ * Check if an error is an operational error
+ * 에러가 운영 에러인지 확인
  */
-export class UnauthorizedError extends ApiError {
-  constructor(message: string = '인증이 필요합니다.') {
-    super(message, 401);
+export function isOperationalError(error: any): boolean {
+  if (error instanceof AppError) {
+    return error.isOperational === true;
   }
+  return false;
 }
