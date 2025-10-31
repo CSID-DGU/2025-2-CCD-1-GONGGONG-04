@@ -24,6 +24,10 @@ const prisma = new PrismaClient();
 const TIMEZONE = 'Asia/Seoul';
 const CLOSING_SOON_THRESHOLD_MINUTES = 30;
 
+// Set charset to utf8mb4 for all connections
+prisma.$executeRawUnsafe('SET NAMES utf8mb4').catch(() => {});
+// Prisma automatically handles disconnection on process exit
+
 /**
  * Operating status enum
  */
@@ -94,19 +98,40 @@ export interface OperatingStatusResponse {
  */
 export async function getOperatingHours(centerId: number): Promise<OperatingHour[]> {
   try {
-    const result = await prisma.$queryRaw<Array<{ weekly_hours: string }>>`
-      SELECT weekly_hours
-      FROM v_center_operating_status
+    // Set charset to utf8mb4 before query
+    await prisma.$executeRawUnsafe('SET NAMES utf8mb4');
+
+    // Query directly from table instead of view to avoid JSON_ARRAYAGG charset issues
+    const hours = await prisma.$queryRaw<Array<{
+      day_of_week: number;
+      open_time: string | null;
+      close_time: string | null;
+      is_open: number;
+    }>>`
+      SELECT
+        day_of_week,
+        TIME_FORMAT(open_time, '%H:%i') as open_time,
+        TIME_FORMAT(close_time, '%H:%i') as close_time,
+        is_open
+      FROM center_operating_hours
       WHERE center_id = ${centerId}
-      LIMIT 1
+      ORDER BY day_of_week ASC
     `;
 
-    if (!result || result.length === 0) {
+    if (!hours || hours.length === 0) {
       return [];
     }
 
-    const weeklyHours = JSON.parse(result[0].weekly_hours);
-    return Array.isArray(weeklyHours) ? weeklyHours : [];
+    // Manually construct the response with day names
+    const dayNames = ['일요일', '월요일', '화요일', '수요일', '목요일', '금요일', '토요일'];
+
+    return hours.map(hour => ({
+      day_of_week: hour.day_of_week,
+      day_name: dayNames[hour.day_of_week],
+      open_time: hour.open_time || '00:00',
+      close_time: hour.close_time || '00:00',
+      is_open: hour.is_open === 1
+    }));
   } catch (error) {
     console.error('[getOperatingHours] Error:', error);
     return [];
@@ -127,6 +152,9 @@ export async function getHolidays(
   endDate?: Date
 ): Promise<Holiday[]> {
   try {
+    // Set charset to utf8mb4 before query
+    await prisma.$executeRawUnsafe('SET NAMES utf8mb4');
+
     const end = endDate || addDays(startDate, 14);
     const startDateStr = format(startDate, 'yyyy-MM-dd');
     const endDateStr = format(end, 'yyyy-MM-dd');
@@ -187,6 +215,9 @@ export async function calculateNextOpen(
   currentDate: Date
 ): Promise<{ date: string | null; day_name: string | null; open_time: string | null }> {
   try {
+    // Set charset to utf8mb4 before query
+    await prisma.$executeRawUnsafe('SET NAMES utf8mb4');
+
     const currentDateStr = format(currentDate, 'yyyy-MM-dd');
 
     const result = await prisma.$queryRaw<Array<{ next_open: string | null }>>`

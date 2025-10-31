@@ -46,6 +46,7 @@ const baseProgram: Program = {
 export const Default: Story = {
   args: {
     program: baseProgram,
+    onClick: () => {},
   },
 };
 
@@ -64,6 +65,7 @@ export const OnlineFree: Story = {
       capacity: 15,
       duration_minutes: 60,
     },
+    onClick: () => {},
   },
 };
 
@@ -83,6 +85,7 @@ export const OnlinePaid: Story = {
       capacity: 1,
       duration_minutes: 50,
     },
+    onClick: () => {},
   },
 };
 
@@ -99,6 +102,7 @@ export const WithoutDetails: Story = {
       capacity: null,
       duration_minutes: null,
     },
+    onClick: () => {},
   },
 };
 
@@ -112,6 +116,7 @@ export const LongProgramName: Story = {
       program_name:
         '직장 내 스트레스 완화 및 정신건강 증진을 위한 종합적인 상담 프로그램 (8주 과정)',
     },
+    onClick: () => {},
   },
 };
 
@@ -121,6 +126,7 @@ export const LongProgramName: Story = {
 export const Clickable: Story = {
   args: {
     program: baseProgram,
+    onClick: () => {},
   },
   parameters: {
     docs: {

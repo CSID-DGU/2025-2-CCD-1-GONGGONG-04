@@ -21,14 +21,20 @@ export type OperatingStatus =
  * 운영 상태 API 응답
  */
 export interface OperatingStatusResponse {
-  centerId: number;
-  centerName: string;
-  status: OperatingStatus;
-  message: string;
-  currentTime: string;
-  nextOpenDate: string | null;
-  operatingHours: OperatingHour[];
-  holidays: Holiday[];
+  center_id: number;
+  center_name: string;
+  current_status: {
+    status: OperatingStatus;
+    message: string;
+  };
+  current_time: string;
+  next_open: {
+    date: string;
+    day_name: string;
+    open_time: string | null;
+  } | null;
+  weekly_hours: OperatingHour[];
+  upcoming_holidays: Holiday[];
 }
 
 /**

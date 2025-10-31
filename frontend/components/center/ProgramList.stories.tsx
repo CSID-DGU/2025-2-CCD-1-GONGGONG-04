@@ -89,6 +89,7 @@ export const Default: Story = {
   args: {
     programs: samplePrograms.slice(0, 4),
     hasData: true,
+    onProgramClick: () => {},
   },
 };
 
@@ -113,6 +114,7 @@ export const FivePrograms: Story = {
       },
     ],
     hasData: true,
+    onProgramClick: () => {},
   },
 };
 
@@ -173,6 +175,7 @@ export const MoreThanFive: Story = {
       },
     ],
     hasData: true,
+    onProgramClick: () => {},
   },
 };
 
@@ -183,6 +186,7 @@ export const Empty: Story = {
   args: {
     programs: [],
     hasData: false,
+    onProgramClick: () => {},
   },
 };
 
@@ -193,6 +197,7 @@ export const SingleProgram: Story = {
   args: {
     programs: [samplePrograms[0]],
     hasData: true,
+    onProgramClick: () => {},
   },
 };
 
@@ -214,6 +219,7 @@ export const ExpandedView: Story = {
       duration_minutes: 60,
     })),
     hasData: true,
+    onProgramClick: () => {},
   },
   parameters: {
     docs: {

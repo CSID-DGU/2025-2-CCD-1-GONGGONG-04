@@ -38,7 +38,7 @@ services:
       - NODE_ENV=development
       - PORT=8080
       - HOST=0.0.0.0
-      - DATABASE_URL=mysql://mindconnect_user:mindconnect_pass@mysql:3306/mindconnect
+      - DATABASE_URL=mysql://mindconnect_user:mindconnect_pass@mysql:3306/mindconnect?charset=utf8mb4
       - REDIS_URL=redis://redis:6379
       - JWT_SECRET=dev_jwt_secret_change_in_production
       - CORS_ORIGIN=http://localhost:3000
@@ -65,6 +65,7 @@ services:
   mysql:
     image: mysql:8.0
     container_name: mindconnect-mysql-dev
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
     environment:
       - MYSQL_ROOT_PASSWORD=root_password_change_me
       - MYSQL_DATABASE=mindconnect
@@ -74,6 +75,7 @@ services:
       - "3307:3306"
     volumes:
       - mysql_data_dev:/var/lib/mysql
+      - ./mysql-utf8.cnf:/etc/mysql/conf.d/utf8.cnf:ro
     networks:
       - mindconnect-network
     restart: unless-stopped

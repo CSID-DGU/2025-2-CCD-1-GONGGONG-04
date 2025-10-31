@@ -13,7 +13,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { ReviewCard } from './ReviewCard';
 import { EmptyReviews } from './EmptyReviews';
 import { useReviews } from '@/hooks/useReviews';
-import type { Review, ReactionType, SortOption } from '@/types/review';
+import type { Review, ReactionType, SortOption, ReviewsResponse } from '@/types/review';
 
 export interface ReviewListProps {
   centerId: number;
@@ -57,7 +57,7 @@ export function ReviewList({
   }
 
   // Get all reviews from pages
-  const allReviews = data?.pages.flatMap((page) => page.reviews) || [];
+  const allReviews = data?.pages.flatMap((page: ReviewsResponse) => page.reviews) || [];
 
   // Empty state
   if (allReviews.length === 0) {

@@ -12,7 +12,8 @@ import type { SortOption } from '@/types/review';
 export function useReviews(centerId: number, sortBy: SortOption = 'latest', limit: number = 10) {
   return useInfiniteQuery({
     queryKey: ['reviews', centerId, sortBy, limit],
-    queryFn: ({ pageParam = 1 }) => fetchReviews(centerId, sortBy, pageParam, limit),
+    queryFn: ({ pageParam = 1 }) => fetchReviews(centerId, sortBy, pageParam as number, limit),
+    initialPageParam: 1,
     getNextPageParam: (lastPage) => {
       if (lastPage.pagination.has_next) {
         return lastPage.pagination.current_page + 1;
