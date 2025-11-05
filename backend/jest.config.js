@@ -19,5 +19,9 @@ module.exports = {
   transform: {
     '^.+\\.ts$': 'ts-jest'
   },
-  moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json', 'node']
+  moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json', 'node'],
+  // Mock faker to avoid ES module issues in Jest
+  moduleNameMapper: {
+    '^@faker-js/faker$': '<rootDir>/tests/__mocks__/faker.js'
+  }
 };

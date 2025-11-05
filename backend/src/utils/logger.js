@@ -23,7 +23,7 @@ const logFormat = winston.format.combine(
   winston.format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
   winston.format.errors({ stack: true }),
   winston.format.splat(),
-  winston.format.json()
+  winston.format.json(),
 );
 
 // Console format for development
@@ -39,7 +39,7 @@ const consoleFormat = winston.format.combine(
     }
 
     return msg;
-  })
+  }),
 );
 
 // Create transports
@@ -49,7 +49,7 @@ const transports = [];
 transports.push(
   new winston.transports.Console({
     format: process.env.NODE_ENV === 'production' ? logFormat : consoleFormat,
-  })
+  }),
 );
 
 // File transports (production only)
@@ -59,7 +59,7 @@ if (process.env.NODE_ENV === 'production') {
     new winston.transports.File({
       filename: path.join(logsDir, 'combined.log'),
       format: logFormat,
-    })
+    }),
   );
 
   // Error log file (errors only)
@@ -68,7 +68,7 @@ if (process.env.NODE_ENV === 'production') {
       filename: path.join(logsDir, 'error.log'),
       level: 'error',
       format: logFormat,
-    })
+    }),
   );
 }
 

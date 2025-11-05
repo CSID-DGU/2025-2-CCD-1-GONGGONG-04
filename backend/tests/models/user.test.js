@@ -2,7 +2,7 @@ const {
   getPrismaClient,
   cleanupDatabase,
   closePrismaConnection,
-  createTestUser
+  createTestUser,
 } = require('../helpers/prisma');
 
 describe('User Model Tests', () => {
@@ -30,11 +30,11 @@ describe('User Model Tests', () => {
         gender: 'M',
         userType: 'GENERAL',
         status: 'ACTIVE',
-        emailVerified: true
+        emailVerified: true,
       };
 
       const user = await prisma.user.create({
-        data: userData
+        data: userData,
       });
 
       expect(user).toBeDefined();
@@ -69,11 +69,11 @@ describe('User Model Tests', () => {
         status: 'ACTIVE',
         emailVerified: false,
         phone: '010-1234-5678',
-        birthYear: 1990
+        birthYear: 1990,
       };
 
       const user = await prisma.user.create({
-        data: userData
+        data: userData,
       });
 
       expect(user.phone).toBe(userData.phone);
@@ -85,9 +85,9 @@ describe('User Model Tests', () => {
       await expect(
         prisma.user.create({
           data: {
-            email: 'incomplete@example.com'
+            email: 'incomplete@example.com',
             // missing required fields
-          }
+          },
         })
       ).rejects.toThrow();
     });
@@ -97,9 +97,7 @@ describe('User Model Tests', () => {
 
       await createTestUser({ email });
 
-      await expect(
-        createTestUser({ email })
-      ).rejects.toThrow();
+      await expect(createTestUser({ email })).rejects.toThrow();
     });
   });
 
@@ -108,7 +106,7 @@ describe('User Model Tests', () => {
       const createdUser = await createTestUser();
 
       const foundUser = await prisma.user.findUnique({
-        where: { id: createdUser.id }
+        where: { id: createdUser.id },
       });
 
       expect(foundUser).toBeDefined();
@@ -121,7 +119,7 @@ describe('User Model Tests', () => {
       await createTestUser({ email });
 
       const foundUser = await prisma.user.findUnique({
-        where: { email }
+        where: { email },
       });
 
       expect(foundUser).toBeDefined();
@@ -130,7 +128,7 @@ describe('User Model Tests', () => {
 
     test('should return null for non-existent user', async () => {
       const user = await prisma.user.findUnique({
-        where: { id: 999999 }
+        where: { id: 999999 },
       });
 
       expect(user).toBeNull();
@@ -152,7 +150,7 @@ describe('User Model Tests', () => {
       await createTestUser({ email: 'deleted@example.com', status: 'DELETED' });
 
       const activeUsers = await prisma.user.findMany({
-        where: { status: 'ACTIVE' }
+        where: { status: 'ACTIVE' },
       });
 
       expect(activeUsers).toHaveLength(1);
@@ -167,7 +165,7 @@ describe('User Model Tests', () => {
 
       const updatedUser = await prisma.user.update({
         where: { id: user.id },
-        data: { nickname: newNickname }
+        data: { nickname: newNickname },
       });
 
       expect(updatedUser.nickname).toBe(newNickname);
@@ -179,7 +177,7 @@ describe('User Model Tests', () => {
 
       const updatedUser = await prisma.user.update({
         where: { id: user.id },
-        data: { status: 'INACTIVE' }
+        data: { status: 'INACTIVE' },
       });
 
       expect(updatedUser.status).toBe('INACTIVE');
@@ -194,8 +192,8 @@ describe('User Model Tests', () => {
           nickname: 'UpdatedNickname',
           phone: '010-9999-9999',
           emailVerified: true,
-          birthYear: 1995
-        }
+          birthYear: 1995,
+        },
       });
 
       expect(updatedUser.nickname).toBe('UpdatedNickname');
@@ -208,7 +206,7 @@ describe('User Model Tests', () => {
       await expect(
         prisma.user.update({
           where: { id: 999999 },
-          data: { nickname: 'ShouldFail' }
+          data: { nickname: 'ShouldFail' },
         })
       ).rejects.toThrow();
     });
@@ -219,13 +217,13 @@ describe('User Model Tests', () => {
       const user = await createTestUser();
 
       const deletedUser = await prisma.user.delete({
-        where: { id: user.id }
+        where: { id: user.id },
       });
 
       expect(deletedUser.id).toBe(user.id);
 
       const foundUser = await prisma.user.findUnique({
-        where: { id: user.id }
+        where: { id: user.id },
       });
 
       expect(foundUser).toBeNull();
@@ -234,7 +232,7 @@ describe('User Model Tests', () => {
     test('should fail to delete non-existent user', async () => {
       await expect(
         prisma.user.delete({
-          where: { id: 999999 }
+          where: { id: 999999 },
         })
       ).rejects.toThrow();
     });
@@ -247,9 +245,9 @@ describe('User Model Tests', () => {
       const result = await prisma.user.deleteMany({
         where: {
           email: {
-            contains: 'delete'
-          }
-        }
+            contains: 'delete',
+          },
+        },
       });
 
       expect(result.count).toBe(3);
@@ -272,13 +270,13 @@ describe('User Model Tests', () => {
               addressSido: 'Seoul',
               addressSigungu: 'Gangnam',
               ageGroup: 'AGE_30s',
-              preferOnline: false
-            }
-          }
+              preferOnline: false,
+            },
+          },
         },
         include: {
-          profile: true
-        }
+          profile: true,
+        },
       });
 
       expect(user.profile).toBeDefined();
@@ -301,15 +299,15 @@ describe('User Model Tests', () => {
             create: {
               addressSido: 'Busan',
               addressSigungu: 'Haeundae',
-              ageGroup: 'AGE_20s'
-            }
-          }
-        }
+              ageGroup: 'AGE_20s',
+            },
+          },
+        },
       });
 
       const userWithProfile = await prisma.user.findUnique({
         where: { id: createdUser.id },
-        include: { profile: true }
+        include: { profile: true },
       });
 
       expect(userWithProfile.profile).toBeDefined();

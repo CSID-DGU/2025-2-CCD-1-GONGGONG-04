@@ -10,22 +10,23 @@
 import { Request, Response } from 'express';
 import { z } from 'zod';
 import { calculateOperatingStatus } from '../services/operatingStatus.service';
-import {
-  getCachedOperatingStatus,
-  cacheOperatingStatus
-} from '../utils/cache';
-import { format, parseISO, isValid } from 'date-fns';
+import { getCachedOperatingStatus, cacheOperatingStatus } from '../utils/cache';
+import { parseISO, isValid } from 'date-fns';
+import logger from '../utils/logger';
 
 /**
  * Validation schema for operating status request
  */
 const operatingStatusSchema = z.object({
   params: z.object({
-    id: z.string().regex(/^\d+$/, 'Center ID must be a positive integer')
+    id: z.string().regex(/^\d+$/, 'Center ID must be a positive integer'),
   }),
   query: z.object({
-    date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Date must be in YYYY-MM-DD format').optional()
-  })
+    date: z
+      .string()
+      .regex(/^\d{4}-\d{2}-\d{2}$/, 'Date must be in YYYY-MM-DD format')
+      .optional(),
+  }),
 });
 
 /**
@@ -55,13 +56,13 @@ export async function getOperatingStatus(req: Request, res: Response): Promise<v
     // Validate request
     const validation = operatingStatusSchema.safeParse({
       params: req.params,
-      query: req.query
+      query: req.query,
     });
 
     if (!validation.success) {
       const errors = validation.error.errors.map(err => ({
         field: err.path.join('.'),
-        message: err.message
+        message: err.message,
       }));
 
       res.status(400).json({
@@ -69,8 +70,8 @@ export async function getOperatingStatus(req: Request, res: Response): Promise<v
         error: {
           code: 'VALIDATION_ERROR',
           message: 'Invalid request parameters',
-          details: errors
-        }
+          details: errors,
+        },
       });
       return;
     }
@@ -90,8 +91,8 @@ export async function getOperatingStatus(req: Request, res: Response): Promise<v
           success: false,
           error: {
             code: 'INVALID_DATE',
-            message: 'Invalid date format. Use YYYY-MM-DD format.'
-          }
+            message: 'Invalid date format. Use YYYY-MM-DD format.',
+          },
         });
         return;
       }
@@ -108,54 +109,53 @@ export async function getOperatingStatus(req: Request, res: Response): Promise<v
     if (status) {
       // Cache hit
       const responseTime = Date.now() - startTime;
-      console.log(`[API] Operating status for center ${centerId} (cached): ${responseTime}ms`);
+      logger.info(`[API] Operating status for center ${centerId} (cached): ${responseTime}ms`);
 
       res.setHeader('X-Cache', 'HIT');
       res.setHeader('X-Response-Time', `${responseTime}ms`);
 
       res.status(200).json({
         success: true,
-        data: status
+        data: status,
       });
       return;
     }
 
     // Cache miss - calculate from database
-    console.log(`[API] Cache miss for center ${centerId}, calculating...`);
+    logger.info(`[API] Cache miss for center ${centerId}, calculating...`);
 
     status = await calculateOperatingStatus(centerId, targetDate);
 
     // Cache the result (don't wait for cache write)
     cacheOperatingStatus(centerId, status, undefined, dateKey).catch(err => {
-      console.error('[API] Failed to cache operating status:', err);
+      logger.error('[API] Failed to cache operating status:', err);
     });
 
     const responseTime = Date.now() - startTime;
-    console.log(`[API] Operating status for center ${centerId} (calculated): ${responseTime}ms`);
+    logger.info(`[API] Operating status for center ${centerId} (calculated): ${responseTime}ms`);
 
     res.setHeader('X-Cache', 'MISS');
     res.setHeader('X-Response-Time', `${responseTime}ms`);
 
     res.status(200).json({
       success: true,
-      data: status
+      data: status,
     });
-
-  } catch (error: any) {
+  } catch (error: unknown) {
     const responseTime = Date.now() - startTime;
-    console.error('[API] Operating status error:', error);
+    logger.error('[API] Operating status error:', error);
 
     res.setHeader('X-Response-Time', `${responseTime}ms`);
 
     // Handle specific error types
-    if (error.code === 'P2025') {
+    if (error && typeof error === 'object' && 'code' in error && error.code === 'P2025') {
       // Prisma record not found
       res.status(404).json({
         success: false,
         error: {
           code: 'CENTER_NOT_FOUND',
-          message: `Center with ID ${req.params.id} not found.`
-        }
+          message: `Center with ID ${req.params.id} not found.`,
+        },
       });
       return;
     }
@@ -166,8 +166,10 @@ export async function getOperatingStatus(req: Request, res: Response): Promise<v
       error: {
         code: 'INTERNAL_ERROR',
         message: 'An error occurred while calculating operating status.',
-        ...(process.env.NODE_ENV === 'development' && { details: error.message })
-      }
+        ...(process.env.NODE_ENV === 'development' && {
+          details: error instanceof Error ? error.message : String(error),
+        }),
+      },
     });
   }
 }
@@ -195,8 +197,8 @@ export async function invalidateOperatingStatusCache(req: Request, res: Response
         success: false,
         error: {
           code: 'INVALID_CENTER_ID',
-          message: 'Center ID must be a positive integer'
-        }
+          message: 'Center ID must be a positive integer',
+        },
       });
       return;
     }
@@ -208,19 +210,18 @@ export async function invalidateOperatingStatusCache(req: Request, res: Response
       success: true,
       data: {
         centerId,
-        invalidated
-      }
+        invalidated,
+      },
     });
-
-  } catch (error: any) {
-    console.error('[API] Cache invalidation error:', error);
+  } catch (error: unknown) {
+    logger.error('[API] Cache invalidation error:', error);
 
     res.status(500).json({
       success: false,
       error: {
         code: 'INTERNAL_ERROR',
-        message: 'An error occurred while invalidating cache.'
-      }
+        message: 'An error occurred while invalidating cache.',
+      },
     });
   }
 }
@@ -228,5 +229,5 @@ export async function invalidateOperatingStatusCache(req: Request, res: Response
 // CommonJS export for compatibility
 module.exports = {
   getOperatingStatus,
-  invalidateOperatingStatusCache
+  invalidateOperatingStatusCache,
 };

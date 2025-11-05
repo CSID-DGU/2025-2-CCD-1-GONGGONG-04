@@ -14,7 +14,7 @@ describe('GET /api/v1/centers/:id/programs', () => {
         centerType: '정신건강복지센터',
         roadAddress: '서울특별시 테스트구 테스트로 456',
         latitude: 37.5665,
-        longitude: 126.9780,
+        longitude: 126.978,
         isActive: true,
       },
     });
@@ -183,9 +183,7 @@ describe('GET /api/v1/centers/:id/programs', () => {
         .expect(200);
 
       expect(response.body.data.programs).toHaveLength(2);
-      expect(response.body.data.programs.every(
-        (p: any) => p.target_group === '직장인'
-      )).toBe(true);
+      expect(response.body.data.programs.every((p: any) => p.target_group === '직장인')).toBe(true);
     });
 
     it('should filter by is_online', async () => {
@@ -195,9 +193,9 @@ describe('GET /api/v1/centers/:id/programs', () => {
         .expect(200);
 
       expect(response.body.data.programs).toHaveLength(3);
-      expect(response.body.data.programs.every(
-        (p: any) => p.is_online_available === true
-      )).toBe(true);
+      expect(response.body.data.programs.every((p: any) => p.is_online_available === true)).toBe(
+        true
+      );
     });
 
     it('should filter by is_free', async () => {

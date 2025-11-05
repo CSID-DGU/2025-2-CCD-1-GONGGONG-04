@@ -150,7 +150,7 @@ describe('Encryption Utility', () => {
         'Long text: ' + 'x'.repeat(500),
       ];
 
-      testCases.forEach((plaintext) => {
+      testCases.forEach(plaintext => {
         const encrypted = encrypt(plaintext);
         const decrypted = decrypt(encrypted);
         expect(decrypted).toBe(plaintext);

@@ -12,11 +12,7 @@
 
 const request = require('supertest');
 const app = require('../../src/app');
-const {
-  getPrismaClient,
-  cleanupDatabase,
-  closePrismaConnection,
-} = require('../helpers/prisma');
+const { getPrismaClient, cleanupDatabase, closePrismaConnection } = require('../helpers/prisma');
 
 let prisma = null;
 let createdTemplateId = null;
@@ -110,7 +106,7 @@ async function seedE2ETestData() {
       roadAddress: '서울특별시 중구 세종대로 110',
       phoneNumber: '02-3444-9934',
       latitude: 37.5665,
-      longitude: 126.9780,
+      longitude: 126.978,
       isActive: true,
       staff: {
         create: [
@@ -197,7 +193,7 @@ describe('E2E: Complete Recommendation Flow', () => {
       sessionId: 'e2e-test-session-123',
       location: {
         latitude: 37.5665,
-        longitude: 126.9780,
+        longitude: 126.978,
       },
       filters: {
         maxDistance: 50,
@@ -236,8 +232,12 @@ describe('E2E: Complete Recommendation Flow', () => {
 
     console.log('✓ E2E Test 1: Full flow completed successfully');
     console.log(`  - Template retrieved: ${templateResponse.body.data.templateName}`);
-    console.log(`  - Assessment submitted: Score ${assessmentResponse.body.data.totalScore}, Severity ${assessmentResponse.body.data.severity}`);
-    console.log(`  - Recommendations received: ${recommendationResponse.body.data.totalCount} centers`);
+    console.log(
+      `  - Assessment submitted: Score ${assessmentResponse.body.data.totalScore}, Severity ${assessmentResponse.body.data.severity}`
+    );
+    console.log(
+      `  - Recommendations received: ${recommendationResponse.body.data.totalCount} centers`
+    );
   }, 10000); // 10 second timeout for E2E test
 
   // ============================================================================
@@ -249,7 +249,7 @@ describe('E2E: Complete Recommendation Flow', () => {
       sessionId: 'e2e-test-session-456',
       location: {
         latitude: 37.5665,
-        longitude: 126.9780,
+        longitude: 126.978,
       },
       filters: {
         maxDistance: 50,
@@ -270,7 +270,7 @@ describe('E2E: Complete Recommendation Flow', () => {
     const recommendations = response.body.data.recommendations;
     expect(recommendations.length).toBeGreaterThan(0);
 
-    recommendations.forEach((rec) => {
+    recommendations.forEach(rec => {
       expect(rec).toHaveProperty('centerId');
       expect(rec).toHaveProperty('centerName');
       expect(rec).toHaveProperty('totalScore');

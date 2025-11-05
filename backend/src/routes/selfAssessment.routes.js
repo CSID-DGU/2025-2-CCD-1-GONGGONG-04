@@ -15,7 +15,7 @@ const selfAssessmentController = require('../controllers/selfAssessmentControlle
 
 /**
  * @swagger
- * /api/v1/self-assessments/templates/{templateId}:
+ * /self-assessments/templates/{templateId}:
  *   get:
  *     summary: Get self-assessment template by ID
  *     description: Retrieve a self-assessment template with questions and scoring rules
@@ -88,7 +88,7 @@ router.get('/templates/:templateId', selfAssessmentController.getTemplate);
 
 /**
  * @swagger
- * /api/v1/self-assessments/submit:
+ * /self-assessments/submit:
  *   post:
  *     summary: Submit self-assessment answers
  *     description: Submit user's answers to a self-assessment template and receive scored results

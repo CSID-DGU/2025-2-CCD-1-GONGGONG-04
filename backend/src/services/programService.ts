@@ -65,7 +65,7 @@ interface ProgramResponse {
 async function getCenterPrograms(
   centerId: number,
   filters: ProgramFilters = {},
-  pagination: Pagination = {}
+  pagination: Pagination = {},
 ): Promise<ProgramResponse> {
   try {
     const { target_group, is_online, is_free } = filters;
@@ -74,7 +74,13 @@ async function getCenterPrograms(
     const skip = (page - 1) * limit;
 
     // Build where clause
-    const where: any = {
+    const where: {
+      centerId: bigint;
+      isActive: boolean;
+      targetGroup?: string;
+      isOnlineAvailable?: boolean;
+      isFree?: boolean;
+    } = {
       centerId: BigInt(centerId),
       isActive: true,
     };
@@ -107,9 +113,7 @@ async function getCenterPrograms(
           capacity: true,
           durationMinutes: true,
         },
-        orderBy: [
-          { createdAt: 'desc' },
-        ],
+        orderBy: [{ createdAt: 'desc' }],
         take: limit,
         skip,
       }),
@@ -117,7 +121,7 @@ async function getCenterPrograms(
     ]);
 
     // Transform the data to match API response format
-    const programItems: ProgramItem[] = programs.map((item: any) => ({
+    const programItems: ProgramItem[] = programs.map((item) => ({
       id: Number(item.id),
       program_name: item.programName,
       program_type: item.programType,

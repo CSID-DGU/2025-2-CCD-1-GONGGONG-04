@@ -9,10 +9,9 @@
  */
 
 import { Request, Response, NextFunction } from 'express';
-import { AppError, ValidationError, InternalError, isOperationalError } from '../utils/errors';
-
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const config = require('../config');
+import { AppError, InternalError, isOperationalError } from '../utils/errors';
+import config from '../config';
+import logger from '../utils/logger';
 
 /**
  * Global error handler middleware
@@ -22,7 +21,7 @@ export const errorHandler = (
   err: Error | AppError,
   req: Request,
   res: Response,
-  _next: NextFunction
+  _next: NextFunction,
 ): void => {
   // 1. 운영 에러 (Operational Error) 처리
   if (isOperationalError(err)) {
@@ -30,7 +29,7 @@ export const errorHandler = (
 
     // 개발 환경에서는 콘솔에 로그 출력
     if (config.env === 'development') {
-      console.error('[Operational Error]', {
+      logger.error('[Operational Error]', {
         code: appError.code,
         message: appError.message,
         statusCode: appError.statusCode,
@@ -43,7 +42,11 @@ export const errorHandler = (
     const response = appError.toJSON();
 
     // InternalError의 경우 개발 환경에서만 originalError 포함
-    if (appError instanceof InternalError && config.env === 'development' && appError.originalError) {
+    if (
+      appError instanceof InternalError &&
+      config.env === 'development' &&
+      appError.originalError
+    ) {
       response.error.originalError = {
         message: appError.originalError.message,
         stack: appError.originalError.stack,
@@ -56,7 +59,7 @@ export const errorHandler = (
 
   // 2. 프로그래밍 에러 (Programming Error) 처리
   // 예상하지 못한 에러 (버그, 타입 에러, 참조 에러 등)
-  console.error('[Programming Error - Unexpected]', {
+  logger.error('[Programming Error - Unexpected]', {
     name: err.name,
     message: err.message,
     stack: err.stack,

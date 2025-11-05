@@ -46,7 +46,7 @@ async function getCenterStaff(centerId: number): Promise<StaffResponse> {
     });
 
     // Transform the data to match API response format
-    const staffItems: StaffItem[] = staff.map((item: any) => ({
+    const staffItems: StaffItem[] = staff.map((item) => ({
       staff_type: item.staffType,
       staff_count: item.staffCount,
       description: item.description,

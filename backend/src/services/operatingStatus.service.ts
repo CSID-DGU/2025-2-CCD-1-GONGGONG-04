@@ -16,7 +16,7 @@ import {
   addDays,
   startOfDay,
   setHours,
-  setMinutes
+  setMinutes,
 } from 'date-fns';
 import { toZonedTime } from 'date-fns-tz';
 
@@ -37,7 +37,7 @@ export enum OperatingStatus {
   CLOSED = 'CLOSED',
   HOLIDAY = 'HOLIDAY',
   TEMP_CLOSED = 'TEMP_CLOSED',
-  NO_INFO = 'NO_INFO'
+  NO_INFO = 'NO_INFO',
 }
 
 /**
@@ -49,7 +49,7 @@ const STATUS_CONFIG = {
   [OperatingStatus.CLOSED]: { color: 'gray', priority: 3 },
   [OperatingStatus.HOLIDAY]: { color: 'red', priority: 2 },
   [OperatingStatus.TEMP_CLOSED]: { color: 'red', priority: 1 },
-  [OperatingStatus.NO_INFO]: { color: 'gray', priority: 0 }
+  [OperatingStatus.NO_INFO]: { color: 'gray', priority: 0 },
 };
 
 /**
@@ -102,12 +102,14 @@ export async function getOperatingHours(centerId: number): Promise<OperatingHour
     await prisma.$executeRawUnsafe('SET NAMES utf8mb4');
 
     // Query directly from table instead of view to avoid JSON_ARRAYAGG charset issues
-    const hours = await prisma.$queryRaw<Array<{
-      day_of_week: number;
-      open_time: string | null;
-      close_time: string | null;
-      is_open: number;
-    }>>`
+    const hours = await prisma.$queryRaw<
+      Array<{
+        day_of_week: number;
+        open_time: string | null;
+        close_time: string | null;
+        is_open: number;
+      }>
+    >`
       SELECT
         day_of_week,
         TIME_FORMAT(open_time, '%H:%i') as open_time,
@@ -130,7 +132,7 @@ export async function getOperatingHours(centerId: number): Promise<OperatingHour
       day_name: dayNames[hour.day_of_week],
       open_time: hour.open_time || '00:00',
       close_time: hour.close_time || '00:00',
-      is_open: hour.is_open === 1
+      is_open: hour.is_open === 1,
     }));
   } catch (error) {
     console.error('[getOperatingHours] Error:', error);
@@ -149,7 +151,7 @@ export async function getOperatingHours(centerId: number): Promise<OperatingHour
 export async function getHolidays(
   centerId: number,
   startDate: Date,
-  endDate?: Date
+  endDate?: Date,
 ): Promise<Holiday[]> {
   try {
     // Set charset to utf8mb4 before query
@@ -212,7 +214,7 @@ function getDayName(dayOfWeek: number): string {
  */
 export async function calculateNextOpen(
   centerId: number,
-  currentDate: Date
+  currentDate: Date,
 ): Promise<{ date: string | null; day_name: string | null; open_time: string | null }> {
   try {
     // Set charset to utf8mb4 before query
@@ -237,7 +239,7 @@ export async function calculateNextOpen(
     return {
       date: dateStr,
       day_name: getDayName(dayOfWeek),
-      open_time: timeStr.substring(0, 5) // "09:00"
+      open_time: timeStr.substring(0, 5), // "09:00"
     };
   } catch (error) {
     console.error('[calculateNextOpen] Error:', error);
@@ -262,7 +264,7 @@ export async function calculateNextOpen(
  */
 export async function calculateOperatingStatus(
   centerId: number,
-  targetDate: Date = new Date()
+  targetDate: Date = new Date(),
 ): Promise<OperatingStatusResponse> {
   const startTime = Date.now();
 
@@ -272,7 +274,7 @@ export async function calculateOperatingStatus(
   // 1. Fetch operating hours and holidays in parallel
   const [hours, holidays] = await Promise.all([
     getOperatingHours(centerId),
-    getHolidays(centerId, seoulTime)
+    getHolidays(centerId, seoulTime),
   ]);
 
   // 2. Check NO_INFO - No operating hours
@@ -283,11 +285,11 @@ export async function calculateOperatingStatus(
       current_status: {
         status: OperatingStatus.NO_INFO,
         message: '운영시간 정보가 없습니다',
-        status_color: STATUS_CONFIG[OperatingStatus.NO_INFO].color
+        status_color: STATUS_CONFIG[OperatingStatus.NO_INFO].color,
       },
       next_open: nextOpen,
       weekly_hours: [],
-      upcoming_holidays: holidays.slice(0, 5)
+      upcoming_holidays: holidays.slice(0, 5),
     };
   }
 
@@ -311,11 +313,11 @@ export async function calculateOperatingStatus(
         current_status: {
           status: OperatingStatus.TEMP_CLOSED,
           message: `임시휴무 (${todayHoliday.holiday_name})`,
-          status_color: STATUS_CONFIG[OperatingStatus.TEMP_CLOSED].color
+          status_color: STATUS_CONFIG[OperatingStatus.TEMP_CLOSED].color,
         },
         next_open: nextOpen,
         weekly_hours: hours,
-        upcoming_holidays: holidays.slice(0, 5)
+        upcoming_holidays: holidays.slice(0, 5),
       };
     }
 
@@ -323,11 +325,11 @@ export async function calculateOperatingStatus(
       current_status: {
         status: OperatingStatus.HOLIDAY,
         message: `휴무 (${todayHoliday.holiday_name})`,
-        status_color: STATUS_CONFIG[OperatingStatus.HOLIDAY].color
+        status_color: STATUS_CONFIG[OperatingStatus.HOLIDAY].color,
       },
       next_open: nextOpen,
       weekly_hours: hours,
-      upcoming_holidays: holidays.slice(0, 5)
+      upcoming_holidays: holidays.slice(0, 5),
     };
   }
 
@@ -339,11 +341,11 @@ export async function calculateOperatingStatus(
       current_status: {
         status: OperatingStatus.HOLIDAY,
         message: '정기휴무',
-        status_color: STATUS_CONFIG[OperatingStatus.HOLIDAY].color
+        status_color: STATUS_CONFIG[OperatingStatus.HOLIDAY].color,
       },
       next_open: nextOpen,
       weekly_hours: hours,
-      upcoming_holidays: holidays.slice(0, 5)
+      upcoming_holidays: holidays.slice(0, 5),
     };
   }
 
@@ -355,11 +357,11 @@ export async function calculateOperatingStatus(
       current_status: {
         status: OperatingStatus.NO_INFO,
         message: '운영시간 정보가 없습니다',
-        status_color: STATUS_CONFIG[OperatingStatus.NO_INFO].color
+        status_color: STATUS_CONFIG[OperatingStatus.NO_INFO].color,
       },
       next_open: nextOpen,
       weekly_hours: hours,
-      upcoming_holidays: holidays.slice(0, 5)
+      upcoming_holidays: holidays.slice(0, 5),
     };
   }
 
@@ -381,11 +383,11 @@ export async function calculateOperatingStatus(
         current_status: {
           status: OperatingStatus.CLOSING_SOON,
           message: `곧 마감 (~${todayHours.close_time})`,
-          status_color: STATUS_CONFIG[OperatingStatus.CLOSING_SOON].color
+          status_color: STATUS_CONFIG[OperatingStatus.CLOSING_SOON].color,
         },
         next_open: null,
         weekly_hours: hours,
-        upcoming_holidays: holidays.slice(0, 5)
+        upcoming_holidays: holidays.slice(0, 5),
       };
     }
 
@@ -397,11 +399,11 @@ export async function calculateOperatingStatus(
       current_status: {
         status: OperatingStatus.OPEN,
         message: `운영 중 (~${todayHours.close_time})`,
-        status_color: STATUS_CONFIG[OperatingStatus.OPEN].color
+        status_color: STATUS_CONFIG[OperatingStatus.OPEN].color,
       },
       next_open: null,
       weekly_hours: hours,
-      upcoming_holidays: holidays.slice(0, 5)
+      upcoming_holidays: holidays.slice(0, 5),
     };
   }
 
@@ -413,13 +415,14 @@ export async function calculateOperatingStatus(
   return {
     current_status: {
       status: OperatingStatus.CLOSED,
-      message: nextOpen && nextOpen.date
-        ? `마감 (${nextOpen.day_name} ${nextOpen.open_time} 오픈)`
-        : '마감',
-      status_color: STATUS_CONFIG[OperatingStatus.CLOSED].color
+      message:
+        nextOpen && nextOpen.date
+          ? `마감 (${nextOpen.day_name} ${nextOpen.open_time} 오픈)`
+          : '마감',
+      status_color: STATUS_CONFIG[OperatingStatus.CLOSED].color,
     },
     next_open: nextOpen,
     weekly_hours: hours,
-    upcoming_holidays: holidays.slice(0, 5)
+    upcoming_holidays: holidays.slice(0, 5),
   };
 }

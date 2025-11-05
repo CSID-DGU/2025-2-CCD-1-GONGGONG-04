@@ -1,6 +1,14 @@
 // Test setup file
 require('dotenv').config({ path: '.env.local' });
 
+// Register ts-node to handle TypeScript imports at runtime
+require('ts-node').register({
+  transpileOnly: true,
+  compilerOptions: {
+    module: 'commonjs',
+  },
+});
+
 // Import app for testing
 const app = require('../src/app');
 
@@ -17,6 +25,6 @@ if (process.env.SUPPRESS_TEST_LOGS === 'true') {
     log: jest.fn(),
     debug: jest.fn(),
     info: jest.fn(),
-    warn: jest.fn()
+    warn: jest.fn(),
   };
 }

@@ -10,7 +10,7 @@
  */
 
 import { PrismaClient, Prisma } from '@prisma/client';
-import { NotFoundError } from '../utils/errors';
+import { NotFoundError, ConflictError, ForbiddenError } from '../utils/errors';
 
 const prisma = new PrismaClient();
 
@@ -134,7 +134,7 @@ async function calculateRatingDistribution(centerId: number): Promise<RatingDist
 
   const result: RatingDistribution = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 };
 
-  distribution.forEach((item) => {
+  distribution.forEach(item => {
     const rating = item.rating as 1 | 2 | 3 | 4 | 5;
     result[rating] = item._count.rating;
   });
@@ -151,7 +151,7 @@ async function calculateRatingDistribution(centerId: number): Promise<RatingDist
  */
 async function getUserReaction(
   reviewId: number,
-  userId: number
+  userId: number,
 ): Promise<'HELPFUL' | 'UNHELPFUL' | null> {
   const reaction = await prisma.reviewReaction.findFirst({
     where: {
@@ -185,7 +185,7 @@ async function getUserReaction(
  */
 export async function fetchReviews(
   centerId: number,
-  params: FetchReviewsParams
+  params: FetchReviewsParams,
 ): Promise<ReviewFetchResponse> {
   const { page, limit, sort, userId } = params;
 
@@ -247,16 +247,12 @@ export async function fetchReviews(
 
   // 5. Calculate is_my_review, my_reaction, and unhelpful_count for each review
   const reviewsWithUserInfo: ReviewWithUser[] = await Promise.all(
-    reviews.map(async (review) => {
+    reviews.map(async review => {
       const isMyReview = userId ? Number(review.userId) === userId : false;
-      const myReaction = userId
-        ? await getUserReaction(Number(review.id), userId)
-        : null;
+      const myReaction = userId ? await getUserReaction(Number(review.id), userId) : null;
 
       // Calculate unhelpful_count from reactions
-      const unhelpfulCount = review.reactions.filter(
-        (r) => r.reactionType === 'UNHELPFUL'
-      ).length;
+      const unhelpfulCount = review.reactions.filter(r => r.reactionType === 'UNHELPFUL').length;
 
       return {
         id: Number(review.id),
@@ -276,7 +272,7 @@ export async function fetchReviews(
         is_my_review: isMyReview,
         my_reaction: myReaction,
       };
-    })
+    }),
   );
 
   // 6. Calculate rating statistics
@@ -344,7 +340,7 @@ export interface UpdateReviewData {
  * @returns Updated avg_rating and review_count
  */
 async function recalculateCenterRating(
-  centerId: number
+  centerId: number,
 ): Promise<{ avgRating: number; reviewCount: number }> {
   const [avgRatingResult, reviewCount] = await Promise.all([
     prisma.review.aggregate({
@@ -400,7 +396,7 @@ async function recalculateCenterRating(
 export async function createReviewWithRatingUpdate(
   userId: number,
   centerId: number,
-  data: CreateReviewData
+  data: CreateReviewData,
 ): Promise<ReviewWithUser> {
   // 1. Verify center exists
   const center = await prisma.center.findUnique({
@@ -423,15 +419,11 @@ export async function createReviewWithRatingUpdate(
   });
 
   if (existingReview) {
-    const ConflictError = require('../utils/errors').ConflictError;
-    throw new ConflictError(
-      '이미 이 센터에 리뷰를 작성하셨습니다.',
-      Number(existingReview.id)
-    );
+    throw new ConflictError('이미 이 센터에 리뷰를 작성하셨습니다.', Number(existingReview.id));
   }
 
   // 3. Create review and update rating in transaction
-  const createdReview = await prisma.$transaction(async (tx) => {
+  const createdReview = await prisma.$transaction(async tx => {
     // Create review
     const review = await tx.review.create({
       data: {
@@ -508,10 +500,8 @@ export async function createReviewWithRatingUpdate(
 export async function updateReviewWithRatingUpdate(
   reviewId: number,
   userId: number,
-  data: UpdateReviewData
+  data: UpdateReviewData,
 ): Promise<ReviewWithUser> {
-  const { ForbiddenError } = require('../utils/errors');
-
   // 1. Fetch review and verify ownership
   const existingReview = await prisma.review.findUnique({
     where: { id: BigInt(reviewId) },
@@ -541,7 +531,7 @@ export async function updateReviewWithRatingUpdate(
   const now = new Date();
   const createdAt = new Date(existingReview.createdAt);
   const daysSinceCreation = Math.floor(
-    (now.getTime() - createdAt.getTime()) / (1000 * 60 * 60 * 24)
+    (now.getTime() - createdAt.getTime()) / (1000 * 60 * 60 * 24),
   );
 
   if (daysSinceCreation > 7) {
@@ -549,7 +539,7 @@ export async function updateReviewWithRatingUpdate(
   }
 
   // 3. Update review and rating in transaction
-  const updatedReview = await prisma.$transaction(async (tx) => {
+  const updatedReview = await prisma.$transaction(async tx => {
     // Update review
     const review = await tx.review.update({
       where: { id: BigInt(reviewId) },
@@ -591,9 +581,7 @@ export async function updateReviewWithRatingUpdate(
   });
 
   // 4. Calculate unhelpful_count
-  const unhelpfulCount = updatedReview.reactions.filter(
-    (r) => r.reactionType === 'UNHELPFUL'
-  ).length;
+  const unhelpfulCount = updatedReview.reactions.filter(r => r.reactionType === 'UNHELPFUL').length;
 
   // 5. Format response
   return {
@@ -633,10 +621,8 @@ export async function updateReviewWithRatingUpdate(
  */
 export async function deleteReviewWithRatingUpdate(
   reviewId: number,
-  userId: number
+  userId: number,
 ): Promise<void> {
-  const { ForbiddenError } = require('../utils/errors');
-
   // 1. Fetch review and verify ownership
   const existingReview = await prisma.review.findUnique({
     where: { id: BigInt(reviewId) },
@@ -661,7 +647,7 @@ export async function deleteReviewWithRatingUpdate(
   }
 
   // 2. Soft delete and update rating in transaction
-  await prisma.$transaction(async (tx) => {
+  await prisma.$transaction(async tx => {
     // Soft delete (no deletedAt field in schema, only status change)
     await tx.review.update({
       where: { id: BigInt(reviewId) },
@@ -704,7 +690,7 @@ export interface ReactionUpsertResponse {
 export async function upsertReaction(
   userId: number,
   reviewId: number,
-  reactionType: 'HELPFUL' | 'UNHELPFUL' | null
+  reactionType: 'HELPFUL' | 'UNHELPFUL' | null,
 ): Promise<ReactionUpsertResponse> {
   // 1. Verify review exists
   const review = await prisma.review.findUnique({

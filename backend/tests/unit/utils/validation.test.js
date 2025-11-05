@@ -90,8 +90,8 @@ describe('Validation Schemas', () => {
       expect(result.success).toBe(false);
     });
 
-    // Test 6: maxDistance가 50 초과 → 에러
-    test('should fail for maxDistance > 50', () => {
+    // Test 6: maxDistance가 100 초과 → 에러
+    test('should fail for maxDistance > 100', () => {
       const invalidRequest = {
         userId: 1,
         location: {
@@ -99,7 +99,7 @@ describe('Validation Schemas', () => {
           longitude: 126.978,
         },
         filters: {
-          maxDistance: 100,
+          maxDistance: 101,
         },
       };
 

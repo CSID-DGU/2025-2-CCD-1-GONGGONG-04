@@ -22,11 +22,7 @@ import { UnauthorizedError } from '../utils/errors';
  *
  * @throws UnauthorizedError if token is missing or invalid
  */
-export function authMiddleware(
-  req: Request,
-  res: Response,
-  next: NextFunction
-): void {
+export function authMiddleware(req: Request, res: Response, next: NextFunction): void {
   try {
     // 1. Extract token from Authorization header
     const authHeader = req.headers.authorization;
@@ -54,12 +50,12 @@ export function authMiddleware(
     }
 
     // 3. Attach user to request
-    (req as any).user = {
+    (req as { user?: { id: number } }).user = {
       id: userId,
     };
 
     next();
-  } catch (error) {
+  } catch (error: unknown) {
     if (error instanceof UnauthorizedError) {
       next(error);
     } else {

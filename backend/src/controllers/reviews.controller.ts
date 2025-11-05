@@ -17,7 +17,8 @@ import {
   deleteReviewWithRatingUpdate,
   upsertReaction,
 } from '../services/reviews.service';
-import { ValidationError, AppError } from '../utils/errors';
+import { ValidationError, AppError, ConflictError } from '../utils/errors';
+import logger from '../utils/logger';
 
 /**
  * Validation schema for GET /api/centers/:id/reviews
@@ -27,20 +28,9 @@ const getReviewsSchema = z.object({
     id: z.string().regex(/^\d+$/, 'Center ID must be a positive integer'),
   }),
   query: z.object({
-    page: z
-      .string()
-      .regex(/^\d+$/, 'Page must be a positive integer')
-      .optional()
-      .default('1'),
-    limit: z
-      .string()
-      .regex(/^\d+$/, 'Limit must be a positive integer')
-      .optional()
-      .default('10'),
-    sort: z
-      .enum(['latest', 'helpful', 'rating_desc', 'rating_asc'])
-      .optional()
-      .default('latest'),
+    page: z.string().regex(/^\d+$/, 'Page must be a positive integer').optional().default('1'),
+    limit: z.string().regex(/^\d+$/, 'Limit must be a positive integer').optional().default('10'),
+    sort: z.enum(['latest', 'helpful', 'rating_desc', 'rating_asc']).optional().default('latest'),
   }),
 });
 
@@ -153,11 +143,7 @@ const addReactionSchema = z.object({
  * @throws {ValidationError} 400 - Invalid request parameters
  * @throws {NotFoundError} 404 - Center not found
  */
-export async function getReviews(
-  req: Request,
-  res: Response,
-  next: NextFunction
-): Promise<void> {
+export async function getReviews(req: Request, res: Response, next: NextFunction): Promise<void> {
   const startTime = Date.now();
 
   try {
@@ -168,7 +154,7 @@ export async function getReviews(
     });
 
     if (!validation.success) {
-      const errors = validation.error.errors.map((err) => ({
+      const errors = validation.error.errors.map(err => ({
         field: err.path.join('.'),
         message: err.message,
       }));
@@ -178,15 +164,12 @@ export async function getReviews(
 
     const centerId = parseInt(req.params.id, 10);
     const page = parseInt((req.query.page as string) || '1', 10);
-    const limit = Math.min(
-      parseInt((req.query.limit as string) || '10', 10),
-      50
-    ); // Max 50 items per page
+    const limit = Math.min(parseInt((req.query.limit as string) || '10', 10), 50); // Max 50 items per page
     const sort = (req.query.sort as SortOption) || 'latest';
 
     // 2. Get authenticated user ID (optional)
     // Assuming JWT middleware sets req.user if authenticated
-    const userId = (req as any).user?.id as number | undefined;
+    const userId = (req as { user?: { id: number } }).user?.id as number | undefined;
 
     // 3. Fetch reviews from service
     const result = await fetchReviews(centerId, {
@@ -198,13 +181,11 @@ export async function getReviews(
 
     // 4. Send response
     const responseTime = Date.now() - startTime;
-    console.log(
-      `[API] GET /api/centers/${centerId}/reviews - ${responseTime}ms`
-    );
+    logger.info(`[API] GET /api/centers/${centerId}/reviews - ${responseTime}ms`);
 
     res.setHeader('X-Response-Time', `${responseTime}ms`);
     res.status(200).json(result);
-  } catch (error: any) {
+  } catch (error: unknown) {
     const responseTime = Date.now() - startTime;
     res.setHeader('X-Response-Time', `${responseTime}ms`);
 
@@ -237,11 +218,7 @@ export async function getReviews(
  * @throws {ConflictError} 409 - Duplicate review
  * @throws {NotFoundError} 404 - Center not found
  */
-export async function createReview(
-  req: Request,
-  res: Response,
-  next: NextFunction
-): Promise<void> {
+export async function createReview(req: Request, res: Response, next: NextFunction): Promise<void> {
   const startTime = Date.now();
 
   try {
@@ -252,7 +229,7 @@ export async function createReview(
     });
 
     if (!validation.success) {
-      const errors = validation.error.errors.map((err) => ({
+      const errors = validation.error.errors.map(err => ({
         field: err.path.join('.'),
         message: err.message,
       }));
@@ -261,12 +238,10 @@ export async function createReview(
     }
 
     const centerId = parseInt(req.params.id, 10);
-    const userId = (req as any).user.id as number;
+    const userId = (req as { user: { id: number } }).user.id as number;
 
     // 2. Parse visit_date if provided
-    const visitDate = req.body.visit_date
-      ? new Date(req.body.visit_date)
-      : undefined;
+    const visitDate = req.body.visit_date ? new Date(req.body.visit_date) : undefined;
 
     // 3. Create review
     const review = await createReviewWithRatingUpdate(userId, centerId, {
@@ -278,13 +253,11 @@ export async function createReview(
 
     // 4. Send response
     const responseTime = Date.now() - startTime;
-    console.log(
-      `[API] POST /api/centers/${centerId}/reviews - ${responseTime}ms`
-    );
+    logger.info(`[API] POST /api/centers/${centerId}/reviews - ${responseTime}ms`);
 
     res.setHeader('X-Response-Time', `${responseTime}ms`);
     res.status(201).json(review);
-  } catch (error: any) {
+  } catch (error: unknown) {
     const responseTime = Date.now() - startTime;
     res.setHeader('X-Response-Time', `${responseTime}ms`);
     next(error);
@@ -315,11 +288,7 @@ export async function createReview(
  * @throws {ForbiddenError} 403 - Not owner or 7-day limit exceeded
  * @throws {NotFoundError} 404 - Review not found
  */
-export async function updateReview(
-  req: Request,
-  res: Response,
-  next: NextFunction
-): Promise<void> {
+export async function updateReview(req: Request, res: Response, next: NextFunction): Promise<void> {
   const startTime = Date.now();
 
   try {
@@ -330,7 +299,7 @@ export async function updateReview(
     });
 
     if (!validation.success) {
-      const errors = validation.error.errors.map((err) => ({
+      const errors = validation.error.errors.map(err => ({
         field: err.path.join('.'),
         message: err.message,
       }));
@@ -339,7 +308,7 @@ export async function updateReview(
     }
 
     const reviewId = parseInt(req.params.id, 10);
-    const userId = (req as any).user.id as number;
+    const userId = (req as { user: { id: number } }).user.id as number;
 
     // 2. Parse visit_date if provided
     let visitDate: Date | undefined = undefined;
@@ -357,11 +326,11 @@ export async function updateReview(
 
     // 4. Send response
     const responseTime = Date.now() - startTime;
-    console.log(`[API] PUT /api/reviews/${reviewId} - ${responseTime}ms`);
+    logger.info(`[API] PUT /api/reviews/${reviewId} - ${responseTime}ms`);
 
     res.setHeader('X-Response-Time', `${responseTime}ms`);
     res.status(200).json(review);
-  } catch (error: any) {
+  } catch (error: unknown) {
     const responseTime = Date.now() - startTime;
     res.setHeader('X-Response-Time', `${responseTime}ms`);
     next(error);
@@ -386,11 +355,7 @@ export async function updateReview(
  * @throws {ForbiddenError} 403 - Not owner
  * @throws {NotFoundError} 404 - Review not found
  */
-export async function deleteReview(
-  req: Request,
-  res: Response,
-  next: NextFunction
-): Promise<void> {
+export async function deleteReview(req: Request, res: Response, next: NextFunction): Promise<void> {
   const startTime = Date.now();
 
   try {
@@ -400,7 +365,7 @@ export async function deleteReview(
     });
 
     if (!validation.success) {
-      const errors = validation.error.errors.map((err) => ({
+      const errors = validation.error.errors.map(err => ({
         field: err.path.join('.'),
         message: err.message,
       }));
@@ -409,18 +374,18 @@ export async function deleteReview(
     }
 
     const reviewId = parseInt(req.params.id, 10);
-    const userId = (req as any).user.id as number;
+    const userId = (req as { user: { id: number } }).user.id as number;
 
     // 2. Delete review
     await deleteReviewWithRatingUpdate(reviewId, userId);
 
     // 3. Send response
     const responseTime = Date.now() - startTime;
-    console.log(`[API] DELETE /api/reviews/${reviewId} - ${responseTime}ms`);
+    logger.info(`[API] DELETE /api/reviews/${reviewId} - ${responseTime}ms`);
 
     res.setHeader('X-Response-Time', `${responseTime}ms`);
     res.status(204).send();
-  } catch (error: any) {
+  } catch (error: unknown) {
     const responseTime = Date.now() - startTime;
     res.setHeader('X-Response-Time', `${responseTime}ms`);
     next(error);
@@ -447,11 +412,7 @@ export async function deleteReview(
  * @throws {UnauthorizedError} 401 - Not authenticated
  * @throws {NotFoundError} 404 - Review not found
  */
-export async function addReaction(
-  req: Request,
-  res: Response,
-  next: NextFunction
-): Promise<void> {
+export async function addReaction(req: Request, res: Response, next: NextFunction): Promise<void> {
   const startTime = Date.now();
 
   try {
@@ -462,7 +423,7 @@ export async function addReaction(
     });
 
     if (!validation.success) {
-      const errors = validation.error.errors.map((err) => ({
+      const errors = validation.error.errors.map(err => ({
         field: err.path.join('.'),
         message: err.message,
       }));
@@ -471,7 +432,7 @@ export async function addReaction(
     }
 
     const reviewId = parseInt(req.params.id, 10);
-    const userId = (req as any).user.id as number;
+    const userId = (req as { user: { id: number } }).user.id as number;
 
     // 2. Convert 'helpful'/'unhelpful' to 'HELPFUL'/'UNHELPFUL'
     const reactionType = req.body.reaction
@@ -485,13 +446,11 @@ export async function addReaction(
 
     // 4. Send response
     const responseTime = Date.now() - startTime;
-    console.log(
-      `[API] POST /api/reviews/${reviewId}/reactions - ${responseTime}ms`
-    );
+    logger.info(`[API] POST /api/reviews/${reviewId}/reactions - ${responseTime}ms`);
 
     res.setHeader('X-Response-Time', `${responseTime}ms`);
     res.status(200).json(result);
-  } catch (error: any) {
+  } catch (error: unknown) {
     const responseTime = Date.now() - startTime;
     res.setHeader('X-Response-Time', `${responseTime}ms`);
     next(error);
@@ -511,14 +470,14 @@ export function errorHandler(
   err: Error | AppError,
   req: Request,
   res: Response,
-  next: NextFunction
+  _next: NextFunction,
 ): void {
-  console.error('[Error]', err.name, err.message, err.stack);
+  logger.error('[Error]', { name: err.name, message: err.message, stack: err.stack });
 
   // Handle custom API errors
   if (err instanceof AppError) {
     const statusCode = err.statusCode;
-    const response: any = {
+    const response: { error: string; message: string; details?: unknown; existing_review_id?: number } = {
       error: err.name.replace('Error', '').toUpperCase(),
       message: err.message,
     };
@@ -529,9 +488,8 @@ export function errorHandler(
     }
 
     // Add existing_review_id for ConflictError
-    const { ConflictError } = require('../utils/errors');
-    if (err.name === 'ConflictError' && (err as any).existingId) {
-      response.existing_review_id = (err as any).existingId;
+    if (err.name === 'ConflictError' && 'existingId' in err) {
+      response.existing_review_id = (err as ConflictError).existingId;
     }
 
     res.status(statusCode).json(response);
@@ -540,7 +498,7 @@ export function errorHandler(
 
   // Handle Prisma errors
   if (err.name === 'PrismaClientKnownRequestError') {
-    const prismaError = err as any;
+    const prismaError = err as { code: string };
 
     if (prismaError.code === 'P2025') {
       res.status(404).json({

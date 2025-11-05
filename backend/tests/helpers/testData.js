@@ -20,9 +20,9 @@ async function seedTestCenters() {
       jibunAddress: '서울특별시 중구 태평로1가 31',
       phoneNumber: '02-3444-9934',
       latitude: 37.5665, // Seoul City Hall
-      longitude: 126.9780,
+      longitude: 126.978,
       businessContent: '정신건강 상담 및 치료 지원, 자살예방 프로그램 운영',
-      isActive: true
+      isActive: true,
     },
     {
       centerName: '강남구 정신건강복지센터',
@@ -33,7 +33,7 @@ async function seedTestCenters() {
       latitude: 37.4979, // Gangnam Station area
       longitude: 127.0276,
       businessContent: '우울증, 불안장애 상담 및 치료 연계',
-      isActive: true
+      isActive: true,
     },
     {
       centerName: '마포구 정신건강복지센터',
@@ -44,7 +44,7 @@ async function seedTestCenters() {
       latitude: 37.5665,
       longitude: 126.9018,
       businessContent: null, // Test null business_content
-      isActive: true
+      isActive: true,
     },
     {
       centerName: '송파구 정신건강복지센터',
@@ -53,17 +53,17 @@ async function seedTestCenters() {
       jibunAddress: '서울특별시 송파구 신천동 7-29',
       phoneNumber: '02-2147-3650',
       latitude: 37.5145, // Jamsil area
-      longitude: 127.1060,
+      longitude: 127.106,
       businessContent: '정신질환 조기발견, 상담 및 사례관리',
-      isActive: true
-    }
+      isActive: true,
+    },
   ];
 
   const createdCenters = [];
 
   for (const centerData of centers) {
     const center = await prisma.center.create({
-      data: centerData
+      data: centerData,
     });
     createdCenters.push(center);
   }
@@ -94,7 +94,7 @@ async function seedTestReviews(centers, user) {
       rating: 5,
       reviewText: '정말 친절하고 전문적인 상담을 받았습니다.',
       visitDate: new Date('2024-01-15'),
-      isAnonymous: false
+      isAnonymous: false,
     },
     {
       centerId: centers[0].id,
@@ -102,8 +102,8 @@ async function seedTestReviews(centers, user) {
       rating: 4,
       reviewText: '시설이 깨끗하고 좋았어요.',
       visitDate: new Date('2024-02-20'),
-      isAnonymous: true
-    }
+      isAnonymous: true,
+    },
   ];
 
   // Add reviews to second center (강남구 정신건강복지센터)
@@ -114,15 +114,15 @@ async function seedTestReviews(centers, user) {
       rating: 5,
       reviewText: '우울증 상담 받고 많은 도움이 되었습니다.',
       visitDate: new Date('2024-01-10'),
-      isAnonymous: false
-    }
+      isAnonymous: false,
+    },
   ];
 
   const allReviews = [...center1Reviews, ...center2Reviews];
 
   for (const reviewData of allReviews) {
     const review = await prisma.review.create({
-      data: reviewData
+      data: reviewData,
     });
     reviews.push(review);
   }
@@ -150,8 +150,8 @@ async function seedTestFavorites(centers, user) {
     const favorite = await prisma.userFavorite.create({
       data: {
         userId: user.id,
-        centerId: centers[i].id
-      }
+        centerId: centers[i].id,
+      },
     });
     favorites.push(favorite);
   }
@@ -176,8 +176,8 @@ async function seedComprehensiveTestData() {
       ageGroup: '30s',
       userType: 'GENERAL',
       status: 'ACTIVE',
-      emailVerified: true
-    }
+      emailVerified: true,
+    },
   });
 
   // Seed centers
@@ -193,7 +193,7 @@ async function seedComprehensiveTestData() {
     user,
     centers,
     reviews,
-    favorites
+    favorites,
   };
 }
 
@@ -208,12 +208,15 @@ async function seedComprehensiveTestData() {
  */
 function calculateDistance(lat1, lng1, lat2, lng2) {
   const R = 6371; // Earth's radius in kilometers
-  const dLat = (lat2 - lat1) * Math.PI / 180;
-  const dLng = (lng2 - lng1) * Math.PI / 180;
+  const dLat = ((lat2 - lat1) * Math.PI) / 180;
+  const dLng = ((lng2 - lng1) * Math.PI) / 180;
 
-  const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-    Math.sin(dLng / 2) * Math.sin(dLng / 2);
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos((lat1 * Math.PI) / 180) *
+      Math.cos((lat2 * Math.PI) / 180) *
+      Math.sin(dLng / 2) *
+      Math.sin(dLng / 2);
 
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   const distance = R * c;
@@ -226,5 +229,5 @@ module.exports = {
   seedTestReviews,
   seedTestFavorites,
   seedComprehensiveTestData,
-  calculateDistance
+  calculateDistance,
 };

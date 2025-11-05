@@ -36,32 +36,20 @@ describe('Distance Service', () => {
 
     // Test 4: TypeError - 숫자가 아닌 입력
     test('should throw TypeError for non-number inputs', () => {
-      expect(() => calculateDistance('37.5', 126.978, 37.4979, 127.0276)).toThrow(
-        TypeError
-      );
-      expect(() => calculateDistance(37.5, '126.978', 37.4979, 127.0276)).toThrow(
-        TypeError
-      );
+      expect(() => calculateDistance('37.5', 126.978, 37.4979, 127.0276)).toThrow(TypeError);
+      expect(() => calculateDistance(37.5, '126.978', 37.4979, 127.0276)).toThrow(TypeError);
     });
 
     // Test 5: RangeError - 잘못된 위도 범위
     test('should throw RangeError for invalid latitude', () => {
-      expect(() => calculateDistance(-91, 126.978, 37.4979, 127.0276)).toThrow(
-        RangeError
-      );
-      expect(() => calculateDistance(91, 126.978, 37.4979, 127.0276)).toThrow(
-        RangeError
-      );
+      expect(() => calculateDistance(-91, 126.978, 37.4979, 127.0276)).toThrow(RangeError);
+      expect(() => calculateDistance(91, 126.978, 37.4979, 127.0276)).toThrow(RangeError);
     });
 
     // Test 6: RangeError - 잘못된 경도 범위
     test('should throw RangeError for invalid longitude', () => {
-      expect(() => calculateDistance(37.5665, -181, 37.4979, 127.0276)).toThrow(
-        RangeError
-      );
-      expect(() => calculateDistance(37.5665, 181, 37.4979, 127.0276)).toThrow(
-        RangeError
-      );
+      expect(() => calculateDistance(37.5665, -181, 37.4979, 127.0276)).toThrow(RangeError);
+      expect(() => calculateDistance(37.5665, 181, 37.4979, 127.0276)).toThrow(RangeError);
     });
   });
 
@@ -174,9 +162,9 @@ describe('Distance Service', () => {
     // Test 17: TypeError - 사용자 위치가 잘못된 경우
     test('should throw TypeError for invalid user location', () => {
       expect(() => filterCentersByDistance(mockCenters, null, 50)).toThrow(TypeError);
-      expect(() =>
-        filterCentersByDistance(mockCenters, { latitude: '37.5' }, 50)
-      ).toThrow(TypeError);
+      expect(() => filterCentersByDistance(mockCenters, { latitude: '37.5' }, 50)).toThrow(
+        TypeError
+      );
     });
 
     // Test 18: 잘못된 좌표를 가진 센터 건너뛰기
@@ -207,12 +195,8 @@ describe('Distance Service', () => {
 
     // Test 20: RangeError - 잘못된 limit
     test('should throw RangeError for invalid limit', () => {
-      expect(() => getNearestCenters(mockCenters, userLocation, 0)).toThrow(
-        RangeError
-      );
-      expect(() => getNearestCenters(mockCenters, userLocation, -5)).toThrow(
-        RangeError
-      );
+      expect(() => getNearestCenters(mockCenters, userLocation, 0)).toThrow(RangeError);
+      expect(() => getNearestCenters(mockCenters, userLocation, -5)).toThrow(RangeError);
     });
   });
 });

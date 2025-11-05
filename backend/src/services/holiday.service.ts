@@ -9,7 +9,7 @@
 
 import { PrismaClient } from '@prisma/client';
 import axios from 'axios';
-import { format, parse, endOfMonth } from 'date-fns';
+import { format, endOfMonth } from 'date-fns';
 
 const prisma = new PrismaClient();
 
@@ -24,9 +24,9 @@ const HOLIDAY_API_KEY = process.env.HOLIDAY_API_KEY || '';
  * Public holiday interface from API
  */
 interface PublicHolidayAPIResponse {
-  locdate: string;    // "20250115" format
-  dateName: string;   // Holiday name (e.g., "설날")
-  isHoliday: string;  // "Y" or "N"
+  locdate: string; // "20250115" format
+  dateName: string; // Holiday name (e.g., "설날")
+  isHoliday: string; // "Y" or "N"
 }
 
 /**
@@ -60,9 +60,9 @@ export async function fetchPublicHolidays(year: number): Promise<PublicHoliday[]
         serviceKey: decodeURIComponent(HOLIDAY_API_KEY),
         solYear: year,
         numOfRows: 100,
-        _type: 'json'
+        _type: 'json',
       },
-      timeout: 5000
+      timeout: 5000,
     });
 
     // Parse API response
@@ -81,12 +81,11 @@ export async function fetchPublicHolidays(year: number): Promise<PublicHoliday[]
       .filter(item => item.isHoliday === 'Y')
       .map(item => ({
         date: parseHolidayDate(item.locdate),
-        name: item.dateName
+        name: item.dateName,
       }));
 
     console.log(`[fetchPublicHolidays] Fetched ${publicHolidays.length} holidays for year ${year}`);
     return publicHolidays;
-
   } catch (error) {
     console.error('[fetchPublicHolidays] API fetch failed:', error);
     console.warn('[fetchPublicHolidays] Falling back to hardcoded holidays');
@@ -126,7 +125,7 @@ function getHardcodedHolidays(year: number): PublicHoliday[] {
     { date: new Date(year, 7, 15), name: '광복절' },
     { date: new Date(year, 9, 3), name: '개천절' },
     { date: new Date(year, 9, 9), name: '한글날' },
-    { date: new Date(year, 11, 25), name: '크리스마스' }
+    { date: new Date(year, 11, 25), name: '크리스마스' },
   ];
 
   // Lunar calendar holidays (approximate - should be calculated properly)
@@ -141,7 +140,7 @@ function getHardcodedHolidays(year: number): PublicHoliday[] {
       { date: new Date(2025, 4, 5), name: '부처님오신날' },
       { date: new Date(2025, 9, 5), name: '추석 전날' },
       { date: new Date(2025, 9, 6), name: '추석' },
-      { date: new Date(2025, 9, 7), name: '추석 다음날' }
+      { date: new Date(2025, 9, 7), name: '추석 다음날' },
     );
   } else if (year === 2026) {
     lunarHolidays.push(
@@ -151,7 +150,7 @@ function getHardcodedHolidays(year: number): PublicHoliday[] {
       { date: new Date(2026, 4, 24), name: '부처님오신날' },
       { date: new Date(2026, 8, 24), name: '추석 전날' },
       { date: new Date(2026, 8, 25), name: '추석' },
-      { date: new Date(2026, 8, 26), name: '추석 다음날' }
+      { date: new Date(2026, 8, 26), name: '추석 다음날' },
     );
   }
 
@@ -197,7 +196,7 @@ export async function syncPublicHolidaysToDatabase(year: number): Promise<number
     // Get all active centers
     const centers = await prisma.center.findMany({
       where: { isActive: true },
-      select: { id: true }
+      select: { id: true },
     });
 
     if (centers.length === 0) {
@@ -211,18 +210,18 @@ export async function syncPublicHolidaysToDatabase(year: number): Promise<number
         centerId: center.id,
         holidayDate: holiday.date,
         holidayName: holiday.name,
-        isRegular: false // Public holidays are not regular weekly holidays
-      }))
+        isRegular: false, // Public holidays are not regular weekly holidays
+      })),
     );
 
     // Batch insert with skip duplicates
     const result = await prisma.centerHoliday.createMany({
       data: holidayRecords,
-      skipDuplicates: true
+      skipDuplicates: true,
     });
 
     console.log(
-      `[syncPublicHolidaysToDatabase] Synced ${holidays.length} holidays to ${centers.length} centers (${result.count} records created)`
+      `[syncPublicHolidaysToDatabase] Synced ${holidays.length} holidays to ${centers.length} centers (${result.count} records created)`,
     );
 
     return result.count;
@@ -247,16 +246,16 @@ export async function syncPublicHolidaysToDatabase(year: number): Promise<number
 export async function generateRegularHolidays(centerId: number, month: Date): Promise<number> {
   try {
     console.log(
-      `[generateRegularHolidays] Generating regular holidays for center ${centerId}, month ${format(month, 'yyyy-MM')}`
+      `[generateRegularHolidays] Generating regular holidays for center ${centerId}, month ${format(month, 'yyyy-MM')}`,
     );
 
     // Get operating hours for center
     const operatingHours = await prisma.centerOperatingHour.findMany({
       where: {
         centerId: BigInt(centerId),
-        isOpen: false // Only closed days
+        isOpen: false, // Only closed days
       },
-      select: { dayOfWeek: true }
+      select: { dayOfWeek: true },
     });
 
     if (operatingHours.length === 0) {
@@ -279,7 +278,7 @@ export async function generateRegularHolidays(centerId: number, month: Date): Pr
       if (closedDays.includes(dayOfWeek)) {
         holidays.push({
           holidayDate: date,
-          holidayName: getDayName(dayOfWeek)
+          holidayName: getDayName(dayOfWeek),
         });
       }
     }
@@ -295,9 +294,9 @@ export async function generateRegularHolidays(centerId: number, month: Date): Pr
         centerId: BigInt(centerId),
         holidayDate: h.holidayDate,
         holidayName: h.holidayName,
-        isRegular: true
+        isRegular: true,
       })),
-      skipDuplicates: true
+      skipDuplicates: true,
     });
 
     console.log(`[generateRegularHolidays] Generated ${result.count} regular holidays`);
@@ -327,11 +326,13 @@ function getDayName(dayOfWeek: number): string {
  */
 export async function generateRegularHolidaysForAllCenters(month: Date): Promise<number> {
   try {
-    console.log(`[generateRegularHolidaysForAllCenters] Generating for month ${format(month, 'yyyy-MM')}`);
+    console.log(
+      `[generateRegularHolidaysForAllCenters] Generating for month ${format(month, 'yyyy-MM')}`,
+    );
 
     const centers = await prisma.center.findMany({
       where: { isActive: true },
-      select: { id: true }
+      select: { id: true },
     });
 
     let totalGenerated = 0;

@@ -1,3 +1,10 @@
+// Sentry must be imported and initialized first
+require('ts-node/register');
+const { initSentry, Sentry } = require('./config/sentry');
+
+// Initialize Sentry before anything else
+initSentry();
+
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
@@ -10,12 +17,19 @@ const config = require('./config');
 const healthRoutes = require('./routes/health.routes');
 const centersRoutes = require('./routes/centers.routes');
 const reviewsRoutes = require('./routes/reviews.routes');
-const recommendationRoutes = require('./routes/recommendation.routes');
+// Import TypeScript routes file explicitly (Sprint 2)
+const recommendationRoutes = require('./routes/recommendation.routes.ts').default;
 const selfAssessmentRoutes = require('./routes/selfAssessment.routes');
 const { errorHandler, notFoundHandler } = require('./middlewares/errorHandler');
 
 // Initialize Express app
 const app = express();
+
+// Sentry request handler (must be first middleware)
+if (Sentry && Sentry.Handlers) {
+  app.use(Sentry.Handlers.requestHandler());
+  app.use(Sentry.Handlers.tracingHandler());
+}
 
 // Security middleware
 app.use(helmet());
@@ -66,7 +80,7 @@ const swaggerOptions = {
       },
     ],
   },
-  apis: ['./src/routes/*.js'],
+  apis: ['./src/routes/*.js', './src/routes/*.ts', './src/controllers/*.ts'],
 };
 
 const swaggerSpec = swaggerJsdoc(swaggerOptions);
@@ -101,6 +115,11 @@ app.use(`${config.api.prefix}/self-assessments`, selfAssessmentRoutes);
 
 // 404 handler
 app.use(notFoundHandler);
+
+// Sentry error handler (must be before other error handlers)
+if (Sentry && Sentry.Handlers) {
+  app.use(Sentry.Handlers.errorHandler());
+}
 
 // Global error handler
 app.use(errorHandler);

@@ -11,10 +11,10 @@ function getPrismaClient() {
     prisma = new PrismaClient({
       datasources: {
         db: {
-          url: process.env.DATABASE_URL
-        }
+          url: process.env.DATABASE_URL,
+        },
       },
-      log: process.env.NODE_ENV === 'development' ? ['error', 'warn'] : ['error']
+      log: process.env.NODE_ENV === 'development' ? ['error', 'warn'] : ['error'],
     });
   }
   return prisma;
@@ -69,7 +69,7 @@ async function cleanupDatabase() {
     prisma.centerType.deleteMany(),
 
     // Users (last)
-    prisma.user.deleteMany()
+    prisma.user.deleteMany(),
   ]);
 }
 
@@ -99,11 +99,11 @@ async function createTestUser(data = {}) {
     gender: 'N',
     userType: 'GENERAL',
     status: 'ACTIVE',
-    emailVerified: true
+    emailVerified: true,
   };
 
   return await prisma.user.create({
-    data: { ...defaultData, ...data }
+    data: { ...defaultData, ...data },
   });
 }
 
@@ -120,12 +120,12 @@ async function createTestCenter(data = {}) {
     centerType: 'Test Type',
     roadAddress: 'Test Address',
     latitude: 37.5665,
-    longitude: 126.9780,
-    isActive: true
+    longitude: 126.978,
+    isActive: true,
   };
 
   return await prisma.center.create({
-    data: { ...defaultData, ...data }
+    data: { ...defaultData, ...data },
   });
 }
 
@@ -134,5 +134,5 @@ module.exports = {
   cleanupDatabase,
   closePrismaConnection,
   createTestUser,
-  createTestCenter
+  createTestCenter,
 };

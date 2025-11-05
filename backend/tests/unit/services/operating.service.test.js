@@ -83,9 +83,7 @@ describe('Operating Service', () => {
 
     // Test 8: TypeError - currentTime이 잘못된 경우
     test('should throw TypeError for invalid currentTime', () => {
-      expect(() => isCurrentlyOpen(weekdayHours, 'invalid-date')).toThrow(
-        TypeError
-      );
+      expect(() => isCurrentlyOpen(weekdayHours, 'invalid-date')).toThrow(TypeError);
     });
   });
 
@@ -147,12 +145,8 @@ describe('Operating Service', () => {
 
     // Test 15: RangeError - maxDaysAhead가 양수가 아닌 경우
     test('should throw RangeError for invalid maxDaysAhead', () => {
-      expect(() => getNextOpenTime(weekdayHours, new Date(), [], 0)).toThrow(
-        RangeError
-      );
-      expect(() => getNextOpenTime(weekdayHours, new Date(), [], -5)).toThrow(
-        RangeError
-      );
+      expect(() => getNextOpenTime(weekdayHours, new Date(), [], 0)).toThrow(RangeError);
+      expect(() => getNextOpenTime(weekdayHours, new Date(), [], -5)).toThrow(RangeError);
     });
   });
 
@@ -207,9 +201,7 @@ describe('Operating Service', () => {
 
     // Test 23: TypeError - currentTime이 잘못된 경우
     test('should throw TypeError for invalid currentTime', () => {
-      expect(() => calculateOperatingScore(weekdayHours, 'invalid')).toThrow(
-        TypeError
-      );
+      expect(() => calculateOperatingScore(weekdayHours, 'invalid')).toThrow(TypeError);
     });
   });
 });

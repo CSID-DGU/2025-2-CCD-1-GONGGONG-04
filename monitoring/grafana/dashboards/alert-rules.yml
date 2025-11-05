@@ -1,0 +1,133 @@
+# Prometheus Alert Rules for Recommendation API
+# Sprint 2 - Task 4.4.2
+#
+# Usage:
+# 1. Copy this file to Prometheus alerting rules directory
+# 2. Add to prometheus.yml:
+#    rule_files:
+#      - "alert-rules.yml"
+# 3. Reload Prometheus: curl -X POST http://localhost:9090/-/reload
+
+groups:
+  - name: recommendation_api_alerts
+    interval: 30s
+    rules:
+      # Alert 1: High Response Time (P95 > 5 seconds)
+      - alert: HighResponseTime
+        expr: histogram_quantile(0.95, rate(recommendation_duration_seconds_bucket[5m])) > 5
+        for: 2m
+        labels:
+          severity: critical
+          component: recommendation-api
+        annotations:
+          summary: "High recommendation API response time"
+          description: "P95 response time is {{ $value }}s (threshold: 5s). Check API performance and database queries."
+          dashboard: "http://grafana:3000/d/recommendation-api-dashboard"
+
+      # Alert 2: High Error Rate (> 5%)
+      - alert: HighErrorRate
+        expr: (sum(rate(recommendation_requests_total{status!="200"}[5m])) / sum(rate(recommendation_requests_total[5m]))) * 100 > 5
+        for: 2m
+        labels:
+          severity: critical
+          component: recommendation-api
+        annotations:
+          summary: "High recommendation API error rate"
+          description: "Error rate is {{ $value }}% (threshold: 5%). Check application logs and error tracking."
+          dashboard: "http://grafana:3000/d/recommendation-api-dashboard"
+
+      # Alert 3: Low Cache Hit Rate (< 50%)
+      - alert: LowCacheHitRate
+        expr: (sum(rate(recommendation_cache_hit_miss_total{result="hit"}[5m])) / sum(rate(recommendation_cache_hit_miss_total[5m]))) * 100 < 50
+        for: 5m
+        labels:
+          severity: warning
+          component: recommendation-api
+        annotations:
+          summary: "Low cache hit rate for recommendations"
+          description: "Cache hit rate is {{ $value }}% (threshold: 50%). Check Redis connection and cache TTL settings."
+          dashboard: "http://grafana:3000/d/recommendation-api-dashboard"
+
+      # Alert 4: High Active Requests (> 50 concurrent)
+      - alert: HighActiveRequests
+        expr: active_recommendations > 50
+        for: 1m
+        labels:
+          severity: warning
+          component: recommendation-api
+        annotations:
+          summary: "High number of active recommendation requests"
+          description: "{{ $value }} concurrent requests (threshold: 50). API may be under heavy load or experiencing slow queries."
+          dashboard: "http://grafana:3000/d/recommendation-api-dashboard"
+
+      # Alert 5: Slow Scoring Module (> 1 second)
+      - alert: SlowScoringModule
+        expr: histogram_quantile(0.95, sum(rate(scoring_module_duration_seconds_bucket[5m])) by (module, le)) > 1
+        for: 3m
+        labels:
+          severity: warning
+          component: recommendation-api
+        annotations:
+          summary: "Slow scoring module execution"
+          description: "Module {{ $labels.module }} P95 execution time is {{ $value }}s (threshold: 1s). Optimize scoring logic or database queries."
+          dashboard: "http://grafana:3000/d/recommendation-api-dashboard"
+
+      # Alert 6: High CPU Usage (> 80%)
+      - alert: HighCPUUsage
+        expr: rate(mindconnect_process_cpu_seconds_total[5m]) * 100 > 80
+        for: 5m
+        labels:
+          severity: warning
+          component: recommendation-api
+        annotations:
+          summary: "High CPU usage for recommendation API"
+          description: "CPU usage is {{ $value }}% (threshold: 80%). Check for CPU-intensive operations or increase resources."
+          dashboard: "http://grafana:3000/d/recommendation-api-dashboard"
+
+      # Alert 7: High Memory Usage (> 1GB)
+      - alert: HighMemoryUsage
+        expr: mindconnect_process_resident_memory_bytes > 1073741824
+        for: 5m
+        labels:
+          severity: warning
+          component: recommendation-api
+        annotations:
+          summary: "High memory usage for recommendation API"
+          description: "Memory usage is {{ $value | humanize }}B (threshold: 1GB). Check for memory leaks or increase resources."
+          dashboard: "http://grafana:3000/d/recommendation-api-dashboard"
+
+      # Alert 8: API Unavailable (no requests in 2 minutes)
+      - alert: APIUnavailable
+        expr: rate(recommendation_requests_total[2m]) == 0
+        for: 2m
+        labels:
+          severity: critical
+          component: recommendation-api
+        annotations:
+          summary: "Recommendation API appears to be unavailable"
+          description: "No requests received in the last 2 minutes. Check if the API is running and accessible."
+          dashboard: "http://grafana:3000/d/recommendation-api-dashboard"
+
+      # Alert 9: Zero Results Rate (> 20%)
+      - alert: HighZeroResultsRate
+        expr: (histogram_quantile(0.50, rate(recommendation_result_count_bucket{le="0"}[5m])) / histogram_quantile(0.50, rate(recommendation_result_count_bucket[5m]))) * 100 > 20
+        for: 5m
+        labels:
+          severity: warning
+          component: recommendation-api
+        annotations:
+          summary: "High rate of recommendations returning zero results"
+          description: "{{ $value }}% of recommendations return no results (threshold: 20%). Check center data coverage and search criteria."
+          dashboard: "http://grafana:3000/d/recommendation-api-dashboard"
+
+      # Alert 10: P99 Response Time Spike (> 10 seconds)
+      - alert: P99ResponseTimeSpike
+        expr: histogram_quantile(0.99, rate(recommendation_duration_seconds_bucket[5m])) > 10
+        for: 1m
+        labels:
+          severity: warning
+          component: recommendation-api
+        annotations:
+          summary: "P99 response time spike detected"
+          description: "P99 response time is {{ $value }}s (threshold: 10s). Some requests are experiencing severe delays."
+          dashboard: "http://grafana:3000/d/recommendation-api-dashboard"

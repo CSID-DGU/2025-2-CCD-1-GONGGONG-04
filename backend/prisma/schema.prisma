@@ -160,6 +160,7 @@ model CenterOperatingHour {
   center Center @relation(fields: [centerId], references: [id], onDelete: Cascade)
 
   @@unique([centerId, dayOfWeek])
+  @@index([centerId, dayOfWeek, isOpen]) // Sprint 2 - Task 4.2.4: Recommendation query optimization
   @@index([dayOfWeek, openTime, closeTime])
   @@map("center_operating_hours")
 }
@@ -204,6 +205,7 @@ model CenterStaff {
   center Center @relation(fields: [centerId], references: [id], onDelete: Cascade)
 
   @@unique([centerId, staffType])
+  @@index([centerId, staffType]) // Sprint 2 - Task 4.2.4: Specialty scoring optimization
   @@index([staffType])
   @@map("center_staff")
 }

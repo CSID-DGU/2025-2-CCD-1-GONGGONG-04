@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const { metricsHandler } = require('../utils/metrics');
 
 /**
  * @swagger
@@ -58,5 +59,24 @@ router.get('/ready', (req, res) => {
     timestamp: new Date().toISOString(),
   });
 });
+
+/**
+ * @swagger
+ * /metrics:
+ *   get:
+ *     summary: Prometheus metrics endpoint
+ *     description: Returns Prometheus metrics for monitoring recommendation API performance
+ *     tags: [Health]
+ *     responses:
+ *       200:
+ *         description: Prometheus metrics in text format
+ *         content:
+ *           text/plain:
+ *             schema:
+ *               type: string
+ *       500:
+ *         description: Failed to collect metrics
+ */
+router.get('/metrics', metricsHandler);
 
 module.exports = router;

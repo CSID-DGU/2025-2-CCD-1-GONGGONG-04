@@ -26,7 +26,7 @@ const recommendationRequestSchema = z
     }),
     filters: z
       .object({
-        maxDistance: z.number().positive().max(50).default(10),
+        maxDistance: z.number().positive().max(100).default(10),
         preferredTimes: z.array(z.string()).optional(),
         centerTypes: z.array(z.string()).optional(),
       })
@@ -52,7 +52,7 @@ const assessmentSubmitSchema = z
         z.object({
           questionId: z.number().int().positive(),
           selectedOption: z.number().int().min(0).max(3), // 0-3 (전혀~매우)
-        })
+        }),
       )
       .min(1), // 최소 1개 답변 필요
   })

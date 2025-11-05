@@ -2,7 +2,7 @@ const {
   getPrismaClient,
   cleanupDatabase,
   closePrismaConnection,
-  createTestCenter
+  createTestCenter,
 } = require('../helpers/prisma');
 
 describe('Center Model Tests', () => {
@@ -28,12 +28,12 @@ describe('Center Model Tests', () => {
         centerType: '정신건강복지센터',
         roadAddress: '서울시 강남구 테헤란로 123',
         latitude: 37.5665,
-        longitude: 126.9780,
-        isActive: true
+        longitude: 126.978,
+        isActive: true,
       };
 
       const center = await prisma.center.create({
-        data: centerData
+        data: centerData,
       });
 
       expect(center).toBeDefined();
@@ -70,11 +70,11 @@ describe('Center Model Tests', () => {
         businessContent: '부산지역 정신건강 지원센터',
         operatingOrgName: '부산시',
         managingOrgName: '부산시 정신건강복지센터',
-        managingOrgPhone: '051-999-8888'
+        managingOrgPhone: '051-999-8888',
       };
 
       const center = await prisma.center.create({
-        data: centerData
+        data: centerData,
       });
 
       expect(center.jibunAddress).toBe(centerData.jibunAddress);
@@ -89,9 +89,9 @@ describe('Center Model Tests', () => {
       await expect(
         prisma.center.create({
           data: {
-            centerName: '불완전한센터'
+            centerName: '불완전한센터',
             // missing required fields
-          }
+          },
         })
       ).rejects.toThrow();
     });
@@ -111,7 +111,7 @@ describe('Center Model Tests', () => {
       const createdCenter = await createTestCenter();
 
       const foundCenter = await prisma.center.findUnique({
-        where: { id: createdCenter.id }
+        where: { id: createdCenter.id },
       });
 
       expect(foundCenter).toBeDefined();
@@ -121,7 +121,7 @@ describe('Center Model Tests', () => {
 
     test('should return null for non-existent center', async () => {
       const center = await prisma.center.findUnique({
-        where: { id: 999999 }
+        where: { id: 999999 },
       });
 
       expect(center).toBeNull();
@@ -143,7 +143,7 @@ describe('Center Model Tests', () => {
       await createTestCenter({ centerName: 'Type B1', centerType: 'Type B' });
 
       const typeACenters = await prisma.center.findMany({
-        where: { centerType: 'Type A' }
+        where: { centerType: 'Type A' },
       });
 
       expect(typeACenters).toHaveLength(2);
@@ -158,7 +158,7 @@ describe('Center Model Tests', () => {
       await createTestCenter({ centerName: 'Inactive', isActive: false });
 
       const activeCenters = await prisma.center.findMany({
-        where: { isActive: true }
+        where: { isActive: true },
       });
 
       expect(activeCenters).toHaveLength(2);
@@ -175,9 +175,9 @@ describe('Center Model Tests', () => {
       const seoulCenters = await prisma.center.findMany({
         where: {
           centerName: {
-            contains: '서울'
-          }
-        }
+            contains: '서울',
+          },
+        },
       });
 
       expect(seoulCenters).toHaveLength(2);
@@ -194,7 +194,7 @@ describe('Center Model Tests', () => {
 
       const updatedCenter = await prisma.center.update({
         where: { id: center.id },
-        data: { centerName: newName }
+        data: { centerName: newName },
       });
 
       expect(updatedCenter.centerName).toBe(newName);
@@ -206,7 +206,7 @@ describe('Center Model Tests', () => {
 
       const updatedCenter = await prisma.center.update({
         where: { id: center.id },
-        data: { isActive: false }
+        data: { isActive: false },
       });
 
       expect(updatedCenter.isActive).toBe(false);
@@ -221,8 +221,8 @@ describe('Center Model Tests', () => {
           centerName: 'Updated Name',
           phoneNumber: '02-9999-8888',
           businessContent: 'Updated business content',
-          operatingOrgName: 'Updated Organization'
-        }
+          operatingOrgName: 'Updated Organization',
+        },
       });
 
       expect(updatedCenter.centerName).toBe('Updated Name');
@@ -234,15 +234,15 @@ describe('Center Model Tests', () => {
     test('should update coordinates', async () => {
       const center = await createTestCenter({
         latitude: 37.5665,
-        longitude: 126.9780
+        longitude: 126.978,
       });
 
       const updatedCenter = await prisma.center.update({
         where: { id: center.id },
         data: {
           latitude: 35.1796,
-          longitude: 129.0756
-        }
+          longitude: 129.0756,
+        },
       });
 
       expect(parseFloat(updatedCenter.latitude)).toBe(35.1796);
@@ -253,7 +253,7 @@ describe('Center Model Tests', () => {
       await expect(
         prisma.center.update({
           where: { id: 999999 },
-          data: { centerName: 'Should Fail' }
+          data: { centerName: 'Should Fail' },
         })
       ).rejects.toThrow();
     });
@@ -264,13 +264,13 @@ describe('Center Model Tests', () => {
       const center = await createTestCenter();
 
       const deletedCenter = await prisma.center.delete({
-        where: { id: center.id }
+        where: { id: center.id },
       });
 
       expect(deletedCenter.id).toBe(center.id);
 
       const foundCenter = await prisma.center.findUnique({
-        where: { id: center.id }
+        where: { id: center.id },
       });
 
       expect(foundCenter).toBeNull();
@@ -279,7 +279,7 @@ describe('Center Model Tests', () => {
     test('should fail to delete non-existent center', async () => {
       await expect(
         prisma.center.delete({
-          where: { id: 999999 }
+          where: { id: 999999 },
         })
       ).rejects.toThrow();
     });
@@ -292,9 +292,9 @@ describe('Center Model Tests', () => {
       const result = await prisma.center.deleteMany({
         where: {
           centerName: {
-            contains: 'Delete'
-          }
-        }
+            contains: 'Delete',
+          },
+        },
       });
 
       expect(result.count).toBe(3);
@@ -305,13 +305,13 @@ describe('Center Model Tests', () => {
 
       const deactivatedCenter = await prisma.center.update({
         where: { id: center.id },
-        data: { isActive: false }
+        data: { isActive: false },
       });
 
       expect(deactivatedCenter.isActive).toBe(false);
 
       const stillExists = await prisma.center.findUnique({
-        where: { id: center.id }
+        where: { id: center.id },
       });
 
       expect(stillExists).toBeDefined();
@@ -326,7 +326,7 @@ describe('Center Model Tests', () => {
           centerType: 'Test Type',
           roadAddress: 'Test Address',
           latitude: 37.5665,
-          longitude: 126.9780,
+          longitude: 126.978,
           isActive: true,
           operatingHours: {
             create: [
@@ -335,21 +335,21 @@ describe('Center Model Tests', () => {
                 openTime: new Date('1970-01-01T09:00:00Z'),
                 closeTime: new Date('1970-01-01T18:00:00Z'),
                 isOpen: true,
-                isHoliday: false
+                isHoliday: false,
               },
               {
                 dayOfWeek: 2, // Tuesday
                 openTime: new Date('1970-01-01T09:00:00Z'),
                 closeTime: new Date('1970-01-01T18:00:00Z'),
                 isOpen: true,
-                isHoliday: false
-              }
-            ]
-          }
+                isHoliday: false,
+              },
+            ],
+          },
         },
         include: {
-          operatingHours: true
-        }
+          operatingHours: true,
+        },
       });
 
       expect(center.operatingHours).toBeDefined();
@@ -366,7 +366,7 @@ describe('Center Model Tests', () => {
           centerType: 'Test Type',
           roadAddress: 'Test Address',
           latitude: 37.5665,
-          longitude: 126.9780,
+          longitude: 126.978,
           isActive: true,
           operatingHours: {
             create: {
@@ -374,15 +374,15 @@ describe('Center Model Tests', () => {
               openTime: new Date('1970-01-01T09:00:00Z'),
               closeTime: new Date('1970-01-01T18:00:00Z'),
               isOpen: true,
-              isHoliday: false
-            }
-          }
-        }
+              isHoliday: false,
+            },
+          },
+        },
       });
 
       const centerWithHours = await prisma.center.findUnique({
         where: { id: createdCenter.id },
-        include: { operatingHours: true }
+        include: { operatingHours: true },
       });
 
       expect(centerWithHours.operatingHours).toBeDefined();
@@ -398,26 +398,26 @@ describe('Center Model Tests', () => {
           centerType: 'Test Type',
           roadAddress: 'Test Address',
           latitude: 37.5665,
-          longitude: 126.9780,
+          longitude: 126.978,
           isActive: true,
           programs: {
             create: [
               {
                 programName: '심리상담 프로그램',
                 description: '개인 심리상담',
-                isActive: true
+                isActive: true,
               },
               {
                 programName: '집단치료 프로그램',
                 description: '집단 심리치료',
-                isActive: true
-              }
-            ]
-          }
+                isActive: true,
+              },
+            ],
+          },
         },
         include: {
-          programs: true
-        }
+          programs: true,
+        },
       });
 
       expect(center.programs).toBeDefined();

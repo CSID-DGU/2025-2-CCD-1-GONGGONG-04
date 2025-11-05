@@ -11,15 +11,8 @@
 
 const request = require('supertest');
 const app = require('../../src/app');
-const {
-  getPrismaClient,
-  cleanupDatabase,
-  closePrismaConnection
-} = require('../helpers/prisma');
-const {
-  seedComprehensiveTestData,
-  calculateDistance
-} = require('../helpers/testData');
+const { getPrismaClient, cleanupDatabase, closePrismaConnection } = require('../helpers/prisma');
+const { seedComprehensiveTestData, calculateDistance } = require('../helpers/testData');
 
 // Test data references
 let testData = null;
@@ -39,7 +32,9 @@ beforeAll(async () => {
   await cleanupDatabase();
   testData = await seedComprehensiveTestData();
 
-  console.log(`✓ Test data seeded: ${testData.centers.length} centers, ${testData.reviews.length} reviews`);
+  console.log(
+    `✓ Test data seeded: ${testData.centers.length} centers, ${testData.reviews.length} reviews`
+  );
 });
 
 /**
@@ -52,13 +47,11 @@ afterAll(async () => {
 });
 
 describe('GET /api/v1/centers/:id', () => {
-
   // ============================================================================
   // SUCCESS CASES (200 OK)
   // ============================================================================
 
   describe('Success Cases (200 OK)', () => {
-
     test('should return center detail without user location', async () => {
       const centerId = Number(testData.centers[0].id);
       const startTime = Date.now();
@@ -122,7 +115,7 @@ describe('GET /api/v1/centers/:id', () => {
     test('should return center detail with valid user location (includes distance)', async () => {
       const centerId = Number(testData.centers[1].id); // Gangnam center
       const userLat = 37.5665; // Seoul City Hall
-      const userLng = 126.9780;
+      const userLng = 126.978;
 
       const response = await request(app)
         .get(`/api/v1/centers/${centerId}`)
@@ -152,9 +145,7 @@ describe('GET /api/v1/centers/:id', () => {
     test('should handle center with null optional fields', async () => {
       const centerId = Number(testData.centers[2].id); // Mapo center (has nulls)
 
-      const response = await request(app)
-        .get(`/api/v1/centers/${centerId}`)
-        .expect(200);
+      const response = await request(app).get(`/api/v1/centers/${centerId}`).expect(200);
 
       const { data } = response.body;
 
@@ -172,9 +163,7 @@ describe('GET /api/v1/centers/:id', () => {
     test('should return stats with accurate review counts', async () => {
       const centerId = Number(testData.centers[0].id); // Has 2 reviews
 
-      const response = await request(app)
-        .get(`/api/v1/centers/${centerId}`)
-        .expect(200);
+      const response = await request(app).get(`/api/v1/centers/${centerId}`).expect(200);
 
       const { data } = response.body;
 
@@ -187,7 +176,6 @@ describe('GET /api/v1/centers/:id', () => {
       // Verify favorite count (user favorited this center)
       expect(data.stats.favorite_count).toBe(1);
     });
-
   });
 
   // ============================================================================
@@ -195,9 +183,7 @@ describe('GET /api/v1/centers/:id', () => {
   // ============================================================================
 
   describe('Validation Errors (400 Bad Request)', () => {
-
     describe('Invalid Center ID Formats', () => {
-
       test('should reject negative center ID', async () => {
         const response = await request(app)
           .get('/api/v1/centers/-1')
@@ -211,44 +197,34 @@ describe('GET /api/v1/centers/:id', () => {
       });
 
       test('should reject zero as center ID', async () => {
-        const response = await request(app)
-          .get('/api/v1/centers/0')
-          .expect(400);
+        const response = await request(app).get('/api/v1/centers/0').expect(400);
 
         expect(response.body.success).toBe(false);
         expect(response.body.error.message).toMatch(/invalid.*center.*id/i);
       });
 
       test('should reject decimal center ID', async () => {
-        const response = await request(app)
-          .get('/api/v1/centers/1.5')
-          .expect(400);
+        const response = await request(app).get('/api/v1/centers/1.5').expect(400);
 
         expect(response.body.success).toBe(false);
         expect(response.body.error.message).toMatch(/invalid.*center.*id/i);
       });
 
       test('should reject non-numeric center ID', async () => {
-        const response = await request(app)
-          .get('/api/v1/centers/abc')
-          .expect(400);
+        const response = await request(app).get('/api/v1/centers/abc').expect(400);
 
         expect(response.body.success).toBe(false);
         expect(response.body.error.message).toMatch(/invalid.*center.*id/i);
       });
 
       test('should reject special characters in center ID', async () => {
-        const response = await request(app)
-          .get('/api/v1/centers/123@#$')
-          .expect(400);
+        const response = await request(app).get('/api/v1/centers/123@#$').expect(400);
 
         expect(response.body.success).toBe(false);
       });
-
     });
 
     describe('Coordinate Validation', () => {
-
       test('should reject user_lat without user_lng', async () => {
         const centerId = Number(testData.centers[0].id);
 
@@ -266,7 +242,7 @@ describe('GET /api/v1/centers/:id', () => {
 
         const response = await request(app)
           .get(`/api/v1/centers/${centerId}`)
-          .query({ user_lng: 126.9780 })
+          .query({ user_lng: 126.978 })
           .expect(400);
 
         expect(response.body.success).toBe(false);
@@ -278,7 +254,7 @@ describe('GET /api/v1/centers/:id', () => {
 
         const response = await request(app)
           .get(`/api/v1/centers/${centerId}`)
-          .query({ user_lat: -91, user_lng: 126.9780 })
+          .query({ user_lat: -91, user_lng: 126.978 })
           .expect(400);
 
         expect(response.body.success).toBe(false);
@@ -290,7 +266,7 @@ describe('GET /api/v1/centers/:id', () => {
 
         const response = await request(app)
           .get(`/api/v1/centers/${centerId}`)
-          .query({ user_lat: 91, user_lng: 126.9780 })
+          .query({ user_lat: 91, user_lng: 126.978 })
           .expect(400);
 
         expect(response.body.success).toBe(false);
@@ -326,7 +302,7 @@ describe('GET /api/v1/centers/:id', () => {
 
         const response = await request(app)
           .get(`/api/v1/centers/${centerId}`)
-          .query({ user_lat: 'abc', user_lng: 126.9780 })
+          .query({ user_lat: 'abc', user_lng: 126.978 })
           .expect(400);
 
         expect(response.body.success).toBe(false);
@@ -344,9 +320,7 @@ describe('GET /api/v1/centers/:id', () => {
         expect(response.body.success).toBe(false);
         expect(response.body.error.message).toMatch(/invalid.*longitude/i);
       });
-
     });
-
   });
 
   // ============================================================================
@@ -354,7 +328,6 @@ describe('GET /api/v1/centers/:id', () => {
   // ============================================================================
 
   describe('Not Found Errors (404 Not Found)', () => {
-
     test('should return 404 for non-existent center ID', async () => {
       const nonExistentId = 999999;
 
@@ -372,14 +345,11 @@ describe('GET /api/v1/centers/:id', () => {
     test('should return 404 for very large center ID', async () => {
       const largeId = 2147483647; // Max 32-bit integer
 
-      const response = await request(app)
-        .get(`/api/v1/centers/${largeId}`)
-        .expect(404);
+      const response = await request(app).get(`/api/v1/centers/${largeId}`).expect(404);
 
       expect(response.body.success).toBe(false);
       expect(response.body.error.message).toMatch(/not found/i);
     });
-
   });
 
   // ============================================================================
@@ -387,7 +357,6 @@ describe('GET /api/v1/centers/:id', () => {
   // ============================================================================
 
   describe('Edge Cases', () => {
-
     test('should accept boundary latitude values (-90, 90)', async () => {
       const centerId = Number(testData.centers[0].id);
 
@@ -438,7 +407,7 @@ describe('GET /api/v1/centers/:id', () => {
         .get(`/api/v1/centers/${centerId}`)
         .query({
           user_lat: Number(center.latitude),
-          user_lng: Number(center.longitude)
+          user_lng: Number(center.longitude),
         })
         .expect(200);
 
@@ -464,7 +433,7 @@ describe('GET /api/v1/centers/:id', () => {
 
       const response = await request(app)
         .get(`/api/v1/centers/${centerId}`)
-        .query({ user_lat: 37.56651234567890, user_lng: 126.97801234567890 })
+        .query({ user_lat: 37.5665123456789, user_lng: 126.9780123456789 })
         .expect(200);
 
       expect(response.body.data.location).toHaveProperty('distance');
@@ -475,7 +444,6 @@ describe('GET /api/v1/centers/:id', () => {
       const decimalPlaces = distanceStr.includes('.') ? distanceStr.split('.')[1].length : 0;
       expect(decimalPlaces).toBeLessThanOrEqual(2);
     });
-
   });
 
   // ============================================================================
@@ -483,14 +451,11 @@ describe('GET /api/v1/centers/:id', () => {
   // ============================================================================
 
   describe('Performance Tests', () => {
-
     test('should respond within performance threshold (<500ms)', async () => {
       const centerId = Number(testData.centers[0].id);
       const startTime = Date.now();
 
-      await request(app)
-        .get(`/api/v1/centers/${centerId}`)
-        .expect(200);
+      await request(app).get(`/api/v1/centers/${centerId}`).expect(200);
 
       const responseTime = Date.now() - startTime;
 
@@ -504,7 +469,7 @@ describe('GET /api/v1/centers/:id', () => {
 
       await request(app)
         .get(`/api/v1/centers/${centerId}`)
-        .query({ user_lat: 37.5665, user_lng: 126.9780 })
+        .query({ user_lat: 37.5665, user_lng: 126.978 })
         .expect(200);
 
       const responseTime = Date.now() - startTime;
@@ -518,16 +483,12 @@ describe('GET /api/v1/centers/:id', () => {
       const centerId = Number(center.id);
 
       // Get initial view count
-      const initialResponse = await request(app)
-        .get(`/api/v1/centers/${centerId}`)
-        .expect(200);
+      const initialResponse = await request(app).get(`/api/v1/centers/${centerId}`).expect(200);
 
       const initialViewCount = initialResponse.body.data.stats.view_count;
 
       // Make another request
-      await request(app)
-        .get(`/api/v1/centers/${centerId}`)
-        .expect(200);
+      await request(app).get(`/api/v1/centers/${centerId}`).expect(200);
 
       // Wait a bit for async update to complete
       await new Promise(resolve => setTimeout(resolve, 100));
@@ -535,12 +496,11 @@ describe('GET /api/v1/centers/:id', () => {
       // Verify view count was incremented in database
       const updatedCenter = await prisma.center.findUnique({
         where: { id: center.id },
-        select: { viewCount: true }
+        select: { viewCount: true },
       });
 
       expect(Number(updatedCenter.viewCount)).toBeGreaterThan(initialViewCount);
     });
-
   });
 
   // ============================================================================
@@ -548,18 +508,23 @@ describe('GET /api/v1/centers/:id', () => {
   // ============================================================================
 
   describe('Response Schema Validation', () => {
-
     test('should match exact response schema without user location', async () => {
       const centerId = Number(testData.centers[0].id);
 
-      const response = await request(app)
-        .get(`/api/v1/centers/${centerId}`)
-        .expect(200);
+      const response = await request(app).get(`/api/v1/centers/${centerId}`).expect(200);
 
       const { data } = response.body;
 
       // Verify exact schema structure
-      const expectedKeys = ['id', 'center_name', 'center_type', 'contact', 'location', 'business_content', 'stats'];
+      const expectedKeys = [
+        'id',
+        'center_name',
+        'center_type',
+        'contact',
+        'location',
+        'business_content',
+        'stats',
+      ];
       expect(Object.keys(data).sort()).toEqual(expectedKeys.sort());
 
       const expectedContactKeys = ['phone', 'road_address', 'jibun_address'];
@@ -577,7 +542,7 @@ describe('GET /api/v1/centers/:id', () => {
 
       const response = await request(app)
         .get(`/api/v1/centers/${centerId}`)
-        .query({ user_lat: 37.5665, user_lng: 126.9780 })
+        .query({ user_lat: 37.5665, user_lng: 126.978 })
         .expect(200);
 
       const { data } = response.body;
@@ -586,7 +551,5 @@ describe('GET /api/v1/centers/:id', () => {
       const expectedLocationKeys = ['latitude', 'longitude', 'distance'];
       expect(Object.keys(data.location).sort()).toEqual(expectedLocationKeys.sort());
     });
-
   });
-
 });

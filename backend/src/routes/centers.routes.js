@@ -12,7 +12,7 @@ const {
 
 /**
  * @swagger
- * /api/v1/centers/{id}:
+ * /centers/{id}:
  *   get:
  *     summary: Get center detail by ID
  *     description: Retrieve detailed information about a specific mental health center. Optionally calculates distance if user location is provided.
@@ -172,7 +172,7 @@ router.get('/:id', getCenterDetail);
 
 /**
  * @swagger
- * /api/v1/centers/{id}/operating-status:
+ * /centers/{id}/operating-status:
  *   get:
  *     summary: Get center operating status
  *     description: Retrieve current operating status for a specific center with caching support
@@ -345,7 +345,7 @@ router.get('/:id/operating-status', getOperatingStatus);
 
 /**
  * @swagger
- * /api/v1/centers/{id}/operating-status/cache:
+ * /centers/{id}/operating-status/cache:
  *   delete:
  *     summary: Invalidate operating status cache
  *     description: Clear cached operating status for a specific center (admin operation)
@@ -388,7 +388,7 @@ router.delete('/:id/operating-status/cache', invalidateOperatingStatusCache);
 
 /**
  * @swagger
- * /api/v1/centers/{id}/staff:
+ * /centers/{id}/staff:
  *   get:
  *     summary: Get center staff information
  *     description: Retrieve staff information for a specific center including staff types, counts, and total
@@ -451,7 +451,7 @@ router.get('/:id/staff', getCenterStaff);
 
 /**
  * @swagger
- * /api/v1/centers/{id}/programs:
+ * /centers/{id}/programs:
  *   get:
  *     summary: Get center programs
  *     description: Retrieve programs offered by a specific center with optional filtering and pagination

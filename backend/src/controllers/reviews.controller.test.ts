@@ -135,7 +135,7 @@ beforeEach(async () => {
     }),
   ]);
 
-  testReviewIds = reviews.map((r) => Number(r.id));
+  testReviewIds = reviews.map(r => Number(r.id));
 });
 
 /**
@@ -178,9 +178,7 @@ describe('GET /api/centers/:id/reviews', () => {
    * Test: Success - Review listing with default parameters
    */
   test('should return reviews with default pagination (200)', async () => {
-    const response = await request(app).get(
-      `/api/centers/${testCenterId}/reviews`
-    );
+    const response = await request(app).get(`/api/centers/${testCenterId}/reviews`);
 
     expect(response.status).toBe(200);
     expect(response.body).toHaveProperty('center_id', testCenterId);
@@ -235,17 +233,13 @@ describe('GET /api/centers/:id/reviews', () => {
    * Test: Sort by latest (default)
    */
   test('should sort reviews by latest (created_at DESC)', async () => {
-    const response = await request(app).get(
-      `/api/centers/${testCenterId}/reviews?sort=latest`
-    );
+    const response = await request(app).get(`/api/centers/${testCenterId}/reviews?sort=latest`);
 
     expect(response.status).toBe(200);
     expect(response.body.reviews.length).toBe(4);
 
     // Check descending order by created_at
-    const createdDates = response.body.reviews.map((r: any) =>
-      new Date(r.created_at).getTime()
-    );
+    const createdDates = response.body.reviews.map((r: any) => new Date(r.created_at).getTime());
     for (let i = 0; i < createdDates.length - 1; i++) {
       expect(createdDates[i]).toBeGreaterThanOrEqual(createdDates[i + 1]);
     }
@@ -258,17 +252,13 @@ describe('GET /api/centers/:id/reviews', () => {
    * Test: Sort by helpful
    */
   test('should sort reviews by helpful count (helpful_count DESC)', async () => {
-    const response = await request(app).get(
-      `/api/centers/${testCenterId}/reviews?sort=helpful`
-    );
+    const response = await request(app).get(`/api/centers/${testCenterId}/reviews?sort=helpful`);
 
     expect(response.status).toBe(200);
     expect(response.body.reviews.length).toBe(4);
 
     // Check descending order by helpful_count
-    const helpfulCounts = response.body.reviews.map(
-      (r: any) => r.helpful_count
-    );
+    const helpfulCounts = response.body.reviews.map((r: any) => r.helpful_count);
     for (let i = 0; i < helpfulCounts.length - 1; i++) {
       expect(helpfulCounts[i]).toBeGreaterThanOrEqual(helpfulCounts[i + 1]);
     }
@@ -283,7 +273,7 @@ describe('GET /api/centers/:id/reviews', () => {
    */
   test('should sort reviews by rating descending (rating DESC)', async () => {
     const response = await request(app).get(
-      `/api/centers/${testCenterId}/reviews?sort=rating_desc`
+      `/api/centers/${testCenterId}/reviews?sort=rating_desc`,
     );
 
     expect(response.status).toBe(200);
@@ -303,9 +293,7 @@ describe('GET /api/centers/:id/reviews', () => {
    * Test: Sort by rating ascending
    */
   test('should sort reviews by rating ascending (rating ASC)', async () => {
-    const response = await request(app).get(
-      `/api/centers/${testCenterId}/reviews?sort=rating_asc`
-    );
+    const response = await request(app).get(`/api/centers/${testCenterId}/reviews?sort=rating_asc`);
 
     expect(response.status).toBe(200);
     expect(response.body.reviews.length).toBe(4);
@@ -326,7 +314,7 @@ describe('GET /api/centers/:id/reviews', () => {
   test('should paginate reviews correctly', async () => {
     // Get first page with limit 2
     const page1Response = await request(app).get(
-      `/api/centers/${testCenterId}/reviews?page=1&limit=2`
+      `/api/centers/${testCenterId}/reviews?page=1&limit=2`,
     );
 
     expect(page1Response.status).toBe(200);
@@ -342,7 +330,7 @@ describe('GET /api/centers/:id/reviews', () => {
 
     // Get second page
     const page2Response = await request(app).get(
-      `/api/centers/${testCenterId}/reviews?page=2&limit=2`
+      `/api/centers/${testCenterId}/reviews?page=2&limit=2`,
     );
 
     expect(page2Response.status).toBe(200);
@@ -367,9 +355,7 @@ describe('GET /api/centers/:id/reviews', () => {
    */
   test('should return 404 when center does not exist', async () => {
     const nonExistentCenterId = 999999;
-    const response = await request(app).get(
-      `/api/centers/${nonExistentCenterId}/reviews`
-    );
+    const response = await request(app).get(`/api/centers/${nonExistentCenterId}/reviews`);
 
     expect(response.status).toBe(404);
     expect(response.body).toHaveProperty('error');
@@ -382,7 +368,7 @@ describe('GET /api/centers/:id/reviews', () => {
    */
   test('should return 400 for invalid sort option', async () => {
     const response = await request(app).get(
-      `/api/centers/${testCenterId}/reviews?sort=invalid_sort`
+      `/api/centers/${testCenterId}/reviews?sort=invalid_sort`,
     );
 
     expect(response.status).toBe(400);
@@ -438,7 +424,7 @@ describe('POST /api/centers/:id/reviews', () => {
     expect(response.body).toHaveProperty('title', 'Amazing experience');
     expect(response.body).toHaveProperty(
       'content',
-      'The counseling was very helpful and professional.'
+      'The counseling was very helpful and professional.',
     );
     expect(response.body).toHaveProperty('helpful_count', 0);
     expect(response.body).toHaveProperty('unhelpful_count', 0);
@@ -458,12 +444,10 @@ describe('POST /api/centers/:id/reviews', () => {
    * Test: Error - Unauthenticated (401)
    */
   test('should return 401 when not authenticated', async () => {
-    const response = await request(app)
-      .post(`/api/centers/${testCenterId}/reviews`)
-      .send({
-        rating: 5,
-        content: 'Great service',
-      });
+    const response = await request(app).post(`/api/centers/${testCenterId}/reviews`).send({
+      rating: 5,
+      content: 'Great service',
+    });
 
     expect(response.status).toBe(401);
     expect(response.body).toHaveProperty('error');
@@ -567,7 +551,7 @@ describe('PUT /api/reviews/:id', () => {
     expect(response.body).toHaveProperty('title', 'Updated title');
     expect(response.body).toHaveProperty(
       'content',
-      'Updated content with more details about the service.'
+      'Updated content with more details about the service.',
     );
   });
 

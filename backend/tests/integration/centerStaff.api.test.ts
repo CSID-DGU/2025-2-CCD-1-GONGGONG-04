@@ -18,7 +18,7 @@ describe('GET /api/v1/centers/:id/staff', () => {
         centerType: '정신건강복지센터',
         roadAddress: '서울특별시 테스트구 테스트로 123',
         latitude: 37.5665,
-        longitude: 126.9780,
+        longitude: 126.978,
         isActive: true,
       },
     });
@@ -125,9 +125,7 @@ describe('GET /api/v1/centers/:id/staff', () => {
 
   describe('Error cases', () => {
     it('should return 400 for invalid center ID (non-numeric)', async () => {
-      const response = await request(global.app)
-        .get('/api/v1/centers/invalid/staff')
-        .expect(400);
+      const response = await request(global.app).get('/api/v1/centers/invalid/staff').expect(400);
 
       expect(response.body).toMatchObject({
         success: false,
@@ -138,9 +136,7 @@ describe('GET /api/v1/centers/:id/staff', () => {
     });
 
     it('should return 400 for invalid center ID (negative)', async () => {
-      const response = await request(global.app)
-        .get('/api/v1/centers/-1/staff')
-        .expect(400);
+      const response = await request(global.app).get('/api/v1/centers/-1/staff').expect(400);
 
       expect(response.body).toMatchObject({
         success: false,

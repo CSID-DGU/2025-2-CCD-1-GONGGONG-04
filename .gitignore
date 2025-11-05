@@ -20,3 +20,6 @@ Thumbs.db
 # 임시 파일
 *.tmp
 *.temp
+
+# Sentry 설정 (민감정보 포함)
+sentry.properties

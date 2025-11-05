@@ -1,0 +1,25 @@
+# Sentry Configuration File
+# Sprint 2 - Task 4.4.3
+#
+# This file is used by Sentry CLI for source map uploads and releases
+#
+# Usage:
+# 1. Replace <YOUR_AUTH_TOKEN> with your actual Sentry auth token
+# 2. Replace <YOUR_ORG> and <YOUR_PROJECT> with your Sentry organization and project names
+# 3. Run: sentry-cli releases finalize <VERSION>
+
+[defaults]
+# Sentry organization name
+org=<YOUR_ORG>
+
+# Sentry project name
+project=mindconnect
+
+# Sentry auth token (DO NOT commit this to Git!)
+# Create token at: https://sentry.io/settings/account/api/auth-tokens/
+# Required scopes: project:read, project:releases
+auth.token=<YOUR_AUTH_TOKEN>
+
+[log]
+# Log level: debug, info, warning, error
+level=warning

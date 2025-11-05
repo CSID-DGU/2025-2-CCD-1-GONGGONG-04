@@ -48,7 +48,7 @@ export function setupHolidaySyncCron(): cron.ScheduledTask {
 
         const results = await Promise.allSettled([
           syncPublicHolidaysToDatabase(currentYear),
-          syncPublicHolidaysToDatabase(nextYear)
+          syncPublicHolidaysToDatabase(nextYear),
         ]);
 
         // Log results
@@ -64,15 +64,14 @@ export function setupHolidaySyncCron(): cron.ScheduledTask {
 
         const duration = Date.now() - startTime;
         console.log(`[Cron] Holiday synchronization completed in ${duration}ms`);
-
       } catch (error) {
         console.error('[Cron] Holiday synchronization failed:', error);
       }
     },
     {
       timezone: 'Asia/Seoul',
-      scheduled: true
-    }
+      scheduled: true,
+    },
   );
 
   console.log(`[Cron] Holiday sync job scheduled: ${schedule} (Asia/Seoul)`);

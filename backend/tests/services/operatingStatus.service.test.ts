@@ -13,7 +13,7 @@ import {
   getOperatingHours,
   getHolidays,
   calculateNextOpen,
-  OperatingStatus
+  OperatingStatus,
 } from '../../src/services/operatingStatus.service';
 
 // Mock Prisma Client
@@ -22,12 +22,12 @@ jest.mock('@prisma/client', () => {
     $queryRaw: jest.fn(),
     center: {
       findUnique: jest.fn(),
-      update: jest.fn()
-    }
+      update: jest.fn(),
+    },
   };
 
   return {
-    PrismaClient: jest.fn(() => mockPrisma)
+    PrismaClient: jest.fn(() => mockPrisma),
   };
 });
 
@@ -42,16 +42,46 @@ describe('Operating Status Service', () => {
     it('should return weekly hours from database view', async () => {
       const mockWeeklyHours = [
         { day_of_week: 0, day_name: '일요일', open_time: null, close_time: null, is_open: false },
-        { day_of_week: 1, day_name: '월요일', open_time: '09:00', close_time: '18:00', is_open: true },
-        { day_of_week: 2, day_name: '화요일', open_time: '09:00', close_time: '18:00', is_open: true },
-        { day_of_week: 3, day_name: '수요일', open_time: '09:00', close_time: '18:00', is_open: true },
-        { day_of_week: 4, day_name: '목요일', open_time: '09:00', close_time: '18:00', is_open: true },
-        { day_of_week: 5, day_name: '금요일', open_time: '09:00', close_time: '18:00', is_open: true },
-        { day_of_week: 6, day_name: '토요일', open_time: null, close_time: null, is_open: false }
+        {
+          day_of_week: 1,
+          day_name: '월요일',
+          open_time: '09:00',
+          close_time: '18:00',
+          is_open: true,
+        },
+        {
+          day_of_week: 2,
+          day_name: '화요일',
+          open_time: '09:00',
+          close_time: '18:00',
+          is_open: true,
+        },
+        {
+          day_of_week: 3,
+          day_name: '수요일',
+          open_time: '09:00',
+          close_time: '18:00',
+          is_open: true,
+        },
+        {
+          day_of_week: 4,
+          day_name: '목요일',
+          open_time: '09:00',
+          close_time: '18:00',
+          is_open: true,
+        },
+        {
+          day_of_week: 5,
+          day_name: '금요일',
+          open_time: '09:00',
+          close_time: '18:00',
+          is_open: true,
+        },
+        { day_of_week: 6, day_name: '토요일', open_time: null, close_time: null, is_open: false },
       ];
 
       (prisma.$queryRaw as jest.Mock).mockResolvedValue([
-        { weekly_hours: JSON.stringify(mockWeeklyHours) }
+        { weekly_hours: JSON.stringify(mockWeeklyHours) },
       ]);
 
       const result = await getOperatingHours(1);
@@ -81,7 +111,7 @@ describe('Operating Status Service', () => {
     it('should return holidays within date range', async () => {
       const mockHolidays = [
         { holiday_date: new Date('2025-01-01'), holiday_name: '신정', is_regular: false },
-        { holiday_date: new Date('2025-01-05'), holiday_name: '일요일', is_regular: true }
+        { holiday_date: new Date('2025-01-05'), holiday_name: '일요일', is_regular: true },
       ];
 
       (prisma.$queryRaw as jest.Mock).mockResolvedValue(mockHolidays);
@@ -111,16 +141,14 @@ describe('Operating Status Service', () => {
 
   describe('calculateNextOpen', () => {
     it('should return next open date from MySQL function', async () => {
-      (prisma.$queryRaw as jest.Mock).mockResolvedValue([
-        { next_open: '2025-01-16 09:00:00' }
-      ]);
+      (prisma.$queryRaw as jest.Mock).mockResolvedValue([{ next_open: '2025-01-16 09:00:00' }]);
 
       const result = await calculateNextOpen(1, new Date('2025-01-15'));
 
       expect(result).toEqual({
         date: '2025-01-16',
         day_name: '목요일',
-        open_time: '09:00'
+        open_time: '09:00',
       });
     });
 
@@ -132,7 +160,7 @@ describe('Operating Status Service', () => {
       expect(result).toEqual({
         date: null,
         day_name: null,
-        open_time: null
+        open_time: null,
       });
     });
 
@@ -144,7 +172,7 @@ describe('Operating Status Service', () => {
       expect(result).toEqual({
         date: null,
         day_name: null,
-        open_time: null
+        open_time: null,
       });
     });
   });
@@ -152,12 +180,42 @@ describe('Operating Status Service', () => {
   describe('calculateOperatingStatus', () => {
     const mockWeeklyHours = [
       { day_of_week: 0, day_name: '일요일', open_time: null, close_time: null, is_open: false },
-      { day_of_week: 1, day_name: '월요일', open_time: '09:00', close_time: '18:00', is_open: true },
-      { day_of_week: 2, day_name: '화요일', open_time: '09:00', close_time: '18:00', is_open: true },
-      { day_of_week: 3, day_name: '수요일', open_time: '09:00', close_time: '18:00', is_open: true },
-      { day_of_week: 4, day_name: '목요일', open_time: '09:00', close_time: '18:00', is_open: true },
-      { day_of_week: 5, day_name: '금요일', open_time: '09:00', close_time: '18:00', is_open: true },
-      { day_of_week: 6, day_name: '토요일', open_time: null, close_time: null, is_open: false }
+      {
+        day_of_week: 1,
+        day_name: '월요일',
+        open_time: '09:00',
+        close_time: '18:00',
+        is_open: true,
+      },
+      {
+        day_of_week: 2,
+        day_name: '화요일',
+        open_time: '09:00',
+        close_time: '18:00',
+        is_open: true,
+      },
+      {
+        day_of_week: 3,
+        day_name: '수요일',
+        open_time: '09:00',
+        close_time: '18:00',
+        is_open: true,
+      },
+      {
+        day_of_week: 4,
+        day_name: '목요일',
+        open_time: '09:00',
+        close_time: '18:00',
+        is_open: true,
+      },
+      {
+        day_of_week: 5,
+        day_name: '금요일',
+        open_time: '09:00',
+        close_time: '18:00',
+        is_open: true,
+      },
+      { day_of_week: 6, day_name: '토요일', open_time: null, close_time: null, is_open: false },
     ];
 
     describe('NO_INFO status', () => {
@@ -179,7 +237,7 @@ describe('Operating Status Service', () => {
     describe('TEMP_CLOSED status', () => {
       it('should return TEMP_CLOSED for temporary closure', async () => {
         const mockHolidays = [
-          { holiday_date: new Date('2025-01-15'), holiday_name: '임시휴무', is_regular: false }
+          { holiday_date: new Date('2025-01-15'), holiday_name: '임시휴무', is_regular: false },
         ];
 
         (prisma.$queryRaw as jest.Mock)
@@ -198,7 +256,7 @@ describe('Operating Status Service', () => {
     describe('HOLIDAY status', () => {
       it('should return HOLIDAY for public holiday', async () => {
         const mockHolidays = [
-          { holiday_date: new Date('2025-01-01'), holiday_name: '신정', is_regular: false }
+          { holiday_date: new Date('2025-01-01'), holiday_name: '신정', is_regular: false },
         ];
 
         (prisma.$queryRaw as jest.Mock)

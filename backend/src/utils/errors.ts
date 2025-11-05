@@ -15,14 +15,14 @@
 export class AppError extends Error {
   statusCode: number;
   code: string;
-  details: any;
+  details: unknown;
   isOperational: boolean;
 
   constructor(
     message: string = 'Application Error',
     statusCode: number = 500,
     code: string = 'APP_ERROR',
-    details: any = null
+    details: unknown = null,
   ) {
     super(message);
     this.name = this.constructor.name;
@@ -33,8 +33,8 @@ export class AppError extends Error {
     Error.captureStackTrace(this, this.constructor);
   }
 
-  toJSON() {
-    const result: any = {
+  toJSON(): { success: false; error: { code: string; message: string; details?: unknown } } {
+    const result: { success: false; error: { code: string; message: string; details?: unknown } } = {
       success: false,
       error: {
         code: this.code,
@@ -55,7 +55,7 @@ export class AppError extends Error {
  * 검증 에러
  */
 export class ValidationError extends AppError {
-  constructor(message: string = '입력 데이터가 유효하지 않습니다', details: any = null) {
+  constructor(message: string = '입력 데이터가 유효하지 않습니다', details: unknown = null) {
     super(message, 400, 'VALIDATION_ERROR', details);
   }
 
@@ -63,8 +63,8 @@ export class ValidationError extends AppError {
    * Create ValidationError from Zod error
    * Zod 에러에서 ValidationError 생성
    */
-  static fromZodError(zodError: any): ValidationError {
-    const details = zodError.errors.map((err: any) => ({
+  static fromZodError(zodError: { errors: Array<{ path: Array<string | number>; message: string; code: string }> }): ValidationError {
+    const details = zodError.errors.map((err) => ({
       field: err.path.join('.'),
       message: err.message,
       code: err.code,
@@ -101,7 +101,10 @@ export class NotFoundError extends AppError {
 export class InternalError extends AppError {
   originalError: Error | null;
 
-  constructor(message: string = '서버 내부 에러가 발생했습니다', originalError: Error | null = null) {
+  constructor(
+    message: string = '서버 내부 에러가 발생했습니다',
+    originalError: Error | null = null,
+  ) {
     let errorMessage = message;
 
     // 프로덕션에서는 상세 에러 숨김
@@ -165,7 +168,7 @@ export class ConflictError extends AppError {
  * Check if an error is an operational error
  * 에러가 운영 에러인지 확인
  */
-export function isOperationalError(error: any): boolean {
+export function isOperationalError(error: unknown): boolean {
   if (error instanceof AppError) {
     return error.isOperational === true;
   }

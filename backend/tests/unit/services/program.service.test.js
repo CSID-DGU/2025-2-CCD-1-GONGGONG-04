@@ -91,9 +91,7 @@ describe('Program Service', () => {
     test('should throw TypeError for invalid assessmentResult', () => {
       expect(() => matchProgramsByAssessment(mockPrograms, null)).toThrow(TypeError);
       expect(() => matchProgramsByAssessment(mockPrograms, {})).toThrow(TypeError);
-      expect(() =>
-        matchProgramsByAssessment(mockPrograms, { severity: 'MID' })
-      ).toThrow(TypeError);
+      expect(() => matchProgramsByAssessment(mockPrograms, { severity: 'MID' })).toThrow(TypeError);
     });
   });
 

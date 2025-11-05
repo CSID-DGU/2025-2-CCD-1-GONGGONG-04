@@ -53,7 +53,7 @@ const getCenterDetail = async (req, res, next) => {
       if (!user_lat || !user_lng) {
         throw createValidationError(
           'Both user_lat and user_lng must be provided together.',
-          user_lat ? 'user_lng' : 'user_lat'
+          user_lat ? 'user_lng' : 'user_lat',
         );
       }
 
