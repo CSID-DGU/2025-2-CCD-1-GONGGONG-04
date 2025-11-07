@@ -350,15 +350,113 @@ export async function getCenterPrograms(
 }
 
 /**
- * 센터 목록 조회 (추후 확장용)
- * @param params - 검색 파라미터
+ * 센터 데이터 타입 (지도 마커용)
  */
-export async function getCenters(params?: {
-  keyword?: string;
-  lat?: number;
-  lng?: number;
+export interface CenterMarkerData {
+  id: number;
+  name: string;
+  latitude: number;
+  longitude: number;
+  distance: number; // meters
+  walkTime: string; // "16분"
+  operatingStatus: 'OPEN' | 'CLOSING_SOON' | 'CLOSED' | 'HOLIDAY' | 'TEMP_CLOSED' | 'NO_INFO';
+  closingTime?: string | null; // "18:00"
+  nextOpenDate?: string | null; // "2025-01-16"
+  avgRating: number;
+  reviewCount: number;
+  centerType: string;
+  roadAddress: string;
+  phoneNumber?: string | null;
+}
+
+/**
+ * Centers API 응답 타입
+ */
+export interface CentersListResponse {
+  centers: CenterMarkerData[];
+  total: number;
+}
+
+/**
+ * 지도 중심 좌표 기준으로 주변 센터 검색
+ *
+ * @param params - 검색 파라미터 { lat, lng, radius }
+ * @returns 센터 목록과 총 개수
+ * @throws CenterApiError
+ *
+ * @example
+ * const result = await getCenters({ lat: 37.5665, lng: 126.978, radius: 5 });
+ */
+export async function getCenters(params: {
+  lat: number;
+  lng: number;
   radius?: number;
-}) {
-  // 추후 구현
-  throw new Error('Not implemented yet');
+}): Promise<CentersListResponse> {
+  try {
+    // URL 구성
+    const url = new URL(`${API_BASE_URL}/centers`);
+    url.searchParams.append('lat', params.lat.toString());
+    url.searchParams.append('lng', params.lng.toString());
+
+    if (params.radius) {
+      url.searchParams.append('radius', params.radius.toString());
+    }
+
+    // API 요청
+    const response = await fetch(url.toString(), {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      // 지도 데이터는 실시간 업데이트가 필요하므로 캐시 비활성화
+      cache: 'no-store',
+    });
+
+    // 에러 처리
+    if (!response.ok) {
+      if (response.status === 400) {
+        throw new CenterApiError('잘못된 검색 파라미터입니다', 400);
+      }
+
+      if (response.status >= 500) {
+        throw new CenterApiError('서버 오류가 발생했습니다', response.status);
+      }
+
+      // 기타 에러
+      const errorData: ApiError = await response.json().catch(() => ({
+        error: '알 수 없는 오류가 발생했습니다',
+      }));
+
+      throw new CenterApiError(
+        errorData.message || errorData.error,
+        response.status
+      );
+    }
+
+    // 성공 응답 파싱
+    const responseBody = await response.json();
+
+    // 백엔드 응답 형식: { success: true, data: { centers: [...], total: N } }
+    return responseBody.data;
+
+  } catch (error) {
+    // CenterApiError는 그대로 throw
+    if (error instanceof CenterApiError) {
+      throw error;
+    }
+
+    // 네트워크 에러 처리
+    if (error instanceof TypeError && error.message.includes('fetch')) {
+      throw new CenterApiError(
+        '네트워크 연결을 확인해주세요',
+        0
+      );
+    }
+
+    // 기타 예상치 못한 에러
+    throw new CenterApiError(
+      '센터 목록을 불러오는데 실패했습니다',
+      500
+    );
+  }
 }

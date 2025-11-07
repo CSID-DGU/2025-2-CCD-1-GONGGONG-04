@@ -168,3 +168,56 @@ export const recommendationResponseSchema = z.object({
  * 추천 응답 타입
  */
 export type RecommendationResponse = z.infer<typeof recommendationResponseSchema>;
+
+// ============================================
+// Sprint 3 - Task 3.4.2: Assessment-based Recommendation API
+// ============================================
+
+/**
+ * Assessment 기반 추천 요청 쿼리 파라미터 스키마
+ *
+ * GET /api/v1/assessments/:id/recommendations
+ */
+export const assessmentRecommendationQuerySchema = z.object({
+  /** 사용자 위도 (필수) */
+  lat: z
+    .string()
+    .transform((val) => parseFloat(val))
+    .pipe(latitudeSchema),
+
+  /** 사용자 경도 (필수) */
+  lng: z
+    .string()
+    .transform((val) => parseFloat(val))
+    .pipe(longitudeSchema),
+
+  /** 최대 검색 반경 (km, 기본값: 10km, 최대: 50km) */
+  maxDistance: z
+    .string()
+    .optional()
+    .transform((val) => (val ? parseFloat(val) : 10))
+    .pipe(
+      z
+        .number()
+        .min(1, '최소 1km 이상이어야 합니다')
+        .max(50, '최대 50km까지 검색할 수 있습니다'),
+    ),
+
+  /** 최대 추천 개수 (기본값: 5, 최대: 20) */
+  limit: z
+    .string()
+    .optional()
+    .transform((val) => (val ? parseInt(val, 10) : 5))
+    .pipe(
+      z
+        .number()
+        .int('정수여야 합니다')
+        .min(1, '최소 1개 이상이어야 합니다')
+        .max(20, '최대 20개까지 조회할 수 있습니다'),
+    ),
+});
+
+/**
+ * Assessment 기반 추천 요청 파라미터 타입
+ */
+export type AssessmentRecommendationQuery = z.infer<typeof assessmentRecommendationQuerySchema>;

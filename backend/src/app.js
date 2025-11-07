@@ -20,10 +20,18 @@ const reviewsRoutes = require('./routes/reviews.routes');
 // Import TypeScript routes file explicitly (Sprint 2)
 const recommendationRoutes = require('./routes/recommendation.routes.ts').default;
 const selfAssessmentRoutes = require('./routes/selfAssessment.routes');
+// Sprint 3: Assessment routes
+const assessmentRoutes = require('./routes/assessment.routes');
 const { errorHandler, notFoundHandler } = require('./middlewares/errorHandler');
 
 // Initialize Express app
 const app = express();
+
+// BigInt JSON serialization support
+// Convert BigInt to Number when serializing to JSON
+BigInt.prototype.toJSON = function() {
+  return Number(this);
+};
 
 // Sentry request handler (must be first middleware)
 if (Sentry && Sentry.Handlers) {
@@ -35,7 +43,14 @@ if (Sentry && Sentry.Handlers) {
 app.use(helmet());
 
 // CORS configuration
-app.use(cors(config.cors));
+app.use(
+  cors(
+    config.cors || {
+      origin: ['http://localhost:3000', 'http://localhost:3001'],
+      credentials: true,
+    }
+  )
+);
 
 // Body parsing middleware
 app.use(express.json());
@@ -50,8 +65,8 @@ if (config.env === 'development') {
 
 // Rate limiting
 const limiter = rateLimit({
-  windowMs: config.rateLimit.windowMs,
-  max: config.rateLimit.maxRequests,
+  windowMs: config.rateLimit?.windowMs || 900000,
+  max: config.rateLimit?.maxRequests || 100,
   message: 'Too many requests from this IP, please try again later.',
 });
 app.use('/api', limiter);
@@ -71,11 +86,11 @@ const swaggerOptions = {
     },
     servers: [
       {
-        url: `http://localhost:${config.port}${config.api.prefix}`,
+        url: `http://localhost:${config.port || 8080}${config.api?.prefix || '/api/v1'}`,
         description: 'Development server',
       },
       {
-        url: `http://localhost:${config.port}`,
+        url: `http://localhost:${config.port || 8080}`,
         description: 'Base server',
       },
     ],
@@ -90,7 +105,9 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 app.use('/', healthRoutes);
 
 // API routes
-app.get(config.api.prefix, (req, res) => {
+const apiPrefix = config.api?.prefix || '/api/v1';
+
+app.get(apiPrefix, (req, res) => {
   res.json({
     message: 'MindConnect API',
     version: '1.0.0',
@@ -99,16 +116,19 @@ app.get(config.api.prefix, (req, res) => {
 });
 
 // Centers routes
-app.use(`${config.api.prefix}/centers`, centersRoutes);
+app.use(`${apiPrefix}/centers`, centersRoutes);
 
 // Reviews routes
-app.use(config.api.prefix, reviewsRoutes);
+app.use(apiPrefix, reviewsRoutes);
 
 // Recommendation routes
-app.use(`${config.api.prefix}/recommendations`, recommendationRoutes);
+app.use(`${apiPrefix}/recommendations`, recommendationRoutes);
 
-// Self-Assessment routes
-app.use(`${config.api.prefix}/self-assessments`, selfAssessmentRoutes);
+// Self-Assessment routes (Sprint 1 - Legacy)
+app.use(`${apiPrefix}/self-assessments`, selfAssessmentRoutes);
+
+// Assessment routes (Sprint 3 - New API)
+app.use(`${apiPrefix}/assessments`, assessmentRoutes);
 
 // TODO: Add more API routes here
 // app.use(`${config.api.prefix}/auth`, authRoutes);

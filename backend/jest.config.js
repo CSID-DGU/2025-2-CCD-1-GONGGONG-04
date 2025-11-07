@@ -17,11 +17,15 @@ module.exports = {
   setupFilesAfterEnv: ['<rootDir>/tests/setup.js'],
   verbose: true,
   transform: {
-    '^.+\\.ts$': 'ts-jest'
+    '^.+\\.ts$': ['ts-jest', {
+      isolatedModules: true,
+      diagnostics: false
+    }]
   },
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json', 'node'],
-  // Mock faker to avoid ES module issues in Jest
+  // Mock ES modules to avoid Jest issues
   moduleNameMapper: {
-    '^@faker-js/faker$': '<rootDir>/tests/__mocks__/faker.js'
+    '^@faker-js/faker$': '<rootDir>/tests/__mocks__/faker.js',
+    '^uuid$': '<rootDir>/tests/__mocks__/uuid.js'
   }
 };

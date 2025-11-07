@@ -121,9 +121,15 @@ export class InternalError extends AppError {
 
     // 개발 환경에서만 원본 에러 정보 포함
     if (process.env.NODE_ENV === 'development' && this.originalError) {
-      json.error.originalError = {
-        message: this.originalError.message,
-        stack: this.originalError.stack,
+      return {
+        ...json,
+        error: {
+          ...json.error,
+          originalError: {
+            message: this.originalError.message,
+            stack: this.originalError.stack,
+          },
+        },
       };
     }
 
@@ -161,6 +167,117 @@ export class ConflictError extends AppError {
   constructor(message: string, existingId?: number) {
     super(message, 409, 'CONFLICT', null);
     this.existingId = existingId;
+  }
+}
+
+/**
+ * Database Error (500 Internal Server Error)
+ * 데이터베이스 에러
+ *
+ * Sprint 1 - Day 2: Error Handling Enhancement
+ */
+export class DatabaseError extends AppError {
+  prismaCode?: string;
+
+  constructor(
+    message: string = '데이터베이스 조회 중 오류가 발생했습니다',
+    code: string = 'DATABASE_ERROR',
+    prismaCode?: string,
+  ) {
+    super(message, 500, code, null);
+    this.prismaCode = prismaCode;
+  }
+
+  /**
+   * Create DatabaseError from Prisma error
+   * Prisma 에러에서 DatabaseError 생성
+   */
+  static fromPrismaError(prismaError: {
+    code: string;
+    meta?: Record<string, unknown>;
+    message: string;
+  }): DatabaseError {
+    let message = '데이터베이스 조회 중 오류가 발생했습니다';
+    let code = 'DATABASE_ERROR';
+
+    // Prisma 에러 코드별 처리
+    switch (prismaError.code) {
+      case 'P2002':
+        // Unique constraint violation
+        message = '이미 존재하는 데이터입니다';
+        code = 'DUPLICATE_ENTRY';
+        break;
+      case 'P2025':
+        // Record not found
+        message = '요청한 데이터를 찾을 수 없습니다';
+        code = 'NOT_FOUND';
+        break;
+      case 'P2003':
+        // Foreign key constraint violation
+        message = '참조 무결성 제약 조건 위반입니다';
+        code = 'FOREIGN_KEY_VIOLATION';
+        break;
+      case 'P2010':
+        // Raw query failed
+        message = '데이터베이스 쿼리 실행에 실패했습니다';
+        code = 'QUERY_FAILED';
+        break;
+      case 'P1001':
+        // Connection error
+        message = '데이터베이스 연결에 실패했습니다';
+        code = 'CONNECTION_ERROR';
+        break;
+      default:
+        // Keep default message
+        break;
+    }
+
+    const error = new DatabaseError(message, code, prismaError.code);
+    return error;
+  }
+}
+
+/**
+ * Cache Error (Non-fatal, logged but doesn't fail request)
+ * 캐시 에러 (Redis)
+ *
+ * Sprint 1 - Day 2: Error Handling Enhancement
+ *
+ * Note: This error should be caught and logged, but NOT thrown to client.
+ * The application should gracefully degrade when Redis is unavailable.
+ */
+export class CacheError extends AppError {
+  operation: string;
+
+  constructor(message: string = '캐시 작업 중 오류가 발생했습니다', operation: string = 'unknown') {
+    super(message, 500, 'CACHE_ERROR', null);
+    this.operation = operation;
+  }
+}
+
+/**
+ * Invalid Coordinates Error (400 Bad Request)
+ * 잘못된 좌표 에러
+ *
+ * Sprint 1 - Day 2: Map Search Error Types
+ */
+export class InvalidCoordinatesError extends ValidationError {
+  constructor(message: string = '잘못된 좌표값입니다', details: unknown = null) {
+    super(message, details);
+    this.code = 'INVALID_COORDINATES';
+  }
+}
+
+/**
+ * Invalid Radius Error (400 Bad Request)
+ * 잘못된 반경 에러
+ *
+ * Sprint 1 - Day 2: Map Search Error Types
+ */
+export class InvalidRadiusError extends ValidationError {
+  constructor(message: string = '잘못된 반경값입니다 (1-50km)', details: unknown = null) {
+    super(message, details);
+    this.code = 'INVALID_RADIUS';
   }
 }
 

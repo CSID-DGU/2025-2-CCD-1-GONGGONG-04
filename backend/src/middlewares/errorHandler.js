@@ -6,9 +6,16 @@
  *
  * Handles all errors in the application with consistent formatting.
  * Distinguishes between operational errors (AppError) and programming errors.
+ *
+ * Day 2 Enhancement:
+ * - Added Prisma error handling (PrismaClientKnownRequestError)
+ * - Added Zod validation error handling (ZodError)
+ * - Added Redis error handling
+ * - Improved error logging and response formatting
  */
 
-const { InternalError, isOperationalError } = require('../utils/errors');
+const { Prisma } = require('@prisma/client');
+const { InternalError, isOperationalError, ValidationError, DatabaseError } = require('../utils/errors.ts');
 const config = require('../config');
 
 /**
@@ -16,18 +23,81 @@ const config = require('../config');
  * Express의 전역 에러 핸들러
  */
 const errorHandler = (err, req, res, _next) => {
-  // 1. 운영 에러 (Operational Error) 처리
+  // 1. Zod Validation Error 처리
+  if (err.name === 'ZodError') {
+    const validationError = ValidationError.fromZodError(err);
+
+    if (config.env === 'development') {
+      console.warn('[Validation Error]', {
+        code: validationError.code,
+        message: validationError.message,
+        details: validationError.details,
+        path: req.path,
+        method: req.method,
+      });
+    }
+
+    res.status(validationError.statusCode).json(validationError.toJSON());
+    return;
+  }
+
+  // 2. Prisma Database Error 처리
+  if (err instanceof Prisma.PrismaClientKnownRequestError) {
+    const dbError = DatabaseError.fromPrismaError(err);
+
+    console.error('[Database Error]', {
+      code: dbError.code,
+      message: dbError.message,
+      prismaCode: err.code,
+      meta: err.meta,
+      path: req.path,
+      method: req.method,
+    });
+
+    res.status(dbError.statusCode).json(dbError.toJSON());
+    return;
+  }
+
+  // 3. Prisma Validation Error 처리
+  if (err instanceof Prisma.PrismaClientValidationError) {
+    const dbError = new DatabaseError(
+      '데이터베이스 검증 오류가 발생했습니다',
+      'VALIDATION_ERROR'
+    );
+
+    console.error('[Database Validation Error]', {
+      message: err.message,
+      path: req.path,
+      method: req.method,
+    });
+
+    res.status(dbError.statusCode).json(dbError.toJSON());
+    return;
+  }
+
+  // 4. 운영 에러 (Operational Error) 처리
   if (isOperationalError(err)) {
     const appError = err;
 
-    // 개발 환경에서는 콘솔에 로그 출력
-    if (config.env === 'development') {
-      console.error('[Operational Error]', {
+    // 에러 레벨에 따른 로깅
+    if (appError.statusCode >= 500) {
+      console.error('[Operational Error - Server]', {
         code: appError.code,
         message: appError.message,
         statusCode: appError.statusCode,
         details: appError.details,
         stack: appError.stack,
+        path: req.path,
+        method: req.method,
+      });
+    } else if (config.env === 'development') {
+      console.warn('[Operational Error - Client]', {
+        code: appError.code,
+        message: appError.message,
+        statusCode: appError.statusCode,
+        details: appError.details,
+        path: req.path,
+        method: req.method,
       });
     }
 
@@ -50,12 +120,14 @@ const errorHandler = (err, req, res, _next) => {
     return;
   }
 
-  // 2. 프로그래밍 에러 (Programming Error) 처리
+  // 5. 프로그래밍 에러 (Programming Error) 처리
   // 예상하지 못한 에러 (버그, 타입 에러, 참조 에러 등)
   console.error('[Programming Error - Unexpected]', {
     name: err.name,
     message: err.message,
     stack: err.stack,
+    path: req.path,
+    method: req.method,
   });
 
   // 프로덕션에서는 상세 에러 정보 숨김

@@ -5,9 +5,54 @@ const {
   isValidLongitude,
   createValidationError,
   createNotFoundError,
+  validateSchema,
+  centerSearchQuerySchema,
 } = require('../utils/validation');
+const { getCentersWithinRadius } = require('../services/centersService');
 
 const prisma = new PrismaClient();
+
+/**
+ * Search centers within radius
+ *
+ * Sprint 1: 지도 기반 센터 검색
+ * Day 1: Backend API Implementation
+ *
+ * @route GET /api/v1/centers?lat=37.5665&lng=126.9780&radius=5
+ * @param {Object} req - Express request object
+ * @param {Object} req.query - Query parameters
+ * @param {string} req.query.lat - User's latitude (required)
+ * @param {string} req.query.lng - User's longitude (required)
+ * @param {string} req.query.radius - Search radius in km (optional, default: 5, max: 50)
+ * @param {Object} res - Express response object
+ * @param {Function} next - Express next middleware function
+ *
+ * @returns {Object} Centers within radius with operating status
+ *
+ * @example
+ * GET /api/v1/centers?lat=37.5665&lng=126.9780&radius=5
+ */
+const searchCenters = async (req, res, next) => {
+  try {
+    const { lat, lng, radius } = req.query;
+
+    // Get centers within radius (service handles caching and distance calculation)
+    const result = await getCentersWithinRadius(
+      parseFloat(lat),
+      parseFloat(lng),
+      radius ? parseFloat(radius) : 5
+    );
+
+    // Send success response
+    res.status(200).json({
+      success: true,
+      data: result,
+    });
+  } catch (error) {
+    // Pass error to global error handler
+    next(error);
+  }
+};
 
 /**
  * Get center detail by ID
@@ -316,6 +361,7 @@ const getCenterPrograms = async (req, res, next) => {
 };
 
 module.exports = {
+  searchCenters,
   getCenterDetail,
   getCenterStaff,
   getCenterPrograms,

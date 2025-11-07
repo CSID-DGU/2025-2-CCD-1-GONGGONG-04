@@ -341,6 +341,211 @@ export async function getRecommendations(
   }
 }
 
+// ============================================
+// Sprint 3 - Task 3.5.1: Assessment 기반 추천 API
+// ============================================
+
+/**
+ * Assessment 기반 추천 요청 파라미터
+ */
+export interface AssessmentRecommendationRequest {
+  /** 사용자 위도 (필수) */
+  lat: number;
+
+  /** 사용자 경도 (필수) */
+  lng: number;
+
+  /** 최대 반경 (km, 기본값: 10km) */
+  maxDistance?: number;
+
+  /** 최대 추천 개수 (기본값: 5개) */
+  limit?: number;
+}
+
+/**
+ * Assessment 기반 추천 API 응답
+ */
+export interface AssessmentRecommendationResponse extends RecommendationResponse {
+  data: RecommendationResponse['data'] & {
+    searchCriteria: RecommendationResponse['data']['searchCriteria'] & {
+      /** Assessment ID */
+      assessmentId: number;
+    };
+  };
+}
+
+/**
+ * Assessment 기반 센터 추천 요청
+ *
+ * Sprint 3 - Task 3.4.2에서 구현된 API 엔드포인트 사용
+ * GET /api/v1/assessments/:id/recommendations
+ *
+ * @param assessmentId - Assessment ID
+ * @param request - 위치 및 검색 조건
+ * @param authToken - 인증 토큰 (MVP: "user_{id}" 형식)
+ * @returns 추천 센터 목록
+ * @throws RecommendationApiError
+ *
+ * @example
+ * ```typescript
+ * const recommendations = await getRecommendationsByAssessment(
+ *   123,
+ *   { lat: 37.5665, lng: 126.9780, maxDistance: 10, limit: 5 },
+ *   'user_456'
+ * );
+ *
+ * console.log(recommendations.data.recommendations);
+ * // [{ centerId: '1', centerName: '...', totalScore: 87.5, ... }]
+ * ```
+ */
+export async function getRecommendationsByAssessment(
+  assessmentId: number,
+  request: AssessmentRecommendationRequest,
+  authToken: string
+): Promise<AssessmentRecommendationResponse> {
+  try {
+    // URL 구성 (query parameters)
+    const params = new URLSearchParams({
+      lat: request.lat.toString(),
+      lng: request.lng.toString(),
+    });
+
+    if (request.maxDistance !== undefined) {
+      params.append('maxDistance', request.maxDistance.toString());
+    }
+
+    if (request.limit !== undefined) {
+      params.append('limit', request.limit.toString());
+    }
+
+    const url = `${API_BASE_URL}/assessments/${assessmentId}/recommendations?${params.toString()}`;
+
+    // API 요청
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${authToken}`,
+      },
+      // 추천은 실시간 데이터이므로 캐싱 비활성화
+      cache: 'no-store',
+    });
+
+    // 에러 처리
+    if (!response.ok) {
+      // 401: 인증 오류
+      if (response.status === 401) {
+        throw new RecommendationApiError(
+          '로그인이 필요합니다',
+          401,
+          'UNAUTHORIZED'
+        );
+      }
+
+      // 404: Assessment not found
+      if (response.status === 404) {
+        const errorData: ApiErrorResponse = await response.json().catch(() => ({
+          success: false,
+          error: {
+            code: 'ASSESSMENT_NOT_FOUND',
+            message: '진단 결과를 찾을 수 없습니다',
+          },
+        }));
+
+        throw new RecommendationApiError(
+          errorData.error.message,
+          404,
+          errorData.error.code
+        );
+      }
+
+      // 400: 입력값 검증 오류
+      if (response.status === 400) {
+        const errorData: ApiErrorResponse = await response.json();
+
+        throw new RecommendationApiError(
+          errorData.error.message || '입력값이 올바르지 않습니다',
+          400,
+          errorData.error.code,
+          errorData.error.details
+        );
+      }
+
+      // 500: 서버 오류
+      if (response.status >= 500) {
+        throw new RecommendationApiError(
+          '서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요',
+          response.status,
+          'SERVER_ERROR'
+        );
+      }
+
+      // 기타 에러
+      const errorData: ApiErrorResponse = await response.json().catch(() => ({
+        success: false,
+        error: {
+          code: 'UNKNOWN_ERROR',
+          message: '알 수 없는 오류가 발생했습니다',
+        },
+      }));
+
+      throw new RecommendationApiError(
+        errorData.error.message,
+        response.status,
+        errorData.error.code
+      );
+    }
+
+    // 성공 응답 파싱
+    const responseBody: AssessmentRecommendationResponse = await response.json();
+
+    // 응답 검증
+    if (!responseBody.success || !responseBody.data) {
+      throw new RecommendationApiError(
+        '올바르지 않은 응답 형식입니다',
+        500,
+        'INVALID_RESPONSE'
+      );
+    }
+
+    return responseBody;
+
+  } catch (error) {
+    // RecommendationApiError는 그대로 throw
+    if (error instanceof RecommendationApiError) {
+      throw error;
+    }
+
+    // 네트워크 에러 처리
+    if (error instanceof TypeError) {
+      // fetch 실패 (네트워크 연결 오류)
+      if (error.message.includes('fetch') || error.message.includes('Failed to fetch')) {
+        throw new RecommendationApiError(
+          '네트워크 연결을 확인해주세요',
+          0,
+          'NETWORK_ERROR'
+        );
+      }
+
+      // JSON 파싱 오류
+      if (error.message.includes('JSON')) {
+        throw new RecommendationApiError(
+          '서버 응답을 처리할 수 없습니다',
+          500,
+          'PARSE_ERROR'
+        );
+      }
+    }
+
+    // 기타 예상치 못한 에러
+    throw new RecommendationApiError(
+      '일시적인 오류가 발생했습니다. 다시 시도해주세요',
+      500,
+      'UNEXPECTED_ERROR'
+    );
+  }
+}
+
 /**
  * 추천 요청 입력값 검증
  *
@@ -384,6 +589,49 @@ export function validateRecommendationRequest(
 
     if (symptoms && symptoms.length > 10) {
       errors.push('증상은 최대 10개까지 선택할 수 있습니다');
+    }
+  }
+
+  return {
+    valid: errors.length === 0,
+    errors,
+  };
+}
+
+/**
+ * Assessment 기반 추천 요청 입력값 검증
+ *
+ * @param request - Assessment 기반 추천 요청 파라미터
+ * @returns 검증 결과
+ */
+export function validateAssessmentRecommendationRequest(
+  request: AssessmentRecommendationRequest
+): { valid: boolean; errors: string[] } {
+  const errors: string[] = [];
+
+  // 필수 필드 검증
+  if (typeof request.lat !== 'number') {
+    errors.push('위도(lat)는 필수입니다');
+  } else if (request.lat < -90 || request.lat > 90) {
+    errors.push('위도는 -90 ~ 90 사이여야 합니다');
+  }
+
+  if (typeof request.lng !== 'number') {
+    errors.push('경도(lng)는 필수입니다');
+  } else if (request.lng < -180 || request.lng > 180) {
+    errors.push('경도는 -180 ~ 180 사이여야 합니다');
+  }
+
+  // 선택 필드 검증
+  if (request.maxDistance !== undefined) {
+    if (request.maxDistance < 1 || request.maxDistance > 50) {
+      errors.push('최대 거리는 1 ~ 50km 사이여야 합니다');
+    }
+  }
+
+  if (request.limit !== undefined) {
+    if (request.limit < 1 || request.limit > 20) {
+      errors.push('최대 추천 개수는 1 ~ 20개 사이여야 합니다');
     }
   }
 

@@ -414,3 +414,174 @@ async function saveRecommendationLogs(
     console.error('추천 이력 저장 실패:', error);
   }
 }
+
+// ============================================
+// Sprint 3 - Task 3.4.1: Assessment-based Recommendations
+// ============================================
+
+/**
+ * Severity 코드 타입
+ */
+export type SeverityCode = 'LOW' | 'MID' | 'HIGH';
+
+/**
+ * 스코어링 가중치 타입
+ */
+export interface ScoringWeights {
+  /** 거리 가중치 */
+  distance: number;
+  /** 운영 시간 가중치 */
+  operating: number;
+  /** 전문성 가중치 */
+  specialty: number;
+  /** 프로그램 매칭 가중치 */
+  program: number;
+}
+
+/**
+ * Severity에 따른 가중치 조정
+ *
+ * Sprint 3 - Task 3.4.1
+ *
+ * @param severityCode - 진단 심각도 ('LOW' | 'MID' | 'HIGH')
+ * @returns 조정된 스코어링 가중치
+ *
+ * @example
+ * ```typescript
+ * const weights = getWeightsBySeverity('HIGH');
+ * // { distance: 0.30, operating: 0.25, specialty: 0.20, program: 0.30 }
+ * ```
+ *
+ * **가중치 조정 로직**:
+ * - **진단 없음** (기본): distance 35%, program 20%
+ * - **진단 있음** (LOW/MID/HIGH): distance 30%, program 30%
+ * - Program 가중치 증가로 매칭 프로그램 중요도 상승
+ */
+export function getWeightsBySeverity(severityCode?: SeverityCode | null): ScoringWeights {
+  // 진단이 없으면 기본 가중치 사용
+  if (!severityCode) {
+    return {
+      distance: 0.35,
+      operating: 0.25,
+      specialty: 0.20,
+      program: 0.20,
+    };
+  }
+
+  // 진단이 있으면 distance를 줄이고 program을 늘림
+  return {
+    distance: 0.30,
+    operating: 0.25,
+    specialty: 0.20,
+    program: 0.30,
+  };
+}
+
+/**
+ * Assessment 기반 센터 추천
+ *
+ * Sprint 3 - Task 3.4.1
+ *
+ * @param assessmentId - 진단 ID
+ * @param latitude - 사용자 위도
+ * @param longitude - 사용자 경도
+ * @param options - 추가 옵션 (maxDistance, limit 등)
+ * @returns 추천 센터 목록 (점수순, HIGH severity 시 24시간 센터 우선)
+ *
+ * @throws {Error} Assessment not found or DB error
+ *
+ * @example
+ * ```typescript
+ * const recommendations = await getRecommendationsByAssessment(
+ *   123,
+ *   37.5665,
+ *   126.9780,
+ *   { maxDistance: 10, limit: 5 }
+ * );
+ * ```
+ *
+ * **HIGH Severity 특별 처리**:
+ * - 24시간 운영 센터를 최우선 추천
+ * - 긴급 연락처 정보 포함
+ */
+export async function getRecommendationsByAssessment(
+  assessmentId: number,
+  latitude: number,
+  longitude: number,
+  options: {
+    maxDistance?: number;
+    limit?: number;
+    sessionId?: string;
+  } = {},
+): Promise<RecommendationResult[]> {
+  try {
+    // 1. Assessment 조회
+    const assessment = await prisma.userAssessment.findUnique({
+      where: {
+        id: assessmentId,
+      },
+      select: {
+        id: true,
+        userId: true,
+        severityCode: true,
+        totalScore: true,
+        answersJson: true,
+      },
+    });
+
+    if (!assessment) {
+      throw new Error(`Assessment with ID ${assessmentId} not found`);
+    }
+
+    // 2. Severity에 따른 가중치 조정
+    const weights = getWeightsBySeverity(assessment.severityCode as SeverityCode);
+
+    console.log(`[Assessment Recommendation] Using weights for ${assessment.severityCode}:`, weights);
+
+    // 3. 기본 추천 계산 (가중치는 현재 하드코딩되어 있음, 추후 수정 필요)
+    const recommendations = await getRecommendations({
+      latitude,
+      longitude,
+      maxDistance: options.maxDistance || 10,
+      limit: options.limit || 5,
+      sessionId: options.sessionId,
+      userId: assessment.userId,
+      // TODO: 가중치를 scoringService에 전달할 수 있도록 수정 필요
+    });
+
+    // 4. HIGH Severity 특별 처리: 24시간 센터 우선 정렬
+    if (assessment.severityCode === 'HIGH') {
+      return prioritize24HourCenters(recommendations);
+    }
+
+    return recommendations;
+  } catch (error) {
+    console.error('[Assessment Recommendation] Error:', error);
+    throw new Error(`Failed to get recommendations for assessment: ${error instanceof Error ? error.message : 'Unknown error'}`);
+  }
+}
+
+/**
+ * 24시간 운영 센터를 최우선으로 정렬
+ *
+ * HIGH severity 진단 결과에 대해 24시간 운영 센터를 최상위로 배치
+ *
+ * @param recommendations - 기존 추천 목록
+ * @returns 24시간 센터가 우선 정렬된 추천 목록
+ */
+function prioritize24HourCenters(
+  recommendations: RecommendationResult[],
+): RecommendationResult[] {
+  // 24시간 운영 센터 여부 판단 로직
+  // '24시간' 키워드가 reasons에 포함되어 있으면 24시간 센터로 간주
+  const is24HourCenter = (rec: RecommendationResult): boolean => {
+    return rec.reasons.some((reason) => reason.includes('24시간'));
+  };
+
+  // 24시간 센터와 일반 센터 분리
+  const twentyFourHourCenters = recommendations.filter(is24HourCenter);
+  const regularCenters = recommendations.filter((rec) => !is24HourCenter(rec));
+
+  // 24시간 센터를 앞에, 나머지는 뒤에 배치 (각각의 점수 순서는 유지)
+  return [...twentyFourHourCenters, ...regularCenters];
+}

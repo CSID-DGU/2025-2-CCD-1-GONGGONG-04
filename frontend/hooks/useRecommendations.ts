@@ -14,11 +14,14 @@
 
 'use client';
 
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   getRecommendations,
+  getRecommendationsByAssessment,
   type RecommendationRequest,
   type RecommendationResponse,
+  type AssessmentRecommendationRequest,
+  type AssessmentRecommendationResponse,
   type CenterRecommendation,
   RecommendationApiError,
 } from '@/lib/api/recommendations';
@@ -323,5 +326,243 @@ export function invalidateRecommendationCache(
   } else {
     // 모든 추천 캐시 무효화
     queryClient.invalidateQueries({ queryKey: ['recommendations'] });
+  }
+}
+
+// ============================================
+// Sprint 3 - Task 3.5.1: Assessment 기반 추천
+// ============================================
+
+/**
+ * useAssessmentRecommendations 훅 옵션
+ */
+export interface UseAssessmentRecommendationsOptions {
+  /**
+   * 성공 콜백
+   * @param data - 추천 결과 응답
+   */
+  onSuccess?: (data: AssessmentRecommendationResponse) => void;
+
+  /**
+   * 에러 콜백
+   * @param error - 에러 객체
+   */
+  onError?: (error: RecommendationApiError) => void;
+
+  /**
+   * Toast 에러 표시 여부 (기본: true)
+   */
+  showErrorToast?: boolean;
+
+  /**
+   * 재시도 횟수 (기본: 2회)
+   */
+  retryCount?: number;
+
+  /**
+   * 캐시 TTL (밀리초, 기본: 300000ms = 5분)
+   */
+  cacheTTL?: number;
+
+  /**
+   * 쿼리 활성화 여부 (기본: 위치 정보가 있을 때 자동 활성화)
+   */
+  enabled?: boolean;
+}
+
+/**
+ * Assessment 기반 센터 추천 요청 훅
+ *
+ * Sprint 3 - Task 3.5.1
+ *
+ * @param assessmentId - Assessment ID (필수)
+ * @param location - 사용자 위치 정보 (lat, lng 필수, maxDistance, limit 선택)
+ * @param authToken - 인증 토큰 (MVP: "user_{id}" 형식)
+ * @param options - 훅 옵션
+ * @returns TanStack Query 결과
+ *
+ * @example
+ * ```tsx
+ * const { data, isLoading, error, refetch } = useAssessmentRecommendations(
+ *   123, // assessmentId
+ *   { lat: 37.5665, lng: 126.9780, maxDistance: 10, limit: 5 },
+ *   'user_456',
+ *   {
+ *     onSuccess: (data) => {
+ *       console.log('추천 결과:', data.data.recommendations);
+ *     },
+ *     onError: (error) => {
+ *       console.error('추천 실패:', error.message);
+ *     },
+ *   }
+ * );
+ *
+ * // 로딩 상태
+ * if (isLoading) return <Skeleton />;
+ *
+ * // 에러 상태
+ * if (error) return <ErrorMessage error={error} />;
+ *
+ * // 성공 상태
+ * if (data) return <RecommendationList recommendations={data.data.recommendations} />;
+ * ```
+ */
+export function useAssessmentRecommendations(
+  assessmentId: number,
+  location: AssessmentRecommendationRequest | null,
+  authToken: string,
+  options: UseAssessmentRecommendationsOptions = {}
+) {
+  const {
+    onSuccess,
+    onError,
+    showErrorToast = true,
+    retryCount = 2,
+    cacheTTL = 300000, // 5분
+    enabled: enabledOption,
+  } = options;
+
+  const { toast } = useToast();
+
+  // 위치 정보가 있을 때만 쿼리 실행
+  const hasLocation = location !== null && typeof location.lat === 'number' && typeof location.lng === 'number';
+  const enabled = enabledOption !== undefined ? enabledOption : hasLocation;
+
+  const query = useQuery({
+    // 쿼리 키
+    queryKey: getAssessmentRecommendationCacheKey(assessmentId, location),
+
+    // 쿼리 함수
+    queryFn: async () => {
+      if (!location) {
+        throw new RecommendationApiError(
+          '위치 정보가 필요합니다',
+          400,
+          'LOCATION_REQUIRED'
+        );
+      }
+
+      return getRecommendationsByAssessment(assessmentId, location, authToken);
+    },
+
+    // 쿼리 활성화 조건
+    enabled,
+
+    // 재시도 설정
+    retry: retryCount,
+    retryDelay: (attemptIndex) => {
+      // 2초 → 4초 (최대 5초)
+      const delay = Math.min(1000 * 2 ** attemptIndex, 5000);
+      return delay;
+    },
+
+    // 캐싱 설정
+    staleTime: cacheTTL,
+    gcTime: cacheTTL,
+
+    // 성공 시 처리
+    onSuccess: (data) => {
+      // 커스텀 성공 콜백 실행
+      if (onSuccess) {
+        onSuccess(data);
+      }
+    },
+
+    // 에러 시 처리
+    onError: (error: Error) => {
+      const apiError =
+        error instanceof RecommendationApiError
+          ? error
+          : new RecommendationApiError(error.message, 500, 'UNKNOWN_ERROR');
+
+      // 커스텀 에러 콜백 실행
+      if (onError) {
+        onError(apiError);
+      }
+
+      // Toast 에러 표시
+      if (showErrorToast) {
+        // 에러 타입에 따라 다른 메시지 표시
+        let title = '추천 실패';
+        let description = apiError.message;
+
+        if (apiError.code === 'VALIDATION_ERROR') {
+          title = '입력값 오류';
+          if (apiError.details && apiError.details.length > 0) {
+            description = apiError.details.map((d) => d.message).join('\n');
+          }
+        } else if (apiError.code === 'UNAUTHORIZED') {
+          title = '인증 오류';
+          description = '로그인이 필요합니다';
+        } else if (apiError.code === 'ASSESSMENT_NOT_FOUND') {
+          title = '진단 결과 없음';
+          description = '진단 결과를 찾을 수 없습니다';
+        } else if (apiError.code === 'NETWORK_ERROR') {
+          title = '네트워크 오류';
+          description = '인터넷 연결을 확인해주세요';
+        } else if (apiError.statusCode >= 500) {
+          title = '서버 오류';
+          description = '잠시 후 다시 시도해주세요';
+        }
+
+        toast({
+          variant: 'destructive',
+          title,
+          description,
+        });
+      }
+    },
+  });
+
+  return query;
+}
+
+/**
+ * Assessment 추천 캐시 키 생성 함수
+ *
+ * @param assessmentId - Assessment ID
+ * @param location - 위치 정보
+ * @returns 쿼리 키
+ */
+export function getAssessmentRecommendationCacheKey(
+  assessmentId: number,
+  location: AssessmentRecommendationRequest | null
+): [string, Record<string, any>] {
+  if (!location) {
+    return ['assessment-recommendations', { assessmentId, location: null }];
+  }
+
+  return [
+    'assessment-recommendations',
+    {
+      assessmentId,
+      lat: parseFloat(location.lat.toFixed(4)), // 4자리 반올림 (~11m 정밀도)
+      lng: parseFloat(location.lng.toFixed(4)),
+      maxDistance: location.maxDistance || 10,
+      limit: location.limit || 5,
+    },
+  ];
+}
+
+/**
+ * Assessment 추천 캐시 무효화 함수
+ *
+ * @param queryClient - Query Client 인스턴스
+ * @param assessmentId - Assessment ID (선택, 지정하지 않으면 모든 assessment 추천 무효화)
+ */
+export function invalidateAssessmentRecommendationCache(
+  queryClient: ReturnType<typeof useQueryClient>,
+  assessmentId?: number
+) {
+  if (assessmentId) {
+    // 특정 assessment의 추천 캐시만 무효화
+    queryClient.invalidateQueries({
+      queryKey: ['assessment-recommendations', { assessmentId }],
+    });
+  } else {
+    // 모든 assessment 추천 캐시 무효화
+    queryClient.invalidateQueries({
+      queryKey: ['assessment-recommendations'],
+    });
   }
 }

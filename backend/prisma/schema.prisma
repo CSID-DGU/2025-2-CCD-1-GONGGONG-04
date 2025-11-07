@@ -384,9 +384,12 @@ model Recommendation {
 
 model SelfAssessmentTemplate {
   id                  BigInt   @id @default(autoincrement()) @db.UnsignedBigInt
+  templateCode        String   @unique @map("template_code") @db.VarChar(50)
   templateName        String   @map("template_name") @db.VarChar(200)
   templateType        String   @map("template_type") @db.VarChar(50)
   description         String?  @db.Text
+  questionCount       Int      @map("question_count") @db.UnsignedInt
+  estimatedTimeMinutes Int?    @map("estimated_time_minutes") @db.UnsignedInt
   questionsJson       Json     @map("questions_json")
   scoringRulesJson    Json?    @map("scoring_rules_json")
   interpretationJson  Json?    @map("interpretation_json")
@@ -400,6 +403,7 @@ model SelfAssessmentTemplate {
 
   @@index([templateType, isActive])
   @@index([templateName])
+  @@index([templateCode])
   @@map("self_assessment_templates")
 }
 

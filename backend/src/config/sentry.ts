@@ -84,7 +84,7 @@ export function initSentry(): void {
     ],
 
     // BeforeSend 훅: 민감 정보 제거
-    beforeSend(event, _hint) {
+    beforeSend(event: any, _hint: any) {
       // 1. 요청 헤더에서 민감 정보 제거
       if (event.request?.headers) {
         const headers = event.request.headers;
@@ -129,7 +129,7 @@ export function initSentry(): void {
     },
 
     // BeforeBreadcrumb 훅: 민감 정보가 포함된 breadcrumb 제거
-    beforeBreadcrumb(breadcrumb, _hint) {
+    beforeBreadcrumb(breadcrumb: any, _hint: any) {
       // HTTP 요청 breadcrumb에서 민감 정보 제거
       if (breadcrumb.category === 'http') {
         if (breadcrumb.data?.headers) {

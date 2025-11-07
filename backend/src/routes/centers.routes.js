@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const {
+  searchCenters,
   getCenterDetail,
   getCenterStaff,
   getCenterPrograms,
@@ -9,6 +10,156 @@ const {
   getOperatingStatus,
   invalidateOperatingStatusCache,
 } = require('../controllers/operatingStatus.controller');
+const {
+  validateSchema,
+  centerSearchQuerySchema,
+} = require('../utils/validation');
+
+/**
+ * @swagger
+ * /centers:
+ *   get:
+ *     summary: Search centers within radius
+ *     description: Search for centers within a specified radius from user location using spatial indexing. Results are cached for 5 minutes.
+ *     tags: [Centers]
+ *     parameters:
+ *       - in: query
+ *         name: lat
+ *         required: true
+ *         description: User's latitude
+ *         schema:
+ *           type: number
+ *           format: double
+ *           minimum: -90
+ *           maximum: 90
+ *           example: 37.5665
+ *       - in: query
+ *         name: lng
+ *         required: true
+ *         description: User's longitude
+ *         schema:
+ *           type: number
+ *           format: double
+ *           minimum: -180
+ *           maximum: 180
+ *           example: 126.9780
+ *       - in: query
+ *         name: radius
+ *         required: false
+ *         description: Search radius in kilometers (default 5, max 50)
+ *         schema:
+ *           type: number
+ *           format: double
+ *           minimum: 1
+ *           maximum: 50
+ *           default: 5
+ *           example: 5
+ *     responses:
+ *       200:
+ *         description: Centers found successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     centers:
+ *                       type: array
+ *                       items:
+ *                         type: object
+ *                         properties:
+ *                           id:
+ *                             type: integer
+ *                             example: 1
+ *                           name:
+ *                             type: string
+ *                             example: 서울시 정신건강복지센터
+ *                           latitude:
+ *                             type: number
+ *                             format: double
+ *                             example: 37.5665
+ *                           longitude:
+ *                             type: number
+ *                             format: double
+ *                             example: 126.9780
+ *                           distance:
+ *                             type: number
+ *                             description: Distance in meters
+ *                             example: 1250
+ *                           walkTime:
+ *                             type: string
+ *                             example: 16분
+ *                           operatingStatus:
+ *                             type: string
+ *                             enum: [OPEN, CLOSING_SOON, CLOSED, HOLIDAY, TEMP_CLOSED, NO_INFO]
+ *                             example: OPEN
+ *                           closingTime:
+ *                             type: string
+ *                             nullable: true
+ *                             example: 18:00
+ *                           nextOpenDate:
+ *                             type: string
+ *                             nullable: true
+ *                             example: 2025-01-16
+ *                           avgRating:
+ *                             type: number
+ *                             format: double
+ *                             example: 4.5
+ *                           reviewCount:
+ *                             type: integer
+ *                             example: 42
+ *                           centerType:
+ *                             type: string
+ *                             example: 정신건강복지센터
+ *                           roadAddress:
+ *                             type: string
+ *                             example: 서울특별시 중구 세종대로 110
+ *                           phoneNumber:
+ *                             type: string
+ *                             nullable: true
+ *                             example: 02-1234-5678
+ *                     total:
+ *                       type: integer
+ *                       example: 15
+ *       400:
+ *         description: Bad Request - Invalid parameters
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 error:
+ *                   type: object
+ *                   properties:
+ *                     code:
+ *                       type: string
+ *                       example: VALIDATION_ERROR
+ *                     message:
+ *                       type: string
+ *                       example: Invalid request data
+ *                     details:
+ *                       type: array
+ *                       items:
+ *                         type: object
+ *                         properties:
+ *                           path:
+ *                             type: string
+ *                             example: query.lat
+ *                           message:
+ *                             type: string
+ *                             example: Latitude must be between -90 and 90
+ *       500:
+ *         description: Internal Server Error
+ */
+router.get('/', validateSchema(centerSearchQuerySchema), searchCenters);
 
 /**
  * @swagger
