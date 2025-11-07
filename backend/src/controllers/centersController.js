@@ -40,7 +40,7 @@ const searchCenters = async (req, res, next) => {
     const result = await getCentersWithinRadius(
       parseFloat(lat),
       parseFloat(lng),
-      radius ? parseFloat(radius) : 5
+      radius ? parseFloat(radius) : 5,
     );
 
     // Send success response

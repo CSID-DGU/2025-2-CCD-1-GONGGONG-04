@@ -179,7 +179,7 @@ async function submitAssessment(req, res, next) {
       userId,
       templateId,
       answers,
-      sessionId
+      sessionId,
     );
 
     res.status(201).json({

@@ -17,6 +17,22 @@ if (!process.env.RATE_LIMIT_WINDOW_MS) {
   process.env.RATE_LIMIT_MAX_REQUESTS = '100';
 }
 
+// Mock Prisma Client BEFORE loading app (prevents unit tests from using real DB)
+jest.mock('@prisma/client', () => {
+  const mockPrisma = {
+    $queryRaw: jest.fn().mockResolvedValue([]),
+    $executeRawUnsafe: jest.fn().mockResolvedValue([]),
+    $connect: jest.fn().mockResolvedValue(undefined),
+    $disconnect: jest.fn().mockResolvedValue(undefined),
+  };
+  return {
+    PrismaClient: jest.fn(() => mockPrisma),
+    Prisma: {
+      sql: (strings, ...values) => ({ strings, values }),
+    },
+  };
+});
+
 // Import app for testing AFTER environment is configured
 const app = require('../src/app');
 

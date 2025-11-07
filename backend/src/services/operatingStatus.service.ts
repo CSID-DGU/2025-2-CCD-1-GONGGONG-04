@@ -24,8 +24,8 @@ const prisma = new PrismaClient();
 const TIMEZONE = 'Asia/Seoul';
 const CLOSING_SOON_THRESHOLD_MINUTES = 30;
 
-// Set charset to utf8mb4 for all connections
-prisma.$executeRawUnsafe('SET NAMES utf8mb4').catch(() => {});
+// Note: SET NAMES utf8mb4 is executed in each function to ensure charset is set
+// Removed top-level execution to fix Jest mocking issues
 // Prisma automatically handles disconnection on process exit
 
 /**

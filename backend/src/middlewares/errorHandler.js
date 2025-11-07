@@ -62,7 +62,7 @@ const errorHandler = (err, req, res, _next) => {
   if (err instanceof Prisma.PrismaClientValidationError) {
     const dbError = new DatabaseError(
       '데이터베이스 검증 오류가 발생했습니다',
-      'VALIDATION_ERROR'
+      'VALIDATION_ERROR',
     );
 
     console.error('[Database Validation Error]', {

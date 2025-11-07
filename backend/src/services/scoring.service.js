@@ -55,7 +55,7 @@ function calculateTotalScore(answers, template) {
     const option = question.options.find(opt => opt.optionNumber === selectedOption);
     if (!option) {
       throw new Error(
-        `Option ${selectedOption} not found for question ${questionNumber}`
+        `Option ${selectedOption} not found for question ${questionNumber}`,
       );
     }
 
@@ -98,12 +98,12 @@ function determineSeverityLevel(totalScore, scoringRules) {
 
   // Find matching severity level
   const severityLevel = scoringRules.severityLevels.find(
-    level => totalScore >= level.min && totalScore <= level.max
+    level => totalScore >= level.min && totalScore <= level.max,
   );
 
   if (!severityLevel) {
     throw new Error(
-      `No severity level found for score ${totalScore}. Score must be within defined ranges.`
+      `No severity level found for score ${totalScore}. Score must be within defined ranges.`,
     );
   }
 
@@ -194,7 +194,7 @@ function validateAnswers(answers, template) {
   // Check if all questions are answered
   if (answers.length !== expectedQuestionCount) {
     errors.push(
-      `Expected ${expectedQuestionCount} answers, but received ${answers.length}`
+      `Expected ${expectedQuestionCount} answers, but received ${answers.length}`,
     );
   }
 
@@ -235,7 +235,7 @@ function validateAnswers(answers, template) {
     // Check selectedOption
     if (typeof selectedOption !== 'number') {
       errors.push(
-        `Answer for question ${questionNumber}: selectedOption must be a number`
+        `Answer for question ${questionNumber}: selectedOption must be a number`,
       );
       continue;
     }
@@ -244,7 +244,7 @@ function validateAnswers(answers, template) {
     const option = question.options.find(opt => opt.optionNumber === selectedOption);
     if (!option) {
       errors.push(
-        `Answer for question ${questionNumber}: option ${selectedOption} does not exist`
+        `Answer for question ${questionNumber}: option ${selectedOption} does not exist`,
       );
       continue;
     }
@@ -255,7 +255,7 @@ function validateAnswers(answers, template) {
 
     if (selectedOption < minOption || selectedOption > maxOption) {
       errors.push(
-        `Answer for question ${questionNumber}: option ${selectedOption} is out of range (${minOption}-${maxOption})`
+        `Answer for question ${questionNumber}: option ${selectedOption} is out of range (${minOption}-${maxOption})`,
       );
     }
   }

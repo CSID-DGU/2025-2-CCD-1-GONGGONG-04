@@ -104,7 +104,7 @@ function calculateWalkTime(distance: number): string {
 export async function getCentersWithinRadius(
   lat: number,
   lng: number,
-  radius: number = 5
+  radius: number = 5,
 ): Promise<CenterSearchResponse> {
   const startTime = Date.now();
 
@@ -182,7 +182,7 @@ export async function getCentersWithinRadius(
     logger.error('[Center Search] Database query failed:', err);
     throw new DatabaseError(
       '센터 검색 중 데이터베이스 오류가 발생했습니다',
-      'QUERY_FAILED'
+      'QUERY_FAILED',
     );
   }
 
@@ -262,7 +262,7 @@ export async function getCentersWithinRadius(
     await redis.setex(
       cacheKey,
       CACHE_TTL.CENTER_SEARCH,
-      JSON.stringify(response)
+      JSON.stringify(response),
     );
   } catch (err) {
     // Log cache error but continue (graceful degradation)

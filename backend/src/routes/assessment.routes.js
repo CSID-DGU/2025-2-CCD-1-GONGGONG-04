@@ -135,7 +135,7 @@ router.get('/templates', assessmentController.getTemplates);
 router.get(
   '/templates/:id',
   validateSchema(getTemplateByIdSchema),
-  assessmentController.getTemplateById
+  assessmentController.getTemplateById,
 );
 
 /**
@@ -210,7 +210,7 @@ router.get(
 router.post(
   '/',
   validateSchema(submitAssessmentSchema),
-  assessmentController.submitAssessment
+  assessmentController.submitAssessment,
 );
 
 // ============================================
@@ -273,7 +273,7 @@ router.use(authMiddleware);
 router.get(
   '/:id/result',
   validateSchema(getAssessmentResultSchema),
-  assessmentController.getAssessmentResult
+  assessmentController.getAssessmentResult,
 );
 
 /**
@@ -574,7 +574,7 @@ router.get('/latest', assessmentController.getLatestAssessment);
 router.delete(
   '/:id',
   validateSchema(deleteAssessmentSchema),
-  assessmentController.deleteAssessment
+  assessmentController.deleteAssessment,
 );
 
 module.exports = router;

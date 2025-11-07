@@ -323,7 +323,7 @@ async function getAssessmentResult(assessmentId, userId) {
     // Authorization check
     if (Number(assessment.userId) !== userId) {
       throw new UnauthorizedAccessError(
-        'You do not have permission to access this assessment'
+        'You do not have permission to access this assessment',
       );
     }
 
@@ -581,7 +581,7 @@ async function deleteAssessment(assessmentId, userId) {
     // Authorization check
     if (Number(assessment.userId) !== userId) {
       throw new UnauthorizedAccessError(
-        'You do not have permission to delete this assessment'
+        'You do not have permission to delete this assessment',
       );
     }
 

@@ -136,7 +136,7 @@ const submitAssessmentSchema = z.object({
             .int()
             .min(1, 'Selected option must be between 1 and 4')
             .max(4, 'Selected option must be between 1 and 4'),
-        })
+        }),
       )
       .length(10, 'Exactly 10 answers are required for K-10 assessment'),
     sessionId: z.string().uuid('Session ID must be a valid UUID').optional(),
@@ -208,9 +208,9 @@ function validateSchema(schema) {
       });
 
       // Merge validated data back into request
-      if (validated.body) req.body = validated.body;
-      if (validated.query) req.query = validated.query;
-      if (validated.params) req.params = validated.params;
+      if (validated.body) {req.body = validated.body;}
+      if (validated.query) {req.query = validated.query;}
+      if (validated.params) {req.params = validated.params;}
 
       next();
     } catch (error) {

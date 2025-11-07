@@ -12,12 +12,18 @@ import logger from '../utils/logger';
 let Sentry: any = null;
 let nodeProfilingIntegration: any = null;
 
-try {
-  Sentry = require('@sentry/node');
-  nodeProfilingIntegration = require('@sentry/profiling-node').nodeProfilingIntegration;
-} catch (error) {
-  logger.warn('[Sentry] @sentry/node not installed - error tracking disabled');
-}
+// Dynamic import for optional dependencies (ESM-compatible)
+import('@sentry/node')
+  .then((module) => {
+    Sentry = module;
+    return import('@sentry/profiling-node');
+  })
+  .then((profilingModule) => {
+    nodeProfilingIntegration = profilingModule.nodeProfilingIntegration;
+  })
+  .catch((error) => {
+    logger.warn('[Sentry] @sentry/node not installed - error tracking disabled');
+  });
 
 /**
  * Sentry 환경 설정
