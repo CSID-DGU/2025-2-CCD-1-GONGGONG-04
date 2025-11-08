@@ -85,7 +85,7 @@ export const CACHE_TTL = {
  * Cache key generators
  */
 export const CACHE_KEYS = {
-  centerSearch: (lat: number, lng: number, radius: number) =>
+  centerSearch: (lat: number, lng: number, radius: string) =>
     `centers:lat:${lat}:lng:${lng}:radius:${radius}`,
   operatingStatus: (centerId: number, date: string) => `operating_status:${centerId}:${date}`,
   centerDetail: (centerId: number) => `center:${centerId}`,

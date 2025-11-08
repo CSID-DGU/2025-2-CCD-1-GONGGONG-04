@@ -17,7 +17,6 @@ const { z } = require('zod');
  * GET /api/v1/centers?lat=37.5665&lng=126.9780&radius=5
  *
  * Sprint 2 Day 6: Radius parameter expansion
- * - Supports: '1', '3', '5', '10', 'all'
  */
 const centerSearchQuerySchema = z.object({
   query: z.object({
@@ -33,10 +32,10 @@ const centerSearchQuerySchema = z.object({
       .refine(val => val >= -180 && val <= 180, 'Longitude must be between -180 and 180'),
     radius: z
       .string()
-      .refine(val => ['1', '3', '5', '10', 'all'].includes(val),
-        'Radius must be one of: 1, 3, 5, 10, all')
+      .refine(val => ['10', '30', '50', '100', 'all'].includes(val),
+        'Radius must be one of: 10, 30, 50, 100, all')
       .optional()
-      .default('5'),
+      .default('50'),
   }),
 });
 

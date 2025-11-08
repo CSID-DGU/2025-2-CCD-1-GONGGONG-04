@@ -37,5 +37,5 @@ storybook-static
 # screenshots and test utilities
 *-home.png
 test-screenshot.mjs
-
+playwright-screenshots
 .pnpm-store

@@ -96,7 +96,7 @@ interface RawCenterData {
  *
  * @param lat - User latitude
  * @param lng - User longitude
- * @param radius - Search radius string ('1', '3', '5', '10', 'all')
+ * @param radius - Search radius string ('10', '30', '50', '100', 'all')
  * @param offset - Pagination offset (default: 0)
  * @param limit - Results per page (default: 50)
  * @returns Promise<CenterSearchResponse> - Centers within radius
@@ -104,7 +104,7 @@ interface RawCenterData {
 export async function getCentersWithinRadius(
   lat: number,
   lng: number,
-  radius: string = '5',
+  radius: string = '50',
   offset: number = 0,
   limit: number = 50,
 ): Promise<CenterSearchResponse> {
@@ -123,9 +123,9 @@ export async function getCentersWithinRadius(
     throw new InvalidCoordinatesError('경도는 -180에서 180 사이여야 합니다', { lng });
   }
 
-  const validRadius = ['1', '3', '5', '10', 'all'];
+  const validRadius = ['10', '30', '50', '100', 'all'];
   if (!validRadius.includes(radius)) {
-    throw new InvalidRadiusError('반경은 1, 3, 5, 10, all 중 하나여야 합니다', { radius });
+    throw new InvalidRadiusError('반경은 10, 30, 50, 100, all 중 하나여야 합니다', { radius });
   }
 
   // 1. Check Redis cache

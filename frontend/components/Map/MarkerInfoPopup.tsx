@@ -105,6 +105,7 @@ export function MarkerInfoPopup({
 
   return (
     <Card
+      onClick={(e) => e.stopPropagation()}
       className={cn(
         'w-full max-w-sm shadow-lg border-neutral-200',
         'sm:max-w-md',

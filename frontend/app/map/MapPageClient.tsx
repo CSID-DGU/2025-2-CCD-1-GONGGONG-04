@@ -31,14 +31,31 @@ const SEOUL_CITY_HALL = {
 };
 
 /**
- * 기본 검색 반경 (km)
+ * 기본 줌 레벨
  */
-const DEFAULT_RADIUS = 5;
+const DEFAULT_ZOOM_LEVEL = 12;
+
+/**
+ * 줌 레벨에 따른 검색 반경 계산
+ * - Level 1-3 (매우 확대): 10km
+ * - Level 4-6 (확대): 30km
+ * - Level 7-9 (중간): 50km
+ * - Level 10-12 (축소): 100km
+ * - Level 13-14 (매우 축소): 100km
+ */
+function getRadiusFromZoomLevel(level: number): number {
+  if (level <= 3) return 10;    // 매우 확대된 상태
+  if (level <= 6) return 30;    // 확대된 상태
+  if (level <= 9) return 50;    // 중간 상태
+  if (level <= 12) return 100;  // 축소된 상태
+  return 100;                   // 매우 축소된 상태
+}
 
 export function MapPageClient() {
   const router = useRouter();
   const [map, setMap] = useState<kakao.maps.Map | null>(null);
   const [mapCenter, setMapCenter] = useState(SEOUL_CITY_HALL);
+  const [zoomLevel, setZoomLevel] = useState(DEFAULT_ZOOM_LEVEL);
   const [selectedCenter, setSelectedCenter] = useState<CenterMarkerData | null>(null);
   const [isPopupOpen, setIsPopupOpen] = useState(false);
 
@@ -47,12 +64,17 @@ export function MapPageClient() {
   const overlayRootRef = useRef<Root | null>(null);
 
   /**
-   * 센터 데이터 패칭
+   * 현재 줌 레벨에 따른 검색 반경 계산
+   */
+  const searchRadius = getRadiusFromZoomLevel(zoomLevel);
+
+  /**
+   * 센터 데이터 패칭 (동적 반경 사용)
    */
   const { data, isLoading, isError, error } = useCenterData({
     lat: mapCenter.lat,
     lng: mapCenter.lng,
-    radius: DEFAULT_RADIUS,
+    radius: searchRadius,
   });
 
   /**
@@ -62,17 +84,23 @@ export function MapPageClient() {
     setMap(loadedMap);
     console.log('지도 로드 완료:', loadedMap);
 
-    // 지도 이동 이벤트 리스너 등록 (지도 이동 시 센터 데이터 재요청)
+    // 지도 이동/줌 이벤트 리스너 등록
     window.kakao.maps.event.addListener(loadedMap, 'idle', () => {
       const center = loadedMap.getCenter();
       const newLat = center.getLat();
       const newLng = center.getLng();
+      const newLevel = loadedMap.getLevel();
 
-      // 지도 중심이 변경되면 상태 업데이트
+      // 지도 중심 및 줌 레벨이 변경되면 상태 업데이트
       setMapCenter({
         lat: newLat,
         lng: newLng,
       });
+      setZoomLevel(newLevel);
+
+      // 현재 줌 레벨과 검색 반경 로깅
+      const currentRadius = getRadiusFromZoomLevel(newLevel);
+      console.log(`지도 업데이트 - 줌 레벨: ${newLevel}, 검색 반경: ${currentRadius}km`);
     });
   }, []);
 
@@ -165,9 +193,9 @@ export function MapPageClient() {
    */
   useEffect(() => {
     if (data) {
-      console.log(`센터 ${data.total}개 로드 완료:`, data.centers);
+      console.log(`센터 ${data.total}개 로드 완료 (반경 ${searchRadius}km):`, data.centers);
     }
-  }, [data]);
+  }, [data, searchRadius]);
 
   /**
    * CustomOverlay 생성 및 관리
@@ -180,6 +208,11 @@ export function MapPageClient() {
     // 팝업을 렌더링할 컨테이너 생성
     const container = document.createElement('div');
     container.style.cssText = 'z-index: 1000;';
+
+    // Native 이벤트 차단 (Kakao Map 이벤트 시스템으로의 전파 방지)
+    container.addEventListener('click', (e) => {
+      e.stopPropagation();
+    }, true); // capture phase에서 차단하여 모든 하위 요소의 클릭 이벤트도 차단
 
     // React root 생성 및 렌더링
     const root = createRoot(container);
@@ -210,18 +243,25 @@ export function MapPageClient() {
     overlayRef.current = overlay;
     overlay.setMap(map);
 
-    // 지도 클릭 시 팝업 닫기
+    // 지도 클릭 시 팝업 닫기 (팝업 내부 클릭은 제외)
     const mapClickListener = window.kakao.maps.event.addListener(
       map,
       'click',
-      () => {
+      (mouseEvent: any) => {
+        // 클릭한 요소가 팝업 내부인지 확인
+        const target = mouseEvent.domEvent?.target;
+        if (target && target.closest('[role="dialog"]')) {
+          return; // 팝업 내부 클릭은 무시
+        }
         handleClosePopup();
       }
     );
 
     // cleanup
     return () => {
-      window.kakao.maps.event.removeListener(mapClickListener);
+      if (mapClickListener && window.kakao?.maps?.event) {
+        window.kakao.maps.event.removeListener(mapClickListener);
+      }
       handleClosePopup();
     };
   }, [map, selectedCenter, isPopupOpen, handleClosePopup, handleNavigate]);
@@ -230,7 +270,7 @@ export function MapPageClient() {
     <MapLayout>
       <KakaoMapView
         center={SEOUL_CITY_HALL}
-        level={12}
+        level={DEFAULT_ZOOM_LEVEL}
         onMapLoad={handleMapLoad}
       />
 

@@ -34,7 +34,7 @@ describe('getRadiusInMeters', () => {
 
   test('should throw error for invalid radius value', () => {
     expect(() => getRadiusInMeters('invalid')).toThrow(
-      'Invalid radius value: invalid. Must be one of: 1, 3, 5, 10, all',
+      'Invalid radius value: invalid. Must be one of: 10, 30, 50, 100, all',
     );
   });
 

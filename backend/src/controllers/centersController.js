@@ -24,7 +24,7 @@ const prisma = new PrismaClient();
  * @param {Object} req.query - Query parameters
  * @param {string} req.query.lat - User's latitude (required)
  * @param {string} req.query.lng - User's longitude (required)
- * @param {string} req.query.radius - Search radius ('1', '3', '5', '10', 'all') (optional, default: '5')
+ * @param {string} req.query.radius - Search radius ('10', '30', '50', '100', 'all') (optional, default: '5')
  * @param {string} req.query.offset - Pagination offset (optional, default: 0)
  * @param {string} req.query.limit - Results per page (optional, default: 50)
  * @param {Object} res - Express response object
@@ -43,7 +43,7 @@ const searchCenters = async (req, res, next) => {
     const result = await getCentersWithinRadius(
       parseFloat(lat),
       parseFloat(lng),
-      radius || '5',
+      radius || '50',
       offset ? parseInt(offset, 10) : 0,
       limit ? parseInt(limit, 10) : 50,
     );
