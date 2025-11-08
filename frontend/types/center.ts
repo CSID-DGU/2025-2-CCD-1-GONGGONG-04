@@ -101,3 +101,74 @@ export interface ProgramResponse {
     totalPages: number;
   };
 }
+
+/**
+ * Sprint 2 - Day 10: Operating status type (enhanced)
+ */
+export type OperatingStatusType =
+  | 'OPEN'
+  | 'CLOSING_SOON'
+  | 'CLOSED'
+  | 'HOLIDAY'
+  | 'TEMP_CLOSED'
+  | 'NO_INFO';
+
+/**
+ * Sprint 2 - Day 10: Center search data interface
+ */
+export interface CenterSearchData {
+  id: number;
+  name: string;
+  latitude: number;
+  longitude: number;
+  distance: number;
+  walkTime: string;
+  operatingStatus: OperatingStatusType;
+  closingTime?: string;
+  nextOpenDate?: string;
+  avgRating: number;
+  reviewCount: number;
+  centerType: string;
+  roadAddress: string;
+  phoneNumber?: string;
+}
+
+/**
+ * Sprint 2 - Day 10: Center search API response
+ */
+export interface CenterSearchResponse {
+  centers: CenterSearchData[];
+  total: number;
+  radius?: string;
+  userLocation?: {
+    lat: number;
+    lng: number;
+  };
+  hasMore?: boolean;
+  nextOffset?: number | null;
+}
+
+/**
+ * Sprint 2 - Day 10: CenterListItem Props
+ */
+export interface CenterListItemProps {
+  center: CenterSearchData;
+  onSelect?: (center: CenterSearchData) => void;
+  isHighlighted?: boolean;
+  className?: string;
+}
+
+/**
+ * Sprint 2 - Day 10: CenterList Props
+ */
+export interface CenterListProps {
+  centers: CenterSearchData[];
+  onSelectCenter?: (center: CenterSearchData) => void;
+  selectedCenterId?: number | null;
+  isLoading?: boolean;
+  error?: string;
+  isFetchingNextPage?: boolean;
+  hasNextPage?: boolean;
+  onLoadMore?: () => void;
+  className?: string;
+}

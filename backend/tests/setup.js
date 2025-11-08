@@ -33,6 +33,17 @@ jest.mock('@prisma/client', () => {
   };
 });
 
+// Mock Redis BEFORE loading app (prevents unit tests from using real Redis)
+jest.mock('ioredis', () => {
+  return jest.fn().mockImplementation(() => ({
+    get: jest.fn().mockResolvedValue(null),
+    setex: jest.fn().mockResolvedValue('OK'),
+    del: jest.fn().mockResolvedValue(1),
+    quit: jest.fn().mockResolvedValue('OK'),
+    on: jest.fn(),
+  }));
+});
+
 // Import app for testing AFTER environment is configured
 const app = require('../src/app');
 

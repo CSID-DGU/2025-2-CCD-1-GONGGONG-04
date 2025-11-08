@@ -21,6 +21,8 @@ import {
 } from './operatingStatus.service';
 import { CacheError, DatabaseError, InvalidCoordinatesError, InvalidRadiusError } from '../utils/errors';
 import logger from '../utils/logger';
+import { getRadiusInMeters, getRadiusDisplay } from '../utils/radius';
+import { calculateWalkTime as calculateWalkTimeUtil } from '../utils/distance';
 
 const prisma = new PrismaClient();
 const redis = getRedisClient();
@@ -56,6 +58,13 @@ export interface CenterSearchData {
 export interface CenterSearchResponse {
   centers: CenterSearchData[];
   total: number;
+  radius?: string;
+  userLocation?: {
+    lat: number;
+    lng: number;
+  };
+  hasMore?: boolean;
+  nextOffset?: number | null;
 }
 
 /**
@@ -73,17 +82,6 @@ interface RawCenterData {
   review_count: number;
 }
 
-/**
- * Calculate walk time from distance
- *
- * @param distance - Distance in meters
- * @returns Walk time string (e.g., "10분")
- */
-function calculateWalkTime(distance: number): string {
-  const walkSpeedMeterPerMin = 80; // 80 meters per minute
-  const minutes = Math.ceil(distance / walkSpeedMeterPerMin);
-  return `${minutes}분`;
-}
 
 /**
  * Get centers within radius
@@ -98,13 +96,17 @@ function calculateWalkTime(distance: number): string {
  *
  * @param lat - User latitude
  * @param lng - User longitude
- * @param radius - Search radius in kilometers (default: 5)
+ * @param radius - Search radius string ('1', '3', '5', '10', 'all')
+ * @param offset - Pagination offset (default: 0)
+ * @param limit - Results per page (default: 50)
  * @returns Promise<CenterSearchResponse> - Centers within radius
  */
 export async function getCentersWithinRadius(
   lat: number,
   lng: number,
-  radius: number = 5,
+  radius: string = '5',
+  offset: number = 0,
+  limit: number = 50,
 ): Promise<CenterSearchResponse> {
   const startTime = Date.now();
 
@@ -121,8 +123,9 @@ export async function getCentersWithinRadius(
     throw new InvalidCoordinatesError('경도는 -180에서 180 사이여야 합니다', { lng });
   }
 
-  if (radius < 1 || radius > 50) {
-    throw new InvalidRadiusError('반경은 1-50km 사이여야 합니다', { radius });
+  const validRadius = ['1', '3', '5', '10', 'all'];
+  if (!validRadius.includes(radius)) {
+    throw new InvalidRadiusError('반경은 1, 3, 5, 10, all 중 하나여야 합니다', { radius });
   }
 
   // 1. Check Redis cache
@@ -147,8 +150,8 @@ export async function getCentersWithinRadius(
   logger.info('[Center Search] Cache MISS - querying database');
 
   // 2. Query database using SPATIAL INDEX
-  // Convert radius from km to meters
-  const radiusMeters = radius * 1000;
+  // Convert radius from km to meters using utility
+  const radiusMeters = getRadiusInMeters(radius);
 
   let centers: RawCenterData[];
   try {
@@ -176,7 +179,8 @@ export async function getCentersWithinRadius(
         POINT(longitude, latitude),
         POINT(${lng}, ${lat})
       ) ASC
-      LIMIT 100
+      LIMIT ${limit}
+      OFFSET ${offset}
     `;
   } catch (err) {
     logger.error('[Center Search] Database query failed:', err);
@@ -200,8 +204,8 @@ export async function getCentersWithinRadius(
     const distanceKm = calculateDistance(lat, lng, centerLat, centerLng);
     const distanceMeters = distanceKm * 1000;
 
-    // Calculate walk time
-    const walkTime = calculateWalkTime(distanceMeters);
+    // Calculate walk time using utility
+    const walkTime = calculateWalkTimeUtil(distanceMeters);
 
     // Get operating status
     let operatingStatus: OperatingStatusType = 'NO_INFO';
@@ -255,6 +259,10 @@ export async function getCentersWithinRadius(
   const response: CenterSearchResponse = {
     centers: processedCenters,
     total: processedCenters.length,
+    radius: getRadiusDisplay(radius),
+    userLocation: { lat, lng },
+    hasMore: processedCenters.length === limit,
+    nextOffset: processedCenters.length === limit ? offset + limit : null,
   };
 
   // 4. Save to Redis cache with 5-minute TTL

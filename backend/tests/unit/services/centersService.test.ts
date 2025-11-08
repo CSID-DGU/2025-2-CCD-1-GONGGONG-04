@@ -29,6 +29,7 @@ jest.mock('@prisma/client', () => ({
 
 // Mock other dependencies
 jest.mock('ioredis');
+jest.mock('../../../src/config/redis');
 jest.mock('../../../src/services/distance.service');
 jest.mock('../../../src/services/operatingStatus.service');
 
@@ -43,6 +44,17 @@ const mockCalculateOperatingStatus = jest.fn();
 // Setup mocks
 beforeAll(() => {
   (Redis as unknown as jest.Mock).mockImplementation(() => mockRedis);
+
+  // Mock redis config
+  const redisConfig = require('../../../src/config/redis');
+  redisConfig.getRedisClient = jest.fn(() => mockRedis);
+  redisConfig.CACHE_KEYS = {
+    centerSearch: (lat: number, lng: number, radius: string) =>
+      `centers:lat:${lat}:lng:${lng}:radius:${radius}`,
+  };
+  redisConfig.CACHE_TTL = {
+    CENTER_SEARCH: 300, // 5 minutes
+  };
 
   // Mock distance service
   const distanceService = require('../../../src/services/distance.service');
@@ -120,7 +132,7 @@ describe('Centers Service', () => {
         upcoming_holidays: [],
       });
 
-      const result = await getCentersWithinRadius(37.5665, 126.978, 5);
+      const result = await getCentersWithinRadius(37.5665, 126.978, '5');
 
       // Verify result structure
       expect(result).toHaveProperty('centers');
@@ -182,7 +194,7 @@ describe('Centers Service', () => {
       // Mock Redis cache hit
       mockRedis.get.mockResolvedValue(JSON.stringify(cachedResponse));
 
-      const result = await getCentersWithinRadius(37.5665, 126.978, 5);
+      const result = await getCentersWithinRadius(37.5665, 126.978, '5');
 
       // Verify result matches cached data
       expect(result).toEqual(cachedResponse);
@@ -219,7 +231,7 @@ describe('Centers Service', () => {
         upcoming_holidays: [],
       });
 
-      const result = await getCentersWithinRadius(37.5665, 126.978, 5);
+      const result = await getCentersWithinRadius(37.5665, 126.978, '5');
 
       expect(result.centers[0].distance).toBe(2500); // 2.5km * 1000
       expect(mockCalculateDistance).toHaveBeenCalledWith(37.5665, 126.978, 37.5665, 126.9780);
@@ -253,7 +265,7 @@ describe('Centers Service', () => {
           upcoming_holidays: [],
         });
 
-        const result = await getCentersWithinRadius(37.5665, 126.978, 5);
+        const result = await getCentersWithinRadius(37.5665, 126.978, '5');
         expect(result.centers[0].walkTime).toBe(testCase.expectedWalkTime);
       }
     });
@@ -278,7 +290,7 @@ describe('Centers Service', () => {
         upcoming_holidays: [],
       });
 
-      const result = await getCentersWithinRadius(37.5665, 126.978, 5);
+      const result = await getCentersWithinRadius(37.5665, 126.978, '5');
 
       expect(result.centers[0].operatingStatus).toBe('OPEN');
       expect(result.centers[0].closingTime).toBe('18:00');
@@ -301,7 +313,7 @@ describe('Centers Service', () => {
         upcoming_holidays: [],
       });
 
-      const result = await getCentersWithinRadius(37.5665, 126.978, 5);
+      const result = await getCentersWithinRadius(37.5665, 126.978, '5');
 
       expect(result.centers[0].operatingStatus).toBe('CLOSING_SOON');
       expect(result.centers[0].closingTime).toBe('17:30');
@@ -327,7 +339,7 @@ describe('Centers Service', () => {
         upcoming_holidays: [],
       });
 
-      const result = await getCentersWithinRadius(37.5665, 126.978, 5);
+      const result = await getCentersWithinRadius(37.5665, 126.978, '5');
 
       expect(result.centers[0].operatingStatus).toBe('CLOSED');
       expect(result.centers[0].nextOpenDate).toBe('2025-01-13');
@@ -349,7 +361,7 @@ describe('Centers Service', () => {
         upcoming_holidays: [],
       });
 
-      const result = await getCentersWithinRadius(37.5665, 126.978, 5);
+      const result = await getCentersWithinRadius(37.5665, 126.978, '5');
 
       expect(result.centers[0].operatingStatus).toBe('NO_INFO');
       expect(result.centers[0].closingTime).toBeUndefined();
@@ -364,7 +376,7 @@ describe('Centers Service', () => {
       mockRedis.get.mockResolvedValue(null);
       mockPrisma.$queryRaw.mockResolvedValue([]);
 
-      const result = await getCentersWithinRadius(37.5665, 126.978, 5);
+      const result = await getCentersWithinRadius(37.5665, 126.978, '5');
 
       expect(result.centers).toEqual([]);
       expect(result.total).toBe(0);
@@ -388,7 +400,7 @@ describe('Centers Service', () => {
         upcoming_holidays: [],
       });
 
-      const result = await getCentersWithinRadius(37.5665, 126.978, 10);
+      const result = await getCentersWithinRadius(37.5665, 126.978, '10');
 
       // Verify ordering (database query should handle ordering via ORDER BY clause)
       // The service itself relies on database ordering
@@ -420,7 +432,7 @@ describe('Centers Service', () => {
         upcoming_holidays: [],
       });
 
-      const result = await getCentersWithinRadius(37.5665, 126.978, 50);
+      const result = await getCentersWithinRadius(37.5665, 126.978, 'all');
 
       // Service processes all returned centers from DB
       // Database LIMIT 100 clause ensures max 100 centers
@@ -446,7 +458,7 @@ describe('Centers Service', () => {
       });
 
       // Should continue with database query
-      const result = await getCentersWithinRadius(37.5665, 126.978, 5);
+      const result = await getCentersWithinRadius(37.5665, 126.978, '5');
 
       expect(result.centers).toHaveLength(1);
       expect(mockPrisma.$queryRaw).toHaveBeenCalled();
@@ -466,7 +478,7 @@ describe('Centers Service', () => {
       });
 
       // Should still return results
-      const result = await getCentersWithinRadius(37.5665, 126.978, 5);
+      const result = await getCentersWithinRadius(37.5665, 126.978, '5');
 
       expect(result.centers).toHaveLength(1);
       expect(mockRedis.setex).toHaveBeenCalled();
@@ -480,7 +492,7 @@ describe('Centers Service', () => {
       mockRedis.get.mockResolvedValue(null);
       mockPrisma.$queryRaw.mockRejectedValue(new Error('Database connection failed'));
 
-      await expect(getCentersWithinRadius(37.5665, 126.978, 5)).rejects.toThrow(
+      await expect(getCentersWithinRadius(37.5665, 126.978, '5')).rejects.toThrow(
         'Database connection failed'
       );
     });
@@ -497,7 +509,7 @@ describe('Centers Service', () => {
       // Mock operating status error
       mockCalculateOperatingStatus.mockRejectedValue(new Error('Operating status service error'));
 
-      const result = await getCentersWithinRadius(37.5665, 126.978, 5);
+      const result = await getCentersWithinRadius(37.5665, 126.978, '5');
 
       // Should continue with NO_INFO status
       expect(result.centers[0].operatingStatus).toBe('NO_INFO');
@@ -534,7 +546,7 @@ describe('Centers Service', () => {
         upcoming_holidays: [],
       });
 
-      const result = await getCentersWithinRadius(37.5665, 126.978, 5);
+      const result = await getCentersWithinRadius(37.5665, 126.978, '5');
 
       // Should skip the center with null coordinates
       expect(result.centers).toHaveLength(1);

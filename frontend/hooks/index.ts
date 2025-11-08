@@ -44,6 +44,22 @@ export { useToast, toast } from './use-toast';
 export { useKakaoMapSDK } from './useKakaoMapSDK';
 export type { UseKakaoMapSDKReturn } from './useKakaoMapSDK';
 
+// Sprint 2: Geolocation 훅
+export { useGeolocation } from './useGeolocation';
+export type { UseGeolocationReturn } from './useGeolocation';
+
+// Sprint 2 - Day 9: Address Search 훅
+export { useDebounce } from './useDebounce';
+export { useAddressSearch } from './useAddressSearch';
+export type { UseAddressSearchReturn } from './useAddressSearch';
+
+// Sprint 2 - Day 10: Infinite Scroll 훅
+export { useInfiniteScroll } from './useInfiniteScroll';
+export type {
+  UseInfiniteScrollOptions,
+  UseInfiniteScrollReturn,
+} from './useInfiniteScroll';
+
 // Sprint 1: 센터 데이터 패칭 훅 (지도용)
 export { useCenterData, useCentersQuery } from './useCenterData';
 export type { UseCenterDataParams } from './useCenterData';
