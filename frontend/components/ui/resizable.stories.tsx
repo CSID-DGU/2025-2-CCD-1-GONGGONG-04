@@ -164,7 +164,7 @@ export const EditorLayout: Story = {
               <div className="flex-1 bg-muted rounded p-4 font-mono text-sm">
                 <code>function hello() {'{'}</code>
                 <br />
-                <code>  console.log("Hello World");</code>
+                <code>  console.log(&quot;Hello World&quot;);</code>
                 <br />
                 <code>{'}'}</code>
               </div>

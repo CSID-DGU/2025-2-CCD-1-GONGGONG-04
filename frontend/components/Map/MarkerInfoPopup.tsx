@@ -105,7 +105,12 @@ export function MarkerInfoPopup({
 
   return (
     <Card
+      // 팝업 내부 상호작용이 지도/오버레이로 전파되지 않도록 캡처 단계에서 차단
       onClick={(e) => e.stopPropagation()}
+      onMouseDown={(e) => e.stopPropagation()}
+      onPointerDown={(e) => e.stopPropagation()}
+      onTouchStart={(e) => e.stopPropagation()}
+      onClickCapture={(e) => e.stopPropagation()}
       className={cn(
         'w-full max-w-sm shadow-lg border-neutral-200',
         'sm:max-w-md',
@@ -128,9 +133,9 @@ export function MarkerInfoPopup({
         <Button
           variant="ghost"
           size="icon"
-          onClick={onClose}
+          onClick={(e) => { e.stopPropagation(); onClose(); }}
           className="absolute top-4 right-4 h-8 w-8"
-          aria-label="팝업 닫기"
+          aria-label="닫기"
         >
           <X className="h-4 w-4" aria-hidden="true" />
         </Button>
@@ -172,7 +177,7 @@ export function MarkerInfoPopup({
         {/* 전화번호 (있는 경우만 표시) */}
         {center.phoneNumber && (
           <button
-            onClick={handleCall}
+            onClick={(e) => { e.stopPropagation(); handleCall(); }}
             className="flex items-center gap-1.5 text-small text-lavender-500 hover:text-lavender-600 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lavender-500 focus-visible:ring-offset-2 rounded"
             aria-label={`전화하기: ${center.phoneNumber}`}
           >
@@ -187,7 +192,7 @@ export function MarkerInfoPopup({
         {/* 상세보기 버튼 */}
         <Button
           variant="default"
-          onClick={handleNavigate}
+          onClick={(e) => { e.stopPropagation(); handleNavigate(); }}
           className="flex-1"
           aria-label={`${center.name} 상세 정보 보기`}
         >
@@ -197,7 +202,7 @@ export function MarkerInfoPopup({
         {/* 길찾기 버튼 */}
         <Button
           variant="outline"
-          onClick={handleDirections}
+          onClick={(e) => { e.stopPropagation(); handleDirections(); }}
           className="flex-1 gap-1.5"
           aria-label={`${center.name} 길찾기`}
         >

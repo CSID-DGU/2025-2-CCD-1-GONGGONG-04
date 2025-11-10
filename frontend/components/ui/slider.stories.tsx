@@ -70,16 +70,18 @@ export const Disabled: Story = {
   ),
 }
 
+const ControlledComponent = () => {
+  const [value, setValue] = useState([33])
+  return (
+    <div className="w-80 space-y-4">
+      <Slider value={value} onValueChange={setValue} max={100} step={1} />
+      <div className="text-sm text-center">Value: {value[0]}</div>
+    </div>
+  )
+}
+
 export const Controlled: Story = {
-  render: () => {
-    const [value, setValue] = useState([33])
-    return (
-      <div className="w-80 space-y-4">
-        <Slider value={value} onValueChange={setValue} max={100} step={1} />
-        <div className="text-sm text-center">Value: {value[0]}</div>
-      </div>
-    )
-  },
+  render: () => <ControlledComponent />,
 }
 
 export const Vertical: Story = {

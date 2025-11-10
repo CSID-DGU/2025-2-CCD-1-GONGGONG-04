@@ -135,68 +135,72 @@ export const WithSubmenus: Story = {
   ),
 }
 
-export const WithCheckboxes: Story = {
-  render: () => {
-    const [showBookmarks, setShowBookmarks] = React.useState(true)
-    const [showReadingList, setShowReadingList] = React.useState(false)
-    const [showHistory, setShowHistory] = React.useState(false)
+const WithCheckboxesComponent = () => {
+  const [showBookmarks, setShowBookmarks] = React.useState(true)
+  const [showReadingList, setShowReadingList] = React.useState(false)
+  const [showHistory, setShowHistory] = React.useState(false)
 
-    return (
-      <ContextMenu>
-        <ContextMenuTrigger className="flex h-[200px] w-[400px] items-center justify-center rounded-md border border-dashed text-sm">
-          Right click for view options
-        </ContextMenuTrigger>
-        <ContextMenuContent className="w-64">
-          <ContextMenuLabel>View Options</ContextMenuLabel>
-          <ContextMenuSeparator />
-          <ContextMenuCheckboxItem
-            checked={showBookmarks}
-            onCheckedChange={setShowBookmarks}
-          >
-            Show Bookmarks Bar
-            <ContextMenuShortcut>⌘⇧B</ContextMenuShortcut>
-          </ContextMenuCheckboxItem>
-          <ContextMenuCheckboxItem
-            checked={showReadingList}
-            onCheckedChange={setShowReadingList}
-          >
-            Show Reading List
-          </ContextMenuCheckboxItem>
-          <ContextMenuCheckboxItem
-            checked={showHistory}
-            onCheckedChange={setShowHistory}
-          >
-            Show Full History
-          </ContextMenuCheckboxItem>
-        </ContextMenuContent>
-      </ContextMenu>
-    )
-  },
+  return (
+    <ContextMenu>
+      <ContextMenuTrigger className="flex h-[200px] w-[400px] items-center justify-center rounded-md border border-dashed text-sm">
+        Right click for view options
+      </ContextMenuTrigger>
+      <ContextMenuContent className="w-64">
+        <ContextMenuLabel>View Options</ContextMenuLabel>
+        <ContextMenuSeparator />
+        <ContextMenuCheckboxItem
+          checked={showBookmarks}
+          onCheckedChange={setShowBookmarks}
+        >
+          Show Bookmarks Bar
+          <ContextMenuShortcut>⌘⇧B</ContextMenuShortcut>
+        </ContextMenuCheckboxItem>
+        <ContextMenuCheckboxItem
+          checked={showReadingList}
+          onCheckedChange={setShowReadingList}
+        >
+          Show Reading List
+        </ContextMenuCheckboxItem>
+        <ContextMenuCheckboxItem
+          checked={showHistory}
+          onCheckedChange={setShowHistory}
+        >
+          Show Full History
+        </ContextMenuCheckboxItem>
+      </ContextMenuContent>
+    </ContextMenu>
+  )
+}
+
+export const WithCheckboxes: Story = {
+  render: () => <WithCheckboxesComponent />,
+}
+
+const WithRadioGroupComponent = () => {
+  const [quality, setQuality] = React.useState('auto')
+
+  return (
+    <ContextMenu>
+      <ContextMenuTrigger className="flex h-[200px] w-[400px] items-center justify-center rounded-md border border-dashed text-sm">
+        Right click to select quality
+      </ContextMenuTrigger>
+      <ContextMenuContent className="w-64">
+        <ContextMenuLabel>Video Quality</ContextMenuLabel>
+        <ContextMenuSeparator />
+        <ContextMenuRadioGroup value={quality} onValueChange={setQuality}>
+          <ContextMenuRadioItem value="auto">Auto</ContextMenuRadioItem>
+          <ContextMenuRadioItem value="1080p">1080p</ContextMenuRadioItem>
+          <ContextMenuRadioItem value="720p">720p</ContextMenuRadioItem>
+          <ContextMenuRadioItem value="480p">480p</ContextMenuRadioItem>
+          <ContextMenuRadioItem value="360p">360p</ContextMenuRadioItem>
+        </ContextMenuRadioGroup>
+      </ContextMenuContent>
+    </ContextMenu>
+  )
 }
 
 export const WithRadioGroup: Story = {
-  render: () => {
-    const [quality, setQuality] = React.useState('auto')
-
-    return (
-      <ContextMenu>
-        <ContextMenuTrigger className="flex h-[200px] w-[400px] items-center justify-center rounded-md border border-dashed text-sm">
-          Right click to select quality
-        </ContextMenuTrigger>
-        <ContextMenuContent className="w-64">
-          <ContextMenuLabel>Video Quality</ContextMenuLabel>
-          <ContextMenuSeparator />
-          <ContextMenuRadioGroup value={quality} onValueChange={setQuality}>
-            <ContextMenuRadioItem value="auto">Auto</ContextMenuRadioItem>
-            <ContextMenuRadioItem value="1080p">1080p</ContextMenuRadioItem>
-            <ContextMenuRadioItem value="720p">720p</ContextMenuRadioItem>
-            <ContextMenuRadioItem value="480p">480p</ContextMenuRadioItem>
-            <ContextMenuRadioItem value="360p">360p</ContextMenuRadioItem>
-          </ContextMenuRadioGroup>
-        </ContextMenuContent>
-      </ContextMenu>
-    )
-  },
+  render: () => <WithRadioGroupComponent />,
 }
 
 export const ImageContext: Story = {

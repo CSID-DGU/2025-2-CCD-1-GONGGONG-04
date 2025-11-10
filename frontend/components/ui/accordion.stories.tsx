@@ -57,7 +57,7 @@ export const Single: Story = {
       <AccordionItem value="item-3">
         <AccordionTrigger>Is it animated?</AccordionTrigger>
         <AccordionContent>
-          Yes. It's animated by default, but you can disable it if you prefer.
+          Yes. It&apos;s animated by default, but you can disable it if you prefer.
         </AccordionContent>
       </AccordionItem>
     </Accordion>
@@ -111,7 +111,7 @@ export const NonCollapsible: Story = {
       <AccordionItem value="item-2">
         <AccordionTrigger>Guaranteed content</AccordionTrigger>
         <AccordionContent>
-          Users can't collapse all items, ensuring content visibility.
+          Users can&apos;t collapse all items, ensuring content visibility.
         </AccordionContent>
       </AccordionItem>
       <AccordionItem value="item-3">

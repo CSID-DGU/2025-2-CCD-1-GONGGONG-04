@@ -213,22 +213,13 @@ router.post(
   assessmentController.submitAssessment,
 );
 
-// ============================================
-// Protected Routes (Authentication Required)
-// ============================================
-
-// Apply auth middleware to all routes below
-router.use(authMiddleware);
-
 /**
  * @swagger
  * /assessments/{id}/result:
  *   get:
  *     summary: Get assessment result by ID
- *     description: Retrieve full assessment result with interpretation
+ *     description: Retrieve full assessment result with interpretation (public - no authentication required)
  *     tags: [Assessments]
- *     security:
- *       - BearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -263,10 +254,6 @@ router.use(authMiddleware);
  *                     completedAt:
  *                       type: string
  *                       format: date-time
- *       401:
- *         description: Unauthorized
- *       403:
- *         description: Forbidden - assessment belongs to another user
  *       404:
  *         description: Assessment not found
  */
@@ -275,6 +262,13 @@ router.get(
   validateSchema(getAssessmentResultSchema),
   assessmentController.getAssessmentResult,
 );
+
+// ============================================
+// Protected Routes (Authentication Required)
+// ============================================
+
+// Apply auth middleware to all routes below
+router.use(authMiddleware);
 
 /**
  * @swagger

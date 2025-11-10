@@ -84,29 +84,31 @@ export const CharsOnly: Story = {
   ),
 }
 
-export const Controlled: Story = {
-  render: () => {
-    const [value, setValue] = React.useState('')
+const ControlledComponent = () => {
+  const [value, setValue] = React.useState('')
 
-    return (
-      <div className="space-y-4">
-        <InputOTP maxLength={6} value={value} onChange={setValue}>
-          <InputOTPGroup>
-            <InputOTPSlot index={0} />
-            <InputOTPSlot index={1} />
-            <InputOTPSlot index={2} />
-          </InputOTPGroup>
-          <InputOTPSeparator />
-          <InputOTPGroup>
-            <InputOTPSlot index={3} />
-            <InputOTPSlot index={4} />
-            <InputOTPSlot index={5} />
-          </InputOTPGroup>
-        </InputOTP>
-        <div className="text-sm text-center">
-          {value === '' ? 'Enter your one-time password.' : `You entered: ${value}`}
-        </div>
+  return (
+    <div className="space-y-4">
+      <InputOTP maxLength={6} value={value} onChange={setValue}>
+        <InputOTPGroup>
+          <InputOTPSlot index={0} />
+          <InputOTPSlot index={1} />
+          <InputOTPSlot index={2} />
+        </InputOTPGroup>
+        <InputOTPSeparator />
+        <InputOTPGroup>
+          <InputOTPSlot index={3} />
+          <InputOTPSlot index={4} />
+          <InputOTPSlot index={5} />
+        </InputOTPGroup>
+      </InputOTP>
+      <div className="text-sm text-center">
+        {value === '' ? 'Enter your one-time password.' : `You entered: ${value}`}
       </div>
-    )
-  },
+    </div>
+  )
+}
+
+export const Controlled: Story = {
+  render: () => <ControlledComponent />,
 }

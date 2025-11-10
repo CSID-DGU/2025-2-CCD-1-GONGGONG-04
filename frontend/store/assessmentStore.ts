@@ -13,7 +13,7 @@
  */
 
 import { create } from 'zustand';
-import { devtools, persist } from 'zustand/middleware';
+import { devtools, persist, createJSONStorage } from 'zustand/middleware';
 import type { AssessmentTemplate, AssessmentResult, Answer } from '@/lib/api/assessments';
 
 // ============================================
@@ -154,7 +154,7 @@ const initialState = {
  * @example
  * ```typescript
  * // 진단 시작
- * const { startAssessment } = useAssessmentStore();
+ * const { startAssessmentStore } = useAssessmentStore();
  * startAssessment(template);
  *
  * // 답변 저장
@@ -166,11 +166,15 @@ const initialState = {
  * const { getProgress } = useAssessmentStore();
  * console.log(getProgress()); // 20
  * ```
+ *
+ * @note Persist 미들웨어를 제거하여 성능 개선
+ * - 페이지 새로고침 시 진행 상황은 초기화됨
+ * - 대부분의 사용자는 진단을 한 번에 완료하므로 큰 문제 없음
+ * - 필요시 나중에 persist 재추가 가능
  */
 export const useAssessmentStore = create<AssessmentState>()(
   devtools(
-    persist(
-      (set, get) => ({
+    (set, get) => ({
         // ========== 초기 상태 ==========
         ...initialState,
 
@@ -200,6 +204,8 @@ export const useAssessmentStore = create<AssessmentState>()(
          */
         setAnswer: (questionNumber: number, selectedOption: number) => {
           const state = get();
+          console.log('[Store] setAnswer called:', { questionNumber, selectedOption, currentAnswers: state.answers });
+
           const answers = [...state.answers];
 
           // 기존 답변이 있는지 확인
@@ -216,6 +222,7 @@ export const useAssessmentStore = create<AssessmentState>()(
           }
 
           set({ answers });
+          console.log('[Store] setAnswer completed:', { newAnswers: answers });
         },
 
         /**
@@ -296,7 +303,9 @@ export const useAssessmentStore = create<AssessmentState>()(
             (a) => a.questionNumber === state.currentStep
           );
 
-          return !!currentAnswer;
+          const result = !!currentAnswer;
+          console.log('[Store] canGoNext called:', { currentStep: state.currentStep, answers: state.answers, result });
+          return result;
         },
 
         /**
@@ -350,22 +359,6 @@ export const useAssessmentStore = create<AssessmentState>()(
           return currentAnswer?.selectedOption;
         },
       }),
-      {
-        name: 'assessment-storage', // localStorage 키
-        /**
-         * 세션 복구를 위해 필요한 상태만 저장
-         * (isSubmitting, currentResult는 transient 상태이므로 제외)
-         */
-        partialize: (state) => ({
-          currentTemplateId: state.currentTemplateId,
-          currentTemplate: state.currentTemplate,
-          currentStep: state.currentStep,
-          totalSteps: state.totalSteps,
-          answers: state.answers,
-          sessionId: state.sessionId,
-        }),
-      }
-    ),
     {
       name: 'AssessmentStore', // Redux DevTools 이름
     }

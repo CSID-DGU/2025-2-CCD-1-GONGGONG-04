@@ -12,7 +12,6 @@
 
 'use client';
 
-import { use } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -121,10 +120,10 @@ function NotFoundState() {
 export default function AssessmentResultPage({
   params,
 }: {
-  params: Promise<{ id: string }>;
+  params: { id: string };
 }) {
   const router = useRouter();
-  const { id } = use(params);
+  const { id } = params;
   const assessmentId = parseInt(id, 10);
 
   // Store에서 제출 직후의 결과 확인 (익명 사용자)

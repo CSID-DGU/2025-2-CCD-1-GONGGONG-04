@@ -82,21 +82,23 @@ const mockReview: Review = {
 /**
  * Create mode - New review creation
  */
-export const CreateMode: Story = {
-  render: (args) => {
-    const [isOpen, setIsOpen] = useState(false);
+const CreateModeComponent = (args: any) => {
+  const [isOpen, setIsOpen] = useState(false);
 
-    return (
-      <div>
-        <Button onClick={() => setIsOpen(true)}>리뷰 작성하기</Button>
-        <ReviewFormModal
-          {...args}
-          isOpen={isOpen}
-          onClose={() => setIsOpen(false)}
-        />
-      </div>
-    );
-  },
+  return (
+    <div>
+      <Button onClick={() => setIsOpen(true)}>리뷰 작성하기</Button>
+      <ReviewFormModal
+        {...args}
+        isOpen={isOpen}
+        onClose={() => setIsOpen(false)}
+      />
+    </div>
+  );
+};
+
+export const CreateMode: Story = {
+  render: (args) => <CreateModeComponent {...args} />,
   args: {
     centerId: 1,
     existingReview: null,
@@ -106,22 +108,24 @@ export const CreateMode: Story = {
 /**
  * Edit mode - Editing existing review
  */
-export const EditMode: Story = {
-  render: (args) => {
-    const [isOpen, setIsOpen] = useState(false);
+const EditModeComponent = (args: any) => {
+  const [isOpen, setIsOpen] = useState(false);
 
-    return (
-      <div>
-        <Button onClick={() => setIsOpen(true)}>리뷰 수정하기</Button>
-        <ReviewFormModal
-          {...args}
-          isOpen={isOpen}
-          onClose={() => setIsOpen(false)}
-          existingReview={mockReview}
-        />
-      </div>
-    );
-  },
+  return (
+    <div>
+      <Button onClick={() => setIsOpen(true)}>리뷰 수정하기</Button>
+      <ReviewFormModal
+        {...args}
+        isOpen={isOpen}
+        onClose={() => setIsOpen(false)}
+        existingReview={mockReview}
+      />
+    </div>
+  );
+};
+
+export const EditMode: Story = {
+  render: (args) => <EditModeComponent {...args} />,
   args: {
     centerId: 1,
   },
@@ -130,18 +134,20 @@ export const EditMode: Story = {
 /**
  * Loading state - Form submission in progress
  */
-export const LoadingState: Story = {
-  render: (args) => {
-    const [isOpen, setIsOpen] = useState(true);
+const LoadingStateComponent = (args: any) => {
+  const [isOpen, setIsOpen] = useState(true);
 
-    return (
-      <ReviewFormModal
-        {...args}
-        isOpen={isOpen}
-        onClose={() => setIsOpen(false)}
-      />
-    );
-  },
+  return (
+    <ReviewFormModal
+      {...args}
+      isOpen={isOpen}
+      onClose={() => setIsOpen(false)}
+    />
+  );
+};
+
+export const LoadingState: Story = {
+  render: (args) => <LoadingStateComponent {...args} />,
   args: {
     centerId: 1,
     existingReview: null,
@@ -158,18 +164,20 @@ export const LoadingState: Story = {
 /**
  * Validation errors - Invalid form input
  */
-export const ValidationErrors: Story = {
-  render: (args) => {
-    const [isOpen, setIsOpen] = useState(true);
+const ValidationErrorsComponent = (args: any) => {
+  const [isOpen, setIsOpen] = useState(true);
 
-    return (
-      <ReviewFormModal
-        {...args}
-        isOpen={isOpen}
-        onClose={() => setIsOpen(false)}
-      />
-    );
-  },
+  return (
+    <ReviewFormModal
+      {...args}
+      isOpen={isOpen}
+      onClose={() => setIsOpen(false)}
+    />
+  );
+};
+
+export const ValidationErrors: Story = {
+  render: (args) => <ValidationErrorsComponent {...args} />,
   args: {
     centerId: 1,
     existingReview: null,
@@ -186,24 +194,26 @@ export const ValidationErrors: Story = {
 /**
  * Character counter - Content length tracking
  */
+const CharacterCounterComponent = (args: any) => {
+  const [isOpen, setIsOpen] = useState(true);
+
+  const longReview: Review = {
+    ...mockReview,
+    content: 'A'.repeat(950), // Close to limit
+  };
+
+  return (
+    <ReviewFormModal
+      {...args}
+      isOpen={isOpen}
+      onClose={() => setIsOpen(false)}
+      existingReview={longReview}
+    />
+  );
+};
+
 export const CharacterCounter: Story = {
-  render: (args) => {
-    const [isOpen, setIsOpen] = useState(true);
-
-    const longReview: Review = {
-      ...mockReview,
-      content: 'A'.repeat(950), // Close to limit
-    };
-
-    return (
-      <ReviewFormModal
-        {...args}
-        isOpen={isOpen}
-        onClose={() => setIsOpen(false)}
-        existingReview={longReview}
-      />
-    );
-  },
+  render: (args) => <CharacterCounterComponent {...args} />,
   args: {
     centerId: 1,
   },
@@ -219,19 +229,21 @@ export const CharacterCounter: Story = {
 /**
  * With all fields filled - Complete review form
  */
-export const AllFieldsFilled: Story = {
-  render: (args) => {
-    const [isOpen, setIsOpen] = useState(true);
+const AllFieldsFilledComponent = (args: any) => {
+  const [isOpen, setIsOpen] = useState(true);
 
-    return (
-      <ReviewFormModal
-        {...args}
-        isOpen={isOpen}
-        onClose={() => setIsOpen(false)}
-        existingReview={mockReview}
-      />
-    );
-  },
+  return (
+    <ReviewFormModal
+      {...args}
+      isOpen={isOpen}
+      onClose={() => setIsOpen(false)}
+      existingReview={mockReview}
+    />
+  );
+};
+
+export const AllFieldsFilled: Story = {
+  render: (args) => <AllFieldsFilledComponent {...args} />,
   args: {
     centerId: 1,
   },

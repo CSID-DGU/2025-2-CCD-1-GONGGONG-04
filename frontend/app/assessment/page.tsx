@@ -16,6 +16,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
+import { flushSync } from 'react-dom';
 import { useRouter } from 'next/navigation';
 import { useTemplate, useSubmitAssessment } from '@/hooks/useAssessments';
 import { useAssessmentStore } from '@/store/assessmentStore';
@@ -52,12 +53,14 @@ export default function AssessmentPage() {
     error,
   } = useTemplate(1);
 
-  // Zustand 스토어
+  // Zustand 스토어 - 구독 최적화를 위해 선택적으로 구독
+  const currentStep = useAssessmentStore((state) => state.currentStep);
+  const totalSteps = useAssessmentStore((state) => state.totalSteps);
+  const answers = useAssessmentStore((state) => state.answers);
+  const currentTemplate = useAssessmentStore((state) => state.currentTemplate);
+
+  // Actions (함수는 변경되지 않으므로 한 번에 구독)
   const {
-    currentStep,
-    totalSteps,
-    answers,
-    currentTemplate,
     startAssessment,
     setAnswer,
     nextStep,
@@ -105,9 +108,14 @@ export default function AssessmentPage() {
 
   /**
    * 답변 선택 핸들러
+   * React 18의 자동 배칭을 우회하여 즉시 렌더링하도록 flushSync 사용
    */
   const handleSelectOption = (optionNumber: number) => {
-    setAnswer(currentStep, optionNumber);
+    console.log('[Page] handleSelectOption called:', { currentStep, optionNumber });
+    flushSync(() => {
+      setAnswer(currentStep, optionNumber);
+    });
+    console.log('[Page] setAnswer flushed synchronously');
   };
 
   /**
@@ -189,7 +197,10 @@ export default function AssessmentPage() {
   };
 
   const currentQuestion = getCurrentQuestion();
-  const selectedAnswer = getCurrentQuestionAnswer();
+
+  // selectedAnswer를 직접 계산 (getCurrentQuestionAnswer 대신)
+  // answers 상태 변경 시 자동 재계산되도록 보장
+  const selectedAnswer = answers.find((a) => a.questionNumber === currentStep)?.selectedOption;
 
   // ========== Helper Functions ==========
 

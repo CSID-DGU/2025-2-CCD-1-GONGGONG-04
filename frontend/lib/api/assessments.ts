@@ -114,6 +114,7 @@ export interface SubmitAssessmentResponse {
  * 백엔드 템플릿 응답을 프론트엔드 형식으로 변환
  * - questionsJson → questions
  * - name → title
+ * - estimatedTimeMinutes → estimatedMinutes
  */
 function transformTemplateData(data: any): AssessmentTemplate {
   if (!data || typeof data !== 'object') return data;
@@ -127,6 +128,11 @@ function transformTemplateData(data: any): AssessmentTemplate {
   // name을 title로 변환
   if ('name' in data && !('title' in data)) {
     data.title = data.name;
+  }
+
+  // estimatedTimeMinutes을 estimatedMinutes로 변환
+  if ('estimatedTimeMinutes' in data && !('estimatedMinutes' in data)) {
+    data.estimatedMinutes = data.estimatedTimeMinutes;
   }
 
   return data as AssessmentTemplate;

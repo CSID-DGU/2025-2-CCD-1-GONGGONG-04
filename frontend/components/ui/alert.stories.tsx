@@ -77,7 +77,7 @@ export const WithoutIcon: Story = {
     <Alert className="w-[400px]">
       <AlertTitle>Simple Alert</AlertTitle>
       <AlertDescription>
-        This alert doesn't have an icon, just text content.
+        This alert doesn&apos;t have an icon, just text content.
       </AlertDescription>
     </Alert>
   ),

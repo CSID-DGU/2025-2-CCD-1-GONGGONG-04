@@ -85,7 +85,7 @@ export const SaveChanges: Story = {
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel>Don't Save</AlertDialogCancel>
+          <AlertDialogCancel>Don&apos;t Save</AlertDialogCancel>
           <AlertDialogAction>Save Changes</AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

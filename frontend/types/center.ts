@@ -26,6 +26,7 @@ export interface CenterDetail {
     review_count: number;
     favorite_count: number;
     view_count: number;
+    rating_distribution: Record<number, number>;
   };
 }
 

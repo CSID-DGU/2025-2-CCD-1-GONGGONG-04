@@ -71,69 +71,23 @@ export default defineConfig({
   /* Configure projects for major browsers */
   projects: [
     {
-      name: 'chromium',
+      name: 'chrome',
       use: {
         ...devices['Desktop Chrome'],
+        channel: 'chrome', // 시스템에 설치된 Chrome 사용
         viewport: { width: 1920, height: 1080 },
       },
     },
-
-    {
-      name: 'firefox',
-      use: {
-        ...devices['Desktop Firefox'],
-        viewport: { width: 1920, height: 1080 },
-      },
-    },
-
-    {
-      name: 'webkit',
-      use: {
-        ...devices['Desktop Safari'],
-        viewport: { width: 1920, height: 1080 },
-      },
-    },
-
-    /* Test against mobile viewports. */
-    {
-      name: 'mobile-chrome',
-      use: {
-        ...devices['iPhone 12'],
-      },
-    },
-
-    {
-      name: 'mobile-safari',
-      use: {
-        ...devices['iPhone 12'],
-      },
-    },
-
-    {
-      name: 'tablet',
-      use: {
-        ...devices['iPad Pro'],
-      },
-    },
-
-    /* Test against branded browsers. */
-    // {
-    //   name: 'Microsoft Edge',
-    //   use: { ...devices['Desktop Edge'], channel: 'msedge' },
-    // },
-    // {
-    //   name: 'Google Chrome',
-    //   use: { ...devices['Desktop Chrome'], channel: 'chrome' },
-    // },
   ],
 
   /* Run your local dev server before starting the tests */
-  webServer: {
-    command: 'npm run dev',
-    url: 'http://localhost:3000',
-    reuseExistingServer: !process.env.CI,
-    timeout: 120 * 1000,
-    stdout: 'ignore',
-    stderr: 'pipe',
-  },
+  // Docker로 이미 실행 중이므로 비활성화
+  // webServer: {
+  //   command: 'npm run dev',
+  //   url: 'http://localhost:3000',
+  //   reuseExistingServer: !process.env.CI,
+  //   timeout: 120 * 1000,
+  //   stdout: 'ignore',
+  //   stderr: 'pipe',
+  // },
 });

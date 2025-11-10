@@ -44,16 +44,18 @@ type Story = StoryObj<typeof StarRating>;
  * Interactive star rating with hover preview
  * Click on stars to select rating
  */
+const InteractiveComponent = (args: React.ComponentProps<typeof StarRating>) => {
+  const [rating, setRating] = useState(args.rating || 0);
+  return (
+    <div className="space-y-4">
+      <StarRating {...args} rating={rating} onRatingChange={setRating} />
+      <p className="text-body text-neutral-700">선택한 별점: {rating}점</p>
+    </div>
+  );
+};
+
 export const Interactive: Story = {
-  render: (args) => {
-    const [rating, setRating] = useState(args.rating || 0);
-    return (
-      <div className="space-y-4">
-        <StarRating {...args} rating={rating} onRatingChange={setRating} />
-        <p className="text-body text-neutral-700">선택한 별점: {rating}점</p>
-      </div>
-    );
-  },
+  render: (args) => <InteractiveComponent {...args} />,
   args: {
     rating: 3,
     readonly: false,
@@ -114,17 +116,19 @@ export const AllRatings: Story = {
 /**
  * Empty rating (0 stars)
  */
+const EmptyComponent = (args: React.ComponentProps<typeof StarRating>) => {
+  const [rating, setRating] = useState(0);
+  return (
+    <div className="space-y-4">
+      <p className="text-body text-neutral-700">별점을 선택해주세요</p>
+      <StarRating {...args} rating={rating} onRatingChange={setRating} />
+      {rating > 0 && <p className="text-body text-lavender-500">선택: {rating}점</p>}
+    </div>
+  );
+};
+
 export const Empty: Story = {
-  render: (args) => {
-    const [rating, setRating] = useState(0);
-    return (
-      <div className="space-y-4">
-        <p className="text-body text-neutral-700">별점을 선택해주세요</p>
-        <StarRating {...args} rating={rating} onRatingChange={setRating} />
-        {rating > 0 && <p className="text-body text-lavender-500">선택: {rating}점</p>}
-      </div>
-    );
-  },
+  render: (args) => <EmptyComponent {...args} />,
   args: {
     rating: 0,
     readonly: false,

@@ -174,6 +174,22 @@ const getCenterDetail = async (req, res, next) => {
       centerDetail = result[0] || null;
     }
 
+    // Get rating distribution
+    const ratingDistribution = await prisma.$queryRaw`
+      SELECT
+        rating,
+        COUNT(*) as count
+      FROM reviews
+      WHERE center_id = ${centerId}
+      GROUP BY rating
+    `;
+
+    // Convert rating distribution array to object
+    const ratingDistObj = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
+    ratingDistribution.forEach(item => {
+      ratingDistObj[Number(item.rating)] = Number(item.count);
+    });
+
     // Check if center exists
     if (!centerDetail) {
       throw createNotFoundError(`Center with ID ${centerId} not found.`);
@@ -210,6 +226,7 @@ const getCenterDetail = async (req, res, next) => {
         review_count: Number(centerDetail.review_count),
         favorite_count: Number(centerDetail.favorite_count),
         view_count: Number(centerDetail.view_count),
+        rating_distribution: ratingDistObj,
       },
     };
 

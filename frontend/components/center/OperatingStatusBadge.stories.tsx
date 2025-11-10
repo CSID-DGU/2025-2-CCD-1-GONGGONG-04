@@ -274,7 +274,7 @@ export const AccessibilityTest: Story = {
           message="30분 후 마감 예정"
         />
         <p className="text-xs text-neutral-600 mt-2">
-          스크린 리더: "마감임박, 30분 후 마감 예정"
+          스크린 리더: &quot;마감임박, 30분 후 마감 예정&quot;
         </p>
       </div>
       <div>

@@ -181,13 +181,7 @@ export default async function CenterDetailPage({ params }: PageProps) {
           centerId={center.id}
           avgRating={center.stats.avg_rating}
           totalReviews={center.stats.review_count}
-          ratingDistribution={{
-            5: 0, // TODO: Fetch from API in Week 2
-            4: 0,
-            3: 0,
-            2: 0,
-            1: 0,
-          }}
+          ratingDistribution={center.stats.rating_distribution}
         />
 
         {/* 플레이스홀더: 지도 */}

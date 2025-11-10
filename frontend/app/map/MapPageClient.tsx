@@ -210,9 +210,14 @@ export function MapPageClient() {
     container.style.cssText = 'z-index: 1000;';
 
     // Native 이벤트 차단 (Kakao Map 이벤트 시스템으로의 전파 방지)
-    container.addEventListener('click', (e) => {
+    // 클릭뿐 아니라 pointer/mouse/touch 시작 이벤트도 캡처 단계에서 차단
+    const stop = (e: Event) => {
       e.stopPropagation();
-    }, true); // capture phase에서 차단하여 모든 하위 요소의 클릭 이벤트도 차단
+    };
+    container.addEventListener('click', stop, true);
+    container.addEventListener('pointerdown', stop, true);
+    container.addEventListener('mousedown', stop, true);
+    container.addEventListener('touchstart', stop, true);
 
     // React root 생성 및 렌더링
     const root = createRoot(container);
@@ -244,23 +249,19 @@ export function MapPageClient() {
     overlay.setMap(map);
 
     // 지도 클릭 시 팝업 닫기 (팝업 내부 클릭은 제외)
-    const mapClickListener = window.kakao.maps.event.addListener(
-      map,
-      'click',
-      (mouseEvent: any) => {
-        // 클릭한 요소가 팝업 내부인지 확인
-        const target = mouseEvent.domEvent?.target;
-        if (target && target.closest('[role="dialog"]')) {
-          return; // 팝업 내부 클릭은 무시
-        }
-        handleClosePopup();
+    const handleMapClick = (mouseEvent: any) => {
+      const target = mouseEvent.domEvent?.target as HTMLElement | null;
+      if (target && typeof (target as any).closest === 'function' && target.closest('[role="dialog"]')) {
+        return; // 팝업 내부 클릭은 무시
       }
-    );
+      handleClosePopup();
+    };
+    window.kakao.maps.event.addListener(map, 'click', handleMapClick);
 
     // cleanup
     return () => {
-      if (mapClickListener && window.kakao?.maps?.event) {
-        window.kakao.maps.event.removeListener(mapClickListener);
+      if (window.kakao?.maps?.event && map) {
+        window.kakao.maps.event.removeListener(map, 'click', handleMapClick);
       }
       handleClosePopup();
     };

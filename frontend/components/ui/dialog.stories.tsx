@@ -63,7 +63,7 @@ export const WithForm: Story = {
         <DialogHeader>
           <DialogTitle>Edit profile</DialogTitle>
           <DialogDescription>
-            Make changes to your profile here. Click save when you're done.
+            Make changes to your profile here. Click save when you&apos;re done.
           </DialogDescription>
         </DialogHeader>
         <div className="grid gap-4 py-4">
@@ -106,7 +106,7 @@ export const WithoutCloseButton: Story = {
         <DialogHeader>
           <DialogTitle>Important Notice</DialogTitle>
           <DialogDescription>
-            This dialog doesn't have a close button. You must use the action buttons.
+            This dialog doesn&apos;t have a close button. You must use the action buttons.
           </DialogDescription>
         </DialogHeader>
         <div className="py-4">
