@@ -186,7 +186,30 @@ export async function fetchOperatingStatus(
 
     // 성공 응답 파싱
     const responseBody = await response.json();
-    return responseBody.data;
+    const apiData = responseBody.data;
+
+    // snake_case를 camelCase로 변환 (API 응답 형식 변환)
+    const transformedData: OperatingStatusResponse = {
+      center_id: apiData.center_id,
+      center_name: apiData.center_name,
+      current_status: apiData.current_status,
+      current_time: apiData.current_time,
+      next_open: apiData.next_open,
+      weekly_hours: apiData.weekly_hours?.map((hour: any) => ({
+        dayOfWeek: hour.day_of_week,
+        dayName: hour.day_name,
+        openTime: hour.open_time,
+        closeTime: hour.close_time,
+        isOpen: hour.is_open,
+      })) || [],
+      upcoming_holidays: apiData.upcoming_holidays?.map((holiday: any) => ({
+        date: holiday.date,
+        name: holiday.name,
+        type: holiday.type,
+      })) || [],
+    };
+
+    return transformedData;
 
   } catch (error) {
     // CenterApiError는 그대로 throw

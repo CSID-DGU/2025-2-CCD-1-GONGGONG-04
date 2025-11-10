@@ -167,7 +167,10 @@ export function OperatingInfoSection({
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <OperatingHoursTable operatingHours={data.weekly_hours} />
+            <OperatingHoursTable
+              operatingHours={data.weekly_hours}
+              currentDayOfWeek={new Date().getDay()}
+            />
           </CardContent>
         </Card>
       )}
