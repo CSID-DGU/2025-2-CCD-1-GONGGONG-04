@@ -40,6 +40,7 @@ services:
       - HOST=0.0.0.0
       - DATABASE_URL=mysql://mindconnect_user:mindconnect_pass@mysql:3306/mindconnect?charset=utf8mb4
       - REDIS_URL=redis://redis:6379
+      - QDRANT_URL=http://qdrant:6333
       - JWT_SECRET=dev_jwt_secret_change_in_production
       - CORS_ORIGIN=http://localhost:3000
     volumes:
@@ -51,6 +52,8 @@ services:
       mysql:
         condition: service_healthy
       redis:
+        condition: service_started
+      qdrant:
         condition: service_started
     networks:
       - mindconnect-network
@@ -103,6 +106,26 @@ services:
       timeout: 5s
       retries: 5
 
+  qdrant:
+    image: qdrant/qdrant:v1.7.4
+    container_name: mindconnect-qdrant-dev
+    ports:
+      - "6333:6333"
+      - "6334:6334"
+    volumes:
+      - qdrant_data_dev:/qdrant/storage
+    environment:
+      - QDRANT__SERVICE__HTTP_PORT=6333
+      - QDRANT__SERVICE__GRPC_PORT=6334
+    networks:
+      - mindconnect-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:6333/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
 networks:
   mindconnect-network:
     driver: bridge
@@ -111,6 +134,7 @@ volumes:
   # 데이터베이스 볼륨
   mysql_data_dev:
   redis_data_dev:
+  qdrant_data_dev:
   # node_modules 볼륨 (호스트와 격리하여 플랫폼 호환성 확보)
   frontend_node_modules:
   backend_node_modules:

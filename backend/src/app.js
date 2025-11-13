@@ -22,6 +22,8 @@ const recommendationRoutes = require('./routes/recommendation.routes.ts').defaul
 const selfAssessmentRoutes = require('./routes/selfAssessment.routes');
 // Sprint 3: Assessment routes
 const assessmentRoutes = require('./routes/assessment.routes');
+// Sprint 5 (Phase 2): Hybrid Recommendation routes
+const hybridRecommendationRoutes = require('./routes/hybridRecommendation.routes');
 const { errorHandler, notFoundHandler } = require('./middlewares/errorHandler');
 
 // Initialize Express app
@@ -129,6 +131,9 @@ app.use(`${apiPrefix}/self-assessments`, selfAssessmentRoutes);
 
 // Assessment routes (Sprint 3 - New API)
 app.use(`${apiPrefix}/assessments`, assessmentRoutes);
+
+// Sprint 5 (Phase 2): Hybrid Recommendation routes
+app.use('/api/v2/recommendations', hybridRecommendationRoutes);
 
 // TODO: Add more API routes here
 // app.use(`${config.api.prefix}/auth`, authRoutes);
