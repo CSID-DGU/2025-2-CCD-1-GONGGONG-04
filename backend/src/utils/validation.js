@@ -32,10 +32,10 @@ const centerSearchQuerySchema = z.object({
       .refine(val => val >= -180 && val <= 180, 'Longitude must be between -180 and 180'),
     radius: z
       .string()
-      .refine(val => ['10', '30', '50', '100', 'all'].includes(val),
-        'Radius must be one of: 10, 30, 50, 100, all')
+      .refine(val => ['1', '3', '5', '10', 'all'].includes(val),
+        'Radius must be one of: 1, 3, 5, 10, all')
       .optional()
-      .default('50'),
+      .default('5'),
   }),
 });
 

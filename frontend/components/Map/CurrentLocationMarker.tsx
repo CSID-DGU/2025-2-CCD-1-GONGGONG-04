@@ -87,14 +87,11 @@ export function CurrentLocationMarker({
     accuracyCircle.setMap(map);
     setCircle(accuracyCircle);
 
-    // 3. 지도 중심 이동
-    map.panTo(latLng);
-
     console.log(
       `현재 위치 마커 생성: ${latitude}, ${longitude} (정확도: ±${Math.round(accuracy)}m)`
     );
 
-    // 4. 클린업 (메모리 누수 방지)
+    // 3. 클린업 (메모리 누수 방지)
     return () => {
       if (currentMarker) {
         currentMarker.setMap(null);
@@ -179,6 +176,6 @@ function createBlueDotSVG(): string {
     </svg>
   `;
 
-  // SVG를 Base64로 인코딩하여 Data URL로 변환
-  return `data:image/svg+xml;base64,${btoa(svg)}`;
+  // SVG를 URL 인코딩하여 Data URL로 변환 (UTF-8 지원)
+  return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`;
 }

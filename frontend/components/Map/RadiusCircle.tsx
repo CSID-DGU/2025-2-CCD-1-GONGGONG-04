@@ -18,7 +18,7 @@
 
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import { useMapStore } from '@/store/mapStore';
 import { getRadiusInMeters } from '@/lib/map/utils';
 
@@ -42,14 +42,15 @@ interface RadiusCircleProps {
  */
 export function RadiusCircle({ map, center }: RadiusCircleProps) {
   const { radius, showCircle } = useMapStore();
-  const [circle, setCircle] = useState<kakao.maps.Circle | null>(null);
+  const circleRef = useRef<kakao.maps.Circle | null>(null);
 
+  // 원 생성 및 업데이트
   useEffect(() => {
     if (!map || !showCircle) {
       // 원 제거
-      if (circle) {
-        circle.setMap(null);
-        setCircle(null);
+      if (circleRef.current) {
+        circleRef.current.setMap(null);
+        circleRef.current = null;
       }
       return;
     }
@@ -57,35 +58,43 @@ export function RadiusCircle({ map, center }: RadiusCircleProps) {
     const latLng = new kakao.maps.LatLng(center.lat, center.lng);
     const radiusMeters = getRadiusInMeters(radius);
 
-    if (circle) {
+    console.log(`반경원 업데이트: 중심(${center.lat}, ${center.lng}), 반경: ${radius}km (${radiusMeters}m)`);
+
+    if (circleRef.current) {
       // 기존 원 업데이트
-      circle.setPosition(latLng);
-      circle.setRadius(radiusMeters);
+      console.log('기존 원 업데이트');
+      circleRef.current.setPosition(latLng);
+      circleRef.current.setRadius(radiusMeters);
     } else {
       // 새 원 생성
+      console.log('새 원 생성');
       const newCircle = new kakao.maps.Circle({
         center: latLng,
         radius: radiusMeters,
-        strokeWeight: 2,
+        strokeWeight: 3, // 더 두껍게
         strokeColor: '#A855F7', // lavender-500
-        strokeOpacity: 0.8,
+        strokeOpacity: 1, // 더 진하게
         strokeStyle: 'solid',
         fillColor: '#A855F7',
-        fillOpacity: 0.1,
+        fillOpacity: 0.15, // 조금 더 진하게
         zIndex: 50, // 마커보다 아래
       });
 
       newCircle.setMap(map);
-      setCircle(newCircle);
+      circleRef.current = newCircle;
     }
+  }, [map, center.lat, center.lng, radius, showCircle]);
 
-    // 클린업
+  // 컴포넌트 언마운트 시에만 정리
+  useEffect(() => {
     return () => {
-      if (circle) {
-        circle.setMap(null);
+      console.log('RadiusCircle 언마운트: 원 제거');
+      if (circleRef.current) {
+        circleRef.current.setMap(null);
+        circleRef.current = null;
       }
     };
-  }, [map, center, radius, showCircle, circle]);
+  }, []);
 
   return null; // 렌더링 없음 (지도 Overlay만)
 }

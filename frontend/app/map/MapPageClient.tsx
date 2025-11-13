@@ -1,9 +1,14 @@
 /**
  * MapPageClient 컴포넌트
  *
+ * Sprint 2: GPS 위치, 반경 필터, 주소 검색, 센터 리스트 통합
+ *
  * 지도 페이지의 클라이언트 사이드 로직을 담당합니다
  * - Kakao Map 초기화
  * - 센터 데이터 패칭 및 마커 표시
+ * - GPS 위치 기반 검색
+ * - 반경 필터 및 주소 검색
+ * - 센터 리스트 뷰 및 무한 스크롤
  * - 사용자 인터랙션 처리
  * - 상태 관리
  *
@@ -18,9 +23,19 @@ import { KakaoMapView } from '@/components/Map/KakaoMapView';
 import { MapLayout } from '@/components/Map/MapLayout';
 import { CenterMarkers } from '@/components/Map/CenterMarkers';
 import { MarkerInfoPopup } from '@/components/Map/MarkerInfoPopup';
+import { AddressSearchBar } from '@/components/Map/AddressSearchBar';
+import { RadiusSelector } from '@/components/Map/RadiusSelector';
+import { RadiusCircle } from '@/components/Map/RadiusCircle';
+import { CenterList } from '@/components/Map/CenterList';
+import { CurrentLocationMarker } from '@/components/Map/CurrentLocationMarker';
 import { useCenterData } from '@/hooks/useCenterData';
+import { useGeolocation } from '@/hooks/useGeolocation';
+import { useMapStore } from '@/store/mapStore';
 import { CenterMarkerData } from '@/lib/api/centers';
+import type { Address } from '@/types/address';
 import { createRoot, Root } from 'react-dom/client';
+import { Button } from '@/components/ui/button';
+import { MapPin, List, Map as MapIcon } from 'lucide-react';
 
 /**
  * 서울시청 기본 좌표
@@ -35,46 +50,35 @@ const SEOUL_CITY_HALL = {
  */
 const DEFAULT_ZOOM_LEVEL = 12;
 
-/**
- * 줌 레벨에 따른 검색 반경 계산
- * - Level 1-3 (매우 확대): 10km
- * - Level 4-6 (확대): 30km
- * - Level 7-9 (중간): 50km
- * - Level 10-12 (축소): 100km
- * - Level 13-14 (매우 축소): 100km
- */
-function getRadiusFromZoomLevel(level: number): number {
-  if (level <= 3) return 10;    // 매우 확대된 상태
-  if (level <= 6) return 30;    // 확대된 상태
-  if (level <= 9) return 50;    // 중간 상태
-  if (level <= 12) return 100;  // 축소된 상태
-  return 100;                   // 매우 축소된 상태
-}
-
 export function MapPageClient() {
   const router = useRouter();
+
+  // Map 상태
   const [map, setMap] = useState<kakao.maps.Map | null>(null);
   const [mapCenter, setMapCenter] = useState(SEOUL_CITY_HALL);
-  const [zoomLevel, setZoomLevel] = useState(DEFAULT_ZOOM_LEVEL);
   const [selectedCenter, setSelectedCenter] = useState<CenterMarkerData | null>(null);
   const [isPopupOpen, setIsPopupOpen] = useState(false);
+
+  // 모바일 뷰 토글 (지도/리스트)
+  const [viewMode, setViewMode] = useState<'map' | 'list'>('map');
 
   // CustomOverlay 관리를 위한 ref
   const overlayRef = useRef<kakao.maps.CustomOverlay | null>(null);
   const overlayRootRef = useRef<Root | null>(null);
 
-  /**
-   * 현재 줌 레벨에 따른 검색 반경 계산
-   */
-  const searchRadius = getRadiusFromZoomLevel(zoomLevel);
+  // Zustand 상태 관리 (반경)
+  const { radius } = useMapStore();
+
+  // GPS 위치 훅
+  const { position, error: gpsError, loading: gpsLoading, requestLocation } = useGeolocation();
 
   /**
-   * 센터 데이터 패칭 (동적 반경 사용)
+   * 센터 데이터 패칭 (반경 필터 적용)
    */
   const { data, isLoading, isError, error } = useCenterData({
     lat: mapCenter.lat,
     lng: mapCenter.lng,
-    radius: searchRadius,
+    radius: radius, // string 그대로 전달 ('1', '3', '5', '10', 'all')
   });
 
   /**
@@ -89,18 +93,14 @@ export function MapPageClient() {
       const center = loadedMap.getCenter();
       const newLat = center.getLat();
       const newLng = center.getLng();
-      const newLevel = loadedMap.getLevel();
 
-      // 지도 중심 및 줌 레벨이 변경되면 상태 업데이트
+      // 지도 중심이 변경되면 상태 업데이트
       setMapCenter({
         lat: newLat,
         lng: newLng,
       });
-      setZoomLevel(newLevel);
 
-      // 현재 줌 레벨과 검색 반경 로깅
-      const currentRadius = getRadiusFromZoomLevel(newLevel);
-      console.log(`지도 업데이트 - 줌 레벨: ${newLevel}, 검색 반경: ${currentRadius}km`);
+      console.log(`지도 중심 업데이트: lat=${newLat}, lng=${newLng}`);
     });
   }, []);
 
@@ -170,6 +170,59 @@ export function MapPageClient() {
   }, []);
 
   /**
+   * GPS 버튼 클릭 핸들러
+   */
+  const handleGpsClick = useCallback(() => {
+    requestLocation();
+  }, [requestLocation]);
+
+  /**
+   * GPS 위치가 확보되면 지도 중심 이동
+   */
+  useEffect(() => {
+    if (position && map) {
+      const newCenter = { lat: position.coords.latitude, lng: position.coords.longitude };
+      setMapCenter(newCenter);
+      map.setCenter(new window.kakao.maps.LatLng(position.coords.latitude, position.coords.longitude));
+      map.setLevel(5); // GPS 위치 확보 시 적절한 줌 레벨
+      console.log('GPS 위치로 지도 이동:', position);
+    }
+  }, [position, map]);
+
+  /**
+   * 주소 검색 선택 핸들러
+   */
+  const handleAddressSelect = useCallback((address: Address) => {
+    if (!map) return;
+
+    const newCenter = { lat: address.y, lng: address.x };
+    setMapCenter(newCenter);
+    map.setCenter(new window.kakao.maps.LatLng(address.y, address.x));
+    map.setLevel(5); // 주소 선택 시 적절한 줌 레벨
+    console.log('주소 선택으로 지도 이동:', address);
+  }, [map]);
+
+  /**
+   * 센터 리스트 아이템 클릭 핸들러
+   */
+  const handleCenterListItemClick = useCallback((center: CenterMarkerData) => {
+    if (!map) return;
+
+    // 지도 중심을 센터 위치로 이동
+    const position = new window.kakao.maps.LatLng(center.latitude, center.longitude);
+    map.setCenter(position);
+    map.setLevel(3); // 센터 상세 보기에 적합한 줌 레벨
+
+    // 마커 클릭과 동일한 동작 (팝업 열기)
+    handleMarkerClick(center);
+
+    // 모바일에서는 자동으로 지도 뷰로 전환
+    if (viewMode === 'list') {
+      setViewMode('map');
+    }
+  }, [map, handleMarkerClick, viewMode]);
+
+  /**
    * 로딩 상태 표시
    */
   useEffect(() => {
@@ -193,9 +246,9 @@ export function MapPageClient() {
    */
   useEffect(() => {
     if (data) {
-      console.log(`센터 ${data.total}개 로드 완료 (반경 ${searchRadius}km):`, data.centers);
+      console.log(`센터 ${data.total}개 로드 완료 (반경 ${data.radius}):`, data.centers);
     }
-  }, [data, searchRadius]);
+  }, [data, radius]);
 
   /**
    * CustomOverlay 생성 및 관리
@@ -269,22 +322,122 @@ export function MapPageClient() {
 
   return (
     <MapLayout>
-      <KakaoMapView
-        center={SEOUL_CITY_HALL}
-        level={DEFAULT_ZOOM_LEVEL}
-        onMapLoad={handleMapLoad}
-      />
-
-      {/* 센터 마커 표시 */}
-      {map && data && (
-        <CenterMarkers
-          map={map}
-          centers={data.centers}
-          onMarkerClick={handleMarkerClick}
-          onMarkerHover={handleMarkerHover}
-          onMarkerLeave={handleMarkerLeave}
+      {/* 지도 컨테이너 */}
+      <div className="relative w-full h-full">
+        <KakaoMapView
+          center={SEOUL_CITY_HALL}
+          level={DEFAULT_ZOOM_LEVEL}
+          onMapLoad={handleMapLoad}
         />
-      )}
+
+        {/* Sprint 2: UI 컨트롤 레이어 */}
+        <div className="absolute top-4 left-4 right-4 z-10 flex flex-col gap-3 md:flex-row md:items-start">
+          {/* 주소 검색 바 */}
+          <div className="flex-1">
+            <AddressSearchBar onSelect={handleAddressSelect} />
+          </div>
+
+          {/* 반경 선택기 (데스크탑) */}
+          <div className="hidden md:block">
+            <RadiusSelector />
+          </div>
+
+          {/* GPS 버튼 */}
+          <Button
+            variant="lavender"
+            size="icon"
+            onClick={handleGpsClick}
+            disabled={gpsLoading}
+            className="shrink-0"
+            aria-label="내 위치로 이동"
+          >
+            <MapPin className={gpsLoading ? 'animate-pulse' : ''} />
+          </Button>
+        </div>
+
+        {/* 반경 선택기 (모바일) */}
+        <div className="absolute top-20 left-4 z-10 md:hidden">
+          <RadiusSelector />
+        </div>
+
+        {/* 반경 원 표시 */}
+        {map && (
+          <RadiusCircle
+            map={map}
+            center={mapCenter}
+          />
+        )}
+
+        {/* 현재 위치 마커 */}
+        {map && position && (
+          <CurrentLocationMarker
+            map={map}
+            position={position}
+          />
+        )}
+
+        {/* 센터 마커 표시 */}
+        {map && data && (
+          <CenterMarkers
+            map={map}
+            centers={data.centers}
+            onMarkerClick={handleMarkerClick}
+            onMarkerHover={handleMarkerHover}
+            onMarkerLeave={handleMarkerLeave}
+          />
+        )}
+
+        {/* 모바일 뷰 토글 버튼 */}
+        <div className="absolute bottom-20 right-4 z-10 flex flex-col gap-2 md:hidden">
+          <Button
+            variant={viewMode === 'map' ? 'lavender' : 'outline'}
+            size="icon"
+            onClick={() => setViewMode('map')}
+            aria-label="지도 보기"
+          >
+            <MapIcon />
+          </Button>
+          <Button
+            variant={viewMode === 'list' ? 'lavender' : 'outline'}
+            size="icon"
+            onClick={() => setViewMode('list')}
+            aria-label="리스트 보기"
+          >
+            <List />
+          </Button>
+        </div>
+
+        {/* GPS 에러 토스트 */}
+        {gpsError && (
+          <div className="absolute top-32 left-1/2 transform -translate-x-1/2 z-20 bg-red-500 text-white px-4 py-2 rounded-lg shadow-lg">
+            GPS 위치를 가져올 수 없습니다: {gpsError}
+          </div>
+        )}
+      </div>
+
+      {/* 센터 리스트 패널 (데스크탑: 사이드 패널, 모바일: 전체 화면 토글) */}
+      <div className={`
+        fixed md:relative
+        inset-0 md:inset-auto
+        z-20 md:z-0
+        bg-white md:bg-transparent
+        transition-transform duration-300
+        ${viewMode === 'list' ? 'translate-x-0' : 'translate-x-full md:translate-x-0'}
+        md:w-96 md:h-full
+      `}>
+        <CenterList
+          centers={data?.centers || []}
+          isLoading={isLoading}
+          error={error?.message}
+          onSelectCenter={handleCenterListItemClick}
+          selectedCenterId={selectedCenter?.id || null}
+          hasNextPage={data?.hasMore || false}
+          isFetchingNextPage={false}
+          onLoadMore={() => {
+            console.log('Load more centers...');
+          }}
+        />
+      </div>
     </MapLayout>
   );
 }
