@@ -1,0 +1,157 @@
+# Docker Compose Configuration for Production Deployment
+# Designed for AWS EC2 single-server deployment with Nginx reverse proxy
+
+name: mindconnect-prod
+
+services:
+  # Nginx Reverse Proxy
+  nginx:
+    image: nginx:1.25-alpine
+    container_name: mindconnect-nginx-prod
+    ports:
+      - "80:80"  # Only Nginx exposed to external traffic
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - nginx_logs:/var/log/nginx
+    depends_on:
+      frontend:
+        condition: service_started
+      backend:
+        condition: service_healthy
+    networks:
+      - mindconnect-network
+    restart: always
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/nginx-health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+  # Frontend (Next.js)
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: mindconnect-frontend-prod
+    expose:
+      - "3000"  # Internal network only
+    env_file:
+      - ./frontend/.env.production
+    environment:
+      - NODE_ENV=production
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      - mindconnect-network
+    restart: always
+
+  # Backend (Express.js)
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: mindconnect-backend-prod
+    expose:
+      - "8080"  # Internal network only
+    env_file:
+      - ./backend/.env
+    environment:
+      - NODE_ENV=production
+      - PORT=8080
+      - HOST=0.0.0.0
+      - DATABASE_URL=mysql://mindconnect_user:mindconnect_pass@mysql:3306/mindconnect
+      - REDIS_URL=redis://redis:6379
+      - QDRANT_URL=http://qdrant:6333
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_started
+      qdrant:
+        condition: service_started
+    networks:
+      - mindconnect-network
+    restart: always
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # MySQL Database
+  mysql:
+    image: mysql:8.0
+    container_name: mindconnect-mysql-prod
+    expose:
+      - "3306"  # Internal network only
+    environment:
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD:-root_password_change_me}
+      - MYSQL_DATABASE=${MYSQL_DATABASE:-mindconnect}
+      - MYSQL_USER=${MYSQL_USER:-mindconnect_user}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD:-mindconnect_pass}
+      - MYSQL_CHARSET=utf8mb4
+      - MYSQL_COLLATION=utf8mb4_unicode_ci
+    volumes:
+      - mysql_data_prod:/var/lib/mysql
+      - ./mysql-utf8.cnf:/etc/mysql/conf.d/utf8.cnf:ro
+    networks:
+      - mindconnect-network
+    restart: always
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD:-root_password_change_me}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    container_name: mindconnect-redis-prod
+    expose:
+      - "6379"  # Internal network only
+    volumes:
+      - redis_data_prod:/data
+    networks:
+      - mindconnect-network
+    restart: always
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Qdrant Vector Database
+  qdrant:
+    image: qdrant/qdrant:v1.7.4
+    container_name: mindconnect-qdrant-prod
+    expose:
+      - "6333"  # HTTP - Internal network only
+      - "6334"  # gRPC - Internal network only
+    volumes:
+      - qdrant_data_prod:/qdrant/storage
+    environment:
+      - QDRANT__SERVICE__HTTP_PORT=6333
+      - QDRANT__SERVICE__GRPC_PORT=6334
+    networks:
+      - mindconnect-network
+    restart: always
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:6333/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+networks:
+  mindconnect-network:
+    driver: bridge
+
+volumes:
+  nginx_logs:
+  mysql_data_prod:
+  redis_data_prod:
+  qdrant_data_prod:
