@@ -30,12 +30,13 @@ export const hybridRecommendationRequestSchema = z.object({
     .optional()
     .default(10),
 
-  // 사용자 쿼리 (필수 - 의미론적 검색용)
+  // 사용자 쿼리 (선택 - 의미론적 검색용, 없으면 규칙 기반만 사용)
   userQuery: z
     .string()
-    .min(1, '사용자 쿼리는 필수입니다')
+    .min(1, '사용자 쿼리는 최소 1자 이상이어야 합니다')
     .max(5000, '사용자 쿼리는 최대 5000자까지 가능합니다')
-    .trim(),
+    .trim()
+    .optional(),
 
   // 자가진단 ID (선택)
   assessmentId: z

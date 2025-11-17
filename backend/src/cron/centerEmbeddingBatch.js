@@ -27,34 +27,42 @@ function buildCenterText(center) {
   // 1. 센터 기본 정보
   parts.push(center.centerName);
 
-  // 2. 센터 설명 (가장 중요)
-  if (center.description) {
-    parts.push(center.description);
+  // 2. 센터 유형
+  if (center.centerType) {
+    parts.push(`유형: ${center.centerType}`);
   }
 
-  // 3. 전문 분야
-  if (center.targetGroup) {
-    parts.push(`대상: ${center.targetGroup}`);
+  // 3. 센터 설명 (businessContent - 가장 중요)
+  if (center.businessContent) {
+    parts.push(center.businessContent);
   }
 
-  if (center.specialization) {
-    parts.push(`전문 분야: ${center.specialization}`);
+  // 4. 추가 정보
+  if (center.otherInfo) {
+    parts.push(center.otherInfo);
   }
 
-  // 4. 프로그램 정보 (이름 + 설명)
+  // 5. 프로그램 정보 (이름 + 대상 + 설명)
   if (center.programs && center.programs.length > 0) {
-    const programTexts = center.programs.map(p =>
-      `${p.programName}${p.description ? ': ' + p.description : ''}`
-    );
-    parts.push('프로그램: ' + programTexts.join(', '));
+    const programTexts = center.programs.map(p => {
+      const programParts = [p.programName];
+      if (p.targetGroup) {
+        programParts.push(`(대상: ${p.targetGroup})`);
+      }
+      if (p.description) {
+        programParts.push(`: ${p.description}`);
+      }
+      return programParts.join(' ');
+    });
+    parts.push('제공 프로그램: ' + programTexts.join('; '));
   }
 
-  // 5. 위치 정보
+  // 6. 위치 정보
   if (center.roadAddress) {
     parts.push(`위치: ${center.roadAddress}`);
   }
 
-  return parts.join('\n').trim();
+  return parts.join('\n\n').trim();
 }
 
 /**
@@ -127,15 +135,15 @@ async function generateCenterEmbeddings(options = {}) {
 
           const embedding = embeddings[0];
 
-          // Vector DB 저장
+          // Vector DB 저장 (BigInt를 Number로 변환)
           await vectorDBService.upsertVector({
-            id: center.id,
+            id: Number(center.id),
             vector: embedding,
             payload: {
+              centerId: Number(center.id),
               name: center.centerName,
+              centerType: center.centerType || '',
               roadAddress: center.roadAddress || '',
-              specialization: center.specialization || '',
-              targetGroup: center.targetGroup || '',
               programCount: center.programs.length,
               textLength: combinedText.length
             }

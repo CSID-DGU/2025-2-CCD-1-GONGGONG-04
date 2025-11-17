@@ -36,7 +36,7 @@ async function getHybridRecommendations(req, res) {
     logger.info('하이브리드 추천 요청 수신', {
       latitude: request.latitude,
       longitude: request.longitude,
-      queryLength: request.userQuery.length,
+      queryLength: request.userQuery?.length,
       assessmentId: request.assessmentId,
       ip: req.ip
     });

@@ -18,10 +18,13 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   getRecommendations,
   getRecommendationsByAssessment,
+  getHybridRecommendations,
   type RecommendationRequest,
   type RecommendationResponse,
   type AssessmentRecommendationRequest,
   type AssessmentRecommendationResponse,
+  type HybridRecommendationRequest,
+  type HybridRecommendationResponse,
   type CenterRecommendation,
   RecommendationApiError,
 } from '@/lib/api/recommendations';
@@ -563,6 +566,282 @@ export function invalidateAssessmentRecommendationCache(
     // 모든 assessment 추천 캐시 무효화
     queryClient.invalidateQueries({
       queryKey: ['assessment-recommendations'],
+    });
+  }
+}
+
+// ============================================
+// Sprint 5 - Phase 2: 하이브리드 추천 시스템
+// ============================================
+
+/**
+ * useHybridRecommendations 훅 옵션
+ */
+export interface UseHybridRecommendationsOptions {
+  /**
+   * 성공 콜백
+   * @param data - 하이브리드 추천 결과 응답
+   */
+  onSuccess?: (data: HybridRecommendationResponse) => void;
+
+  /**
+   * 에러 콜백
+   * @param error - 에러 객체
+   */
+  onError?: (error: RecommendationApiError) => void;
+
+  /**
+   * Toast 에러 표시 여부 (기본: true)
+   */
+  showErrorToast?: boolean;
+
+  /**
+   * 재시도 횟수 (기본: 2회)
+   */
+  retryCount?: number;
+
+  /**
+   * 캐시 TTL (밀리초, 기본: 300000ms = 5분)
+   */
+  cacheTTL?: number;
+
+  /**
+   * 쿼리 활성화 여부 (기본: 위치 정보가 있을 때 자동 활성화)
+   */
+  enabled?: boolean;
+}
+
+/**
+ * 하이브리드 센터 추천 요청 훅
+ *
+ * Sprint 5 - Phase 2 하이브리드 추천 시스템
+ *
+ * @description
+ * 규칙 기반(70%) + 의미론적 검색(30%)을 결합한 하이브리드 추천 훅
+ * - userQuery가 있으면 하이브리드 모드 (규칙 + 임베딩)
+ * - userQuery가 없으면 Fallback 모드 (규칙 기반만 사용)
+ * - LLM 실패 시 자동 Fallback 처리
+ * - TanStack Query 기반 캐싱 (5분)
+ *
+ * @param request - 하이브리드 추천 요청 파라미터 (latitude, longitude 필수, userQuery 선택)
+ * @param options - 훅 옵션
+ * @returns TanStack Query 결과
+ *
+ * @example
+ * ```tsx
+ * // userQuery 포함 (하이브리드 모드)
+ * const { data, isLoading, error, refetch } = useHybridRecommendations(
+ *   {
+ *     latitude: 37.5665,
+ *     longitude: 126.9780,
+ *     userQuery: '우울증 상담이 필요해요',
+ *     assessmentId: 123,
+ *     maxDistance: 10,
+ *     limit: 5,
+ *   },
+ *   {
+ *     onSuccess: (data) => {
+ *       console.log('알고리즘:', data.data.metadata.algorithm); // 'hybrid'
+ *       console.log('Fallback:', data.data.metadata.fallbackMode); // false
+ *     },
+ *   }
+ * );
+ *
+ * // userQuery 없음 (규칙 기반만 사용)
+ * const { data, isLoading } = useHybridRecommendations(
+ *   {
+ *     latitude: 37.5665,
+ *     longitude: 126.9780,
+ *     assessmentId: 123,
+ *     maxDistance: 10,
+ *     limit: 5,
+ *   },
+ *   {
+ *     onSuccess: (data) => {
+ *       console.log('Fallback 모드:', data.data.metadata.fallbackMode); // true
+ *     },
+ *   }
+ * );
+ *
+ * // 로딩 상태
+ * if (isLoading) return <Skeleton />;
+ *
+ * // 에러 상태
+ * if (error) return <ErrorMessage error={error} />;
+ *
+ * // 성공 상태 (메타데이터 확인)
+ * if (data) {
+ *   const { algorithm, fallbackMode, weights } = data.data.metadata;
+ *   return (
+ *     <>
+ *       <p>알고리즘: {algorithm}</p>
+ *       <p>Fallback 모드: {fallbackMode ? '예' : '아니오'}</p>
+ *       <p>가중치: 규칙 {weights.rule * 100}% / 임베딩 {weights.embedding * 100}%</p>
+ *       <RecommendationList recommendations={data.data.recommendations} />
+ *     </>
+ *   );
+ * }
+ * ```
+ */
+export function useHybridRecommendations(
+  request: HybridRecommendationRequest | null,
+  options: UseHybridRecommendationsOptions = {}
+) {
+  const {
+    onSuccess,
+    onError,
+    showErrorToast = true,
+    retryCount = 2,
+    cacheTTL = 300000, // 5분
+    enabled: enabledOption,
+  } = options;
+
+  const { toast } = useToast();
+
+  // 위치 정보가 있을 때만 쿼리 실행
+  const hasLocation =
+    request !== null &&
+    typeof request.latitude === 'number' &&
+    typeof request.longitude === 'number';
+  const enabled = enabledOption !== undefined ? enabledOption : hasLocation;
+
+  const query = useQuery({
+    // 쿼리 키
+    queryKey: getHybridRecommendationCacheKey(request),
+
+    // 쿼리 함수
+    queryFn: async () => {
+      if (!request) {
+        throw new RecommendationApiError(
+          '위치 정보가 필요합니다',
+          400,
+          'LOCATION_REQUIRED'
+        );
+      }
+
+      return getHybridRecommendations(request);
+    },
+
+    // 쿼리 활성화 조건
+    enabled,
+
+    // 재시도 설정
+    retry: retryCount,
+    retryDelay: (attemptIndex) => {
+      // 2초 → 4초 (최대 5초)
+      const delay = Math.min(1000 * 2 ** attemptIndex, 5000);
+      return delay;
+    },
+
+    // 캐싱 설정
+    staleTime: cacheTTL,
+    gcTime: cacheTTL,
+
+    // 성공 시 처리
+    // @ts-ignore - TanStack Query v5 타입 이슈 (onSuccess는 deprecated되었지만 여전히 작동)
+    onSuccess: (data: HybridRecommendationResponse) => {
+      // 커스텀 성공 콜백 실행
+      if (onSuccess) {
+        onSuccess(data);
+      }
+    },
+
+    // 에러 시 처리
+    // @ts-ignore - TanStack Query v5 타입 이슈 (onError는 deprecated되었지만 여전히 작동)
+    onError: (error: Error) => {
+      const apiError =
+        error instanceof RecommendationApiError
+          ? error
+          : new RecommendationApiError(error.message, 500, 'UNKNOWN_ERROR');
+
+      // 커스텀 에러 콜백 실행
+      if (onError) {
+        onError(apiError);
+      }
+
+      // Toast 에러 표시
+      if (showErrorToast) {
+        // 에러 타입에 따라 다른 메시지 표시
+        let title = '추천 실패';
+        let description = apiError.message;
+
+        if (apiError.code === 'VALIDATION_ERROR' || apiError.code === 'INVALID_INPUT') {
+          title = '입력값 오류';
+          if (apiError.details && apiError.details.length > 0) {
+            description = apiError.details.map((d) => d.message).join('\n');
+          }
+        } else if (apiError.code === 'NOT_FOUND') {
+          title = '검색 결과 없음';
+          description = '검색 반경을 넓혀서 다시 시도해주세요';
+        } else if (apiError.code === 'NETWORK_ERROR') {
+          title = '네트워크 오류';
+          description = '인터넷 연결을 확인해주세요';
+        } else if (apiError.statusCode >= 500) {
+          title = '서버 오류';
+          description = '잠시 후 다시 시도해주세요';
+        }
+
+        toast({
+          variant: 'destructive',
+          title,
+          description,
+        });
+      }
+    },
+  });
+
+  return query;
+}
+
+/**
+ * 하이브리드 추천 캐시 키 생성 함수
+ *
+ * @param request - 하이브리드 추천 요청 파라미터
+ * @returns 쿼리 키
+ */
+export function getHybridRecommendationCacheKey(
+  request: HybridRecommendationRequest | null
+): [string, Record<string, any>] {
+  if (!request) {
+    return ['hybrid-recommendations', { request: null }];
+  }
+
+  return [
+    'hybrid-recommendations',
+    {
+      latitude: parseFloat(request.latitude.toFixed(4)), // 4자리 반올림 (~11m 정밀도)
+      longitude: parseFloat(request.longitude.toFixed(4)),
+      userQuery: request.userQuery || null,
+      assessmentId: request.assessmentId || null,
+      specialties: request.specialties ? sortObjectKeys(request.specialties) : null,
+      preferredDays: request.preferredDays ? sortObjectKeys(request.preferredDays) : null,
+      preferredTimes: request.preferredTimes ? sortObjectKeys(request.preferredTimes) : null,
+      maxDistance: request.maxDistance || 10,
+      limit: request.limit || 10,
+      weights: request.weights ? sortObjectKeys(request.weights) : null,
+    },
+  ];
+}
+
+/**
+ * 하이브리드 추천 캐시 무효화 함수
+ *
+ * @param queryClient - Query Client 인스턴스
+ * @param location - 위치 정보 (선택, 지정하지 않으면 모든 하이브리드 추천 무효화)
+ */
+export function invalidateHybridRecommendationCache(
+  queryClient: ReturnType<typeof useQueryClient>,
+  location?: { latitude: number; longitude: number }
+) {
+  if (location) {
+    // 특정 위치의 하이브리드 추천 캐시만 무효화
+    queryClient.invalidateQueries({
+      queryKey: ['hybrid-recommendations', { latitude: location.latitude, longitude: location.longitude }],
+    });
+  } else {
+    // 모든 하이브리드 추천 캐시 무효화
+    queryClient.invalidateQueries({
+      queryKey: ['hybrid-recommendations'],
     });
   }
 }

@@ -78,10 +78,11 @@ const logger = winston.createLogger({
   format: logFormat,
   transports,
   exitOnError: false,
+  silent: process.env.NODE_ENV === 'test'  // Silence logger in tests
 });
 
 // Development-specific settings
-if (process.env.NODE_ENV !== 'production') {
+if (process.env.NODE_ENV !== 'production' && process.env.NODE_ENV !== 'test') {
   logger.level = 'debug';
 }
 

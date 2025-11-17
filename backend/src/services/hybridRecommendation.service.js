@@ -160,7 +160,7 @@ async function getHybridRecommendations(request) {
         const semanticSearchResult = await semanticSearchService.semanticSearch({
           queryText,
           topK: limit * 2,
-          threshold: 0.5
+          threshold: 0.2
         });
 
         semanticResults = semanticSearchResult.results;

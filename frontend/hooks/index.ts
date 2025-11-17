@@ -30,6 +30,23 @@ export {
   getRecommendationCacheKey,
 } from './useRecommendations';
 
+// Sprint 3: Assessment 기반 추천 훅
+export {
+  useAssessmentRecommendations,
+  getAssessmentRecommendationCacheKey,
+  invalidateAssessmentRecommendationCache,
+} from './useRecommendations';
+
+// Sprint 5 - Phase 2: 하이브리드 추천 훅
+export {
+  useHybridRecommendations,
+  getHybridRecommendationCacheKey,
+  invalidateHybridRecommendationCache,
+} from './useRecommendations';
+export type {
+  UseHybridRecommendationsOptions,
+} from './useRecommendations';
+
 // Sprint 4: 리뷰 훅
 export { useReviews } from './useReviews';
 export { useReviewMutation } from './useReviewMutation';

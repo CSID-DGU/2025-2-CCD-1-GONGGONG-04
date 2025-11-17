@@ -2,6 +2,7 @@
 node_modules/
 .pnp
 .pnp.js
+.pnpm-store
 
 # Environment variables
 # Note: .env.example should be tracked in Git as a template

@@ -36,16 +36,14 @@ async function upsertVector(point) {
     await vectorDBLimiter.schedule(async () => {
       await qdrantClient.upsert(COLLECTION_NAME, {
         wait: true,
-        points: [
-          {
-            id: String(id),  // Qdrant는 string ID 선호
-            vector,
-            payload: {
-              ...payload,
-              updatedAt: new Date().toISOString()
-            }
+        points: [{
+          id: id,  // Number ID 사용
+          vector: vector,
+          payload: {
+            ...payload,
+            updatedAt: new Date().toISOString()
           }
-        ]
+        }]
       });
     });
 

@@ -27,5 +27,7 @@ module.exports = {
   moduleNameMapper: {
     '^@faker-js/faker$': '<rootDir>/tests/__mocks__/faker.js',
     '^uuid$': '<rootDir>/tests/__mocks__/uuid.js'
-  }
+  },
+  // Set NODE_ENV for all tests
+  setupFiles: ['<rootDir>/tests/jest.setup.js']
 };

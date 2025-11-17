@@ -640,3 +640,308 @@ export function validateAssessmentRecommendationRequest(
     errors,
   };
 }
+
+// ============================================
+// Sprint 5 - Phase 2: 하이브리드 추천 시스템
+// ============================================
+
+/**
+ * 하이브리드 추천 요청 파라미터
+ * 규칙 기반(70%) + 의미론적 검색(30%) 결합
+ */
+export interface HybridRecommendationRequest {
+  /** 사용자 위도 (필수) */
+  latitude: number;
+
+  /** 사용자 경도 (필수) */
+  longitude: number;
+
+  /** 사용자 쿼리 (선택 - 의미론적 검색용, 없으면 규칙 기반만 사용) */
+  userQuery?: string;
+
+  /** 최대 거리 (km, 기본값: 10km) */
+  maxDistance?: number;
+
+  /** 최대 추천 개수 (기본값: 10개) */
+  limit?: number;
+
+  /** 자가진단 ID (선택) */
+  assessmentId?: number;
+
+  /** 전문 분야 필터 (선택, 최대 10개) */
+  specialties?: string[];
+
+  /** 선호 요일 (선택) */
+  preferredDays?: Array<'월' | '화' | '수' | '목' | '금' | '토' | '일'>;
+
+  /** 선호 시간대 (선택) */
+  preferredTimes?: Array<'morning' | 'afternoon' | 'evening' | 'night'>;
+
+  /** 가중치 조정 (선택, A/B 테스트용) */
+  weights?: {
+    /** 임베딩 가중치 (0-1) */
+    embedding: number;
+    /** 규칙 기반 가중치 (0-1), 합은 1.0이어야 함 */
+    rule: number;
+  };
+
+  /** 세션 ID (로그용, 선택) */
+  sessionId?: string;
+
+  /** 사용자 ID (로그용, 선택) */
+  userId?: string;
+}
+
+/**
+ * 하이브리드 추천 결과 (개별 센터)
+ */
+export interface HybridCenterRecommendation extends CenterRecommendation {
+  /** 세부 점수 (하이브리드 전용) */
+  scores: CenterRecommendation['scores'] & {
+    /** 규칙 기반 점수 (0-100) */
+    ruleBasedScore: number;
+    /** 임베딩 점수 (0-100, userQuery 있을 때만) */
+    embeddingScore?: number;
+  };
+}
+
+/**
+ * 하이브리드 추천 메타데이터
+ */
+export interface HybridRecommendationMetadata {
+  /** 사용된 알고리즘 */
+  algorithm: 'hybrid' | 'rule-based-only';
+
+  /** Fallback 모드 여부 (userQuery 없거나 LLM 실패) */
+  fallbackMode: boolean;
+
+  /** 적용된 가중치 */
+  weights: {
+    embedding: number;
+    rule: number;
+  };
+
+  /** 쿼리 실행 시간 (ms) */
+  queryTime: number;
+
+  /** 검색된 센터 수 */
+  centersSearched: number;
+
+  /** 캐시 사용 여부 */
+  cached?: boolean;
+}
+
+/**
+ * 하이브리드 추천 API 응답
+ */
+export interface HybridRecommendationResponse {
+  /** 성공 여부 */
+  success: boolean;
+
+  /** 추천 데이터 */
+  data: {
+    /** 추천 센터 목록 */
+    recommendations: HybridCenterRecommendation[];
+
+    /** 메타데이터 */
+    metadata: HybridRecommendationMetadata;
+  };
+}
+
+/**
+ * 하이브리드 센터 추천 요청
+ *
+ * Sprint 5 - Phase 2 하이브리드 추천 시스템
+ * POST /api/v2/recommendations/hybrid
+ *
+ * 규칙 기반(70%) + 의미론적 검색(30%)을 결합한 추천
+ * userQuery가 없거나 LLM 실패 시 규칙 기반으로 자동 Fallback
+ *
+ * @param request - 하이브리드 추천 요청 파라미터
+ * @returns 추천 센터 목록 및 메타데이터
+ * @throws RecommendationApiError
+ *
+ * @example
+ * ```typescript
+ * // userQuery 포함 (하이브리드 모드)
+ * const recommendations = await getHybridRecommendations({
+ *   latitude: 37.5665,
+ *   longitude: 126.9780,
+ *   userQuery: '우울증 상담이 필요해요',
+ *   assessmentId: 123,
+ *   maxDistance: 10,
+ *   limit: 5,
+ * });
+ *
+ * console.log(recommendations.data.metadata.algorithm); // 'hybrid'
+ * console.log(recommendations.data.recommendations[0].scores);
+ * // { ruleBasedScore: 75, embeddingScore: 85, totalScore: 78 }
+ *
+ * // userQuery 없음 (규칙 기반만 사용)
+ * const fallbackRecommendations = await getHybridRecommendations({
+ *   latitude: 37.5665,
+ *   longitude: 126.9780,
+ *   assessmentId: 123,
+ *   maxDistance: 10,
+ *   limit: 5,
+ * });
+ *
+ * console.log(fallbackRecommendations.data.metadata.fallbackMode); // true
+ * ```
+ */
+export async function getHybridRecommendations(
+  request: HybridRecommendationRequest
+): Promise<HybridRecommendationResponse> {
+  try {
+    // API v2 URL 구성
+    const url = `${API_BASE_URL.replace('/v1', '/v2')}/recommendations/hybrid`;
+
+    // API 요청
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(request),
+      // 추천은 실시간 데이터이므로 캐싱 비활성화
+      cache: 'no-store',
+    });
+
+    // 에러 처리
+    if (!response.ok) {
+      // 400: 입력값 검증 오류
+      if (response.status === 400) {
+        const errorData: ApiErrorResponse = await response.json();
+
+        throw new RecommendationApiError(
+          errorData.error.message || '입력값이 올바르지 않습니다',
+          400,
+          errorData.error.code,
+          errorData.error.details
+        );
+      }
+
+      // 404: 검색 반경 내 센터 없음
+      if (response.status === 404) {
+        throw new RecommendationApiError(
+          '검색 반경 내에 센터가 없습니다',
+          404,
+          'NOT_FOUND'
+        );
+      }
+
+      // 500: 서버 오류
+      if (response.status >= 500) {
+        throw new RecommendationApiError(
+          '서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요',
+          response.status,
+          'SERVER_ERROR'
+        );
+      }
+
+      // 기타 에러
+      const errorData: ApiErrorResponse = await response.json().catch(() => ({
+        success: false,
+        error: {
+          code: 'UNKNOWN_ERROR',
+          message: '알 수 없는 오류가 발생했습니다',
+        },
+      }));
+
+      throw new RecommendationApiError(
+        errorData.error.message,
+        response.status,
+        errorData.error.code
+      );
+    }
+
+    // 성공 응답 파싱
+    const responseBody: HybridRecommendationResponse = await response.json();
+
+    // 응답 검증
+    if (!responseBody.success || !responseBody.data) {
+      throw new RecommendationApiError(
+        '올바르지 않은 응답 형식입니다',
+        500,
+        'INVALID_RESPONSE'
+      );
+    }
+
+    return responseBody;
+
+  } catch (error) {
+    // RecommendationApiError는 그대로 throw
+    if (error instanceof RecommendationApiError) {
+      throw error;
+    }
+
+    // 네트워크 에러 처리
+    if (error instanceof TypeError) {
+      // fetch 실패 (네트워크 연결 오류)
+      if (error.message.includes('fetch') || error.message.includes('Failed to fetch')) {
+        throw new RecommendationApiError(
+          '네트워크 연결을 확인해주세요',
+          0,
+          'NETWORK_ERROR'
+        );
+      }
+
+      // JSON 파싱 오류
+      if (error.message.includes('JSON')) {
+        throw new RecommendationApiError(
+          '서버 응답을 처리할 수 없습니다',
+          500,
+          'PARSE_ERROR'
+        );
+      }
+    }
+
+    // 기타 예상치 못한 에러
+    throw new RecommendationApiError(
+      '일시적인 오류가 발생했습니다. 다시 시도해주세요',
+      500,
+      'UNEXPECTED_ERROR'
+    );
+  }
+}
+
+/**
+ * 하이브리드 추천 헬스 체크
+ *
+ * @returns 헬스 체크 결과
+ */
+export async function checkHybridRecommendationHealth(): Promise<{
+  status: 'healthy' | 'unhealthy';
+  components: {
+    llm: { status: string };
+    vectorDB: { status: string };
+  };
+  timestamp: string;
+}> {
+  try {
+    const url = `${API_BASE_URL.replace('/v1', '/v2')}/recommendations/hybrid/health`;
+
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      cache: 'no-store',
+    });
+
+    if (!response.ok) {
+      throw new Error('Health check failed');
+    }
+
+    return await response.json();
+  } catch (error) {
+    return {
+      status: 'unhealthy',
+      components: {
+        llm: { status: 'unknown' },
+        vectorDB: { status: 'unknown' },
+      },
+      timestamp: new Date().toISOString(),
+    };
+  }
+}

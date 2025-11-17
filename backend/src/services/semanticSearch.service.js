@@ -29,7 +29,7 @@ const logger = require('../utils/logger');
  * });
  */
 async function semanticSearch(request) {
-  const { queryText, topK = 20, threshold = 0.5, filter = null } = request;
+  const { queryText, topK = 20, threshold = 0.2, filter = null } = request;
 
   const startTime = Date.now();
 

@@ -13,7 +13,8 @@ const logger = require('../utils/logger');
  */
 const qdrantClient = new QdrantClient({
   url: process.env.QDRANT_URL || 'http://localhost:6333',
-  apiKey: process.env.QDRANT_API_KEY || undefined
+  apiKey: process.env.QDRANT_API_KEY || undefined,
+  checkCompatibility: false  // 버전 호환성 체크 비활성화 (1.7.4 구버전 사용)
 });
 
 /**
