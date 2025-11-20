@@ -78,6 +78,7 @@ export function MarkerInfoPopup({
    * 상세보기 버튼 클릭 핸들러
    */
   const handleNavigate = () => {
+    console.log('[MarkerInfoPopup] 상세보기 버튼 클릭, center.id:', center.id);
     onNavigate(center.id);
   };
 
@@ -105,12 +106,11 @@ export function MarkerInfoPopup({
 
   return (
     <Card
-      // 팝업 내부 상호작용이 지도/오버레이로 전파되지 않도록 캡처 단계에서 차단
+      // 팝업 내부 상호작용이 지도/오버레이로 전파되지 않도록 버블링 단계에서 차단
       onClick={(e) => e.stopPropagation()}
       onMouseDown={(e) => e.stopPropagation()}
       onPointerDown={(e) => e.stopPropagation()}
       onTouchStart={(e) => e.stopPropagation()}
-      onClickCapture={(e) => e.stopPropagation()}
       className={cn(
         'w-full max-w-sm shadow-lg border-neutral-200',
         'sm:max-w-md',

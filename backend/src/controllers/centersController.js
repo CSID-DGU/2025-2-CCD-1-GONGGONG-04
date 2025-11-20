@@ -1,4 +1,3 @@
-const { PrismaClient } = require('@prisma/client');
 const {
   isPositiveInteger,
   isValidLatitude,
@@ -10,8 +9,8 @@ const {
 } = require('../utils/validation');
 const { getCentersWithinRadius } = require('../services/centersService');
 const { getRadiusDisplay } = require('../utils/radius');
-
-const prisma = new PrismaClient();
+// Sprint 3 - Bug Fix: 중앙화된 Prisma 클라이언트 사용 (UTF-8 인코딩 강제)
+const { prisma } = require('../config/database');
 
 /**
  * Search centers within radius

@@ -58,6 +58,12 @@ app.use(
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// Set UTF-8 charset for all responses
+app.use((req, res, next) => {
+  res.setHeader('Content-Type', 'application/json; charset=utf-8');
+  next();
+});
+
 // Logging middleware
 if (config.env === 'development') {
   app.use(morgan('dev'));

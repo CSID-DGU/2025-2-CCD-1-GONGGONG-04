@@ -18,6 +18,7 @@
 import React, { useEffect, useState } from 'react';
 import { flushSync } from 'react-dom';
 import { useRouter } from 'next/navigation';
+import MainLayout from '@/components/layout/MainLayout';
 import { useTemplate, useSubmitAssessment } from '@/hooks/useAssessments';
 import { useAssessmentStore } from '@/store/assessmentStore';
 import { AssessmentHeader } from '@/components/assessment/AssessmentHeader';
@@ -232,7 +233,11 @@ export default function AssessmentPage() {
 
   // 로딩 상태 - 개선된 스켈레톤 UI
   if (isLoading) {
-    return <AssessmentSkeleton />;
+    return (
+      <MainLayout title="자가진단" showBackButton={false}>
+        <AssessmentSkeleton />
+      </MainLayout>
+    );
   }
 
   // 에러 상태 - 사용자 친화적인 에러 메시지
@@ -241,32 +246,37 @@ export default function AssessmentPage() {
     const errorMessage = error instanceof Error ? error.message : undefined;
 
     return (
-      <div className="container max-w-3xl mx-auto px-4 py-8">
-        <AssessmentErrorAlert
-          type={errorType}
-          message={errorMessage}
-          showRetry
-          onRetry={() => window.location.reload()}
-        />
-      </div>
+      <MainLayout title="자가진단" showBackButton={false}>
+        <div className="max-w-3xl mx-auto px-4 py-8">
+          <AssessmentErrorAlert
+            type={errorType}
+            message={errorMessage}
+            showRetry
+            onRetry={() => window.location.reload()}
+          />
+        </div>
+      </MainLayout>
     );
   }
 
   // 템플릿 없음
   if (!template || !currentQuestion) {
     return (
-      <div className="container max-w-3xl mx-auto px-4 py-8">
-        <AssessmentErrorAlert
-          type="not_found"
-          showRetry
-          onRetry={() => router.push('/')}
-        />
-      </div>
+      <MainLayout title="자가진단" showBackButton={false}>
+        <div className="max-w-3xl mx-auto px-4 py-8">
+          <AssessmentErrorAlert
+            type="not_found"
+            showRetry
+            onRetry={() => router.push('/')}
+          />
+        </div>
+      </MainLayout>
     );
   }
 
   return (
-    <div className="container max-w-3xl mx-auto px-4 py-8">
+    <MainLayout title="자가진단" showBackButton={false}>
+      <div className="max-w-3xl mx-auto px-4 pt-4">
       {/* 헤더 */}
       <AssessmentHeader
         templateName={template.title}
@@ -279,6 +289,7 @@ export default function AssessmentPage() {
 
       {/* 질문 카드 */}
       <QuestionCard
+        key={currentStep}
         questionNumber={currentQuestion.questionNumber}
         questionText={currentQuestion.questionText}
         options={currentQuestion.options}
@@ -315,6 +326,7 @@ export default function AssessmentPage() {
         onClose={() => setIsExitModalOpen(false)}
         onConfirmExit={confirmExit}
       />
-    </div>
+      </div>
+    </MainLayout>
   );
 }

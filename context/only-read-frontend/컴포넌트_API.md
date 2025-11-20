@@ -539,9 +539,189 @@
 
 ---
 
-## 3. 순수 커스텀 컴포넌트
+## 3. 레이아웃 컴포넌트 (Layout Components)
 
-### 3.1 ThemeProvider
+### 3.1 MainLayout
+
+**목적**: 전체 페이지의 공통 레이아웃을 제공하는 메인 레이아웃 컴포넌트 (Sprint 1)
+
+**주요 기능**:
+- 페이지 제목 및 뒤로가기 버튼이 있는 헤더 영역
+- 반응형 콘텐츠 영역 (모바일, 태블릿, 데스크탑 대응)
+- 하단 네비게이션 바 통합
+- Safe Area 지원 (iOS 노치 대응)
+
+**Props**:
+
+| Prop | 타입 | 기본값 | 설명 |
+|------|------|--------|------|
+| `children` | `ReactNode` | (필수) | 페이지 메인 콘텐츠 |
+| `title` | `string` | `undefined` | 헤더에 표시할 페이지 제목 |
+| `showBackButton` | `boolean` | `false` | 뒤로가기 버튼 표시 여부 |
+| `showBottomNav` | `boolean` | `true` | 하단 네비게이션 표시 여부 |
+| `className` | `string` | `''` | 추가 CSS 클래스 |
+
+**반응형 디자인**:
+- **모바일** (< 640px): 전체 너비 사용
+- **태블릿** (640px ~ 1023px): `max-w-3xl` 중앙 정렬
+- **데스크탑** (1024px+): `max-w-5xl` 중앙 정렬
+
+**접근성**:
+- 헤더: `role="banner"` 시맨틱 마크업
+- 메인 콘텐츠: `role="main"` 시맨틱 마크업
+- 뒤로가기 버튼: `aria-label="뒤로 가기"` 명시
+- 아이콘: `aria-hidden="true"` (장식 요소)
+
+**사용 예시**:
+
+```tsx
+// 1. 기본 사용 (제목 + 하단 네비게이션)
+import MainLayout from '@/components/layout/MainLayout';
+
+export default function MapPage() {
+  return (
+    <MainLayout title="지도 검색">
+      <MapContainer />
+    </MainLayout>
+  );
+}
+
+// 2. 뒤로가기 버튼 포함 (상세 페이지)
+export default function CenterDetailPage() {
+  return (
+    <MainLayout title="센터 상세" showBackButton={true}>
+      <CenterDetailContent />
+    </MainLayout>
+  );
+}
+
+// 3. 하단 네비게이션 숨김 (전체화면 페이지)
+export default function FullScreenPage() {
+  return (
+    <MainLayout title="설정" showBottomNav={false}>
+      <SettingsContent />
+    </MainLayout>
+  );
+}
+
+// 4. 제목 없이 콘텐츠만 (커스텀 헤더)
+export default function CustomPage() {
+  return (
+    <MainLayout>
+      <CustomHeader />
+      <PageContent />
+    </MainLayout>
+  );
+}
+```
+
+**Storybook**: `frontend/components/layout/MainLayout.stories.tsx`
+
+**Storybook 변형**:
+- `Default`: 기본 레이아웃 (하단 네비게이션만)
+- `WithTitle`: 제목이 있는 레이아웃
+- `WithBackButton`: 뒤로가기 버튼 + 제목
+- `WithoutBottomNav`: 하단 네비게이션 숨김
+- `FullExample`: 모든 Props 활성화
+
+**관련 컴포넌트**:
+- `BottomNavigation`: 하단 네비게이션 바 (자동 포함)
+- `Button`: 뒤로가기 버튼 (shadcn)
+- `ChevronLeft`: 뒤로가기 아이콘 (lucide-react)
+
+---
+
+### 3.2 BottomNavigation
+
+**목적**: 모바일 친화적인 하단 고정 네비게이션 바 (Sprint 1)
+
+**주요 기능**:
+- 3개 탭 네비게이션 (지도 검색, 센터 목록, 자가진단)
+- 현재 페이지 활성 상태 자동 감지
+- Safe Area 지원 (iOS 홈 인디케이터 대응)
+- 키보드 네비게이션 지원
+- 터치 친화적 디자인 (44x44px 터치 타겟)
+
+**탭 구성**:
+
+| 탭 | 라벨 | 경로 | 아이콘 |
+|-----|------|------|--------|
+| 지도 검색 | 지도 검색 | `/map` | Map (lucide-react) |
+| 센터 목록 | 센터 목록 | `/centers` | List (lucide-react) |
+| 자가진단 | 자가진단 | `/assessment` | ClipboardList (lucide-react) |
+
+**디자인 규칙**:
+- **활성 탭**: `text-lavender-500` (브랜드 컬러)
+- **비활성 탭**: `text-neutral-500` (회색)
+- **포커스 링**: `ring-lavender-600` (키보드 네비게이션)
+- **레이블 크기**: `text-caption` (12px)
+- **아이콘 크기**: `w-6 h-6` (24x24px)
+- **높이**: `h-16` (64px) + `pb-safe-bottom` (iOS Safe Area)
+
+**접근성**:
+- 네비게이션: `role="navigation"`, `aria-label="주요 네비게이션"`
+- 활성 탭: `aria-current="page"` 속성 추가
+- 각 탭: `aria-label="{탭 이름} 페이지로 이동"` 명시
+- 아이콘: `aria-hidden="true"` (장식 요소, 레이블로 충분)
+- 키보드: Tab 키로 탭 간 이동, Enter 키로 활성화 가능
+- 포커스: `focus-visible:outline-2 focus-visible:outline-lavender-600`
+
+**Safe Area 처리**:
+- iOS Safari: `pb-[env(safe-area-inset-bottom, 0px)]`
+- Android: Fallback `0px` (기본 동작)
+- 홈 인디케이터와 네비게이션 바 겹침 방지
+
+**사용 예시**:
+
+```tsx
+// 1. MainLayout에서 자동 사용 (권장)
+import MainLayout from '@/components/layout/MainLayout';
+
+export default function Page() {
+  return (
+    <MainLayout title="페이지 제목">
+      {/* 하단 네비게이션 자동 표시 */}
+      <Content />
+    </MainLayout>
+  );
+}
+
+// 2. 독립적으로 사용 (특수한 경우)
+import BottomNavigation from '@/components/layout/BottomNavigation';
+
+export default function CustomLayout() {
+  return (
+    <div>
+      <CustomHeader />
+      <main>{/* 콘텐츠 */}</main>
+      <BottomNavigation />
+    </div>
+  );
+}
+```
+
+**Storybook**: `frontend/components/layout/BottomNavigation.stories.tsx`
+
+**Storybook 변형**:
+- `MapActive`: 지도 검색 탭 활성화
+- `CentersActive`: 센터 목록 탭 활성화
+- `AssessmentActive`: 자가진단 탭 활성화
+
+**관련 컴포넌트**:
+- `MainLayout`: 메인 레이아웃 (자동 통합)
+- `Link`: Next.js 네비게이션 (next/link)
+- `Map`, `List`, `ClipboardList`: 탭 아이콘 (lucide-react)
+
+**기술 스택**:
+- `usePathname` (next/navigation): 현재 경로 감지
+- `cn` (@/lib/utils): 조건부 클래스 결합
+- Tailwind CSS: 반응형 스타일링
+
+---
+
+## 4. 순수 커스텀 컴포넌트
+
+### 4.1 ThemeProvider
 
 **목적**: Next.js 애플리케이션의 다크/라이트 테마 관리
 
@@ -549,7 +729,7 @@
 
 ---
 
-### 3.2 PromotionalSection
+### 4.2 PromotionalSection
 
 **목적**: 홍보 섹션 카드 (긴급전화, 상담 예약 등)
 
@@ -557,7 +737,7 @@
 
 ---
 
-### 3.3 HeroBanner
+### 4.3 HeroBanner
 
 **목적**: 메인 페이지 히어로 배너
 
@@ -565,7 +745,7 @@
 
 ---
 
-### 3.4 Header
+### 4.4 Header
 
 **목적**: 앱 상단 헤더 (네비게이션 및 사용자 메뉴)
 
@@ -573,35 +753,27 @@
 
 ---
 
-### 3.5 IconButton
+### 4.5 IconButton
 
 **목적**: 아이콘과 라벨이 있는 터치 친화적 버튼
 
 ---
 
-### 3.6 BottomNavigation
-
-**목적**: 모바일 하단 네비게이션 바
-
-**Storybook**: `frontend/components/bottom-navigation.stories.tsx`
-
----
-
-### 3.7 LocationSelector
+### 4.6 LocationSelector
 
 **목적**: 현재 위치를 선택하는 드롭다운
 
 ---
 
-### 3.8 FilterPanel
+### 4.7 FilterPanel
 
 **목적**: 센터 검색 필터 패널
 
 ---
 
-## 4. 스타일 가이드
+## 5. 스타일 가이드
 
-### 4.1 색상 사용
+### 5.1 색상 사용
 
 **Primary Actions**:
 - `bg-lavender-500` 또는 `gradient-lavender`
@@ -628,7 +800,7 @@
 --status-emergency: 0 84% 60%
 ```
 
-### 4.2 간격 규칙
+### 5.2 간격 규칙
 
 **컴포넌트 간격**:
 - `gap-4` (16px) - 그리드 아이템 간격
@@ -646,7 +818,7 @@
 - 최소 `44x44px` (모바일 접근성)
 - `size="touch"` prop 사용
 
-### 4.3 반응형 브레이크포인트
+### 5.3 반응형 브레이크포인트
 
 - `sm:` (640px) - 태블릿
 - `md:` (768px) - 작은 데스크톱
@@ -669,7 +841,7 @@
 - `font-medium` - 레이블
 - `font-normal` - 본문
 
-### 4.5 그림자 및 둥근 모서리
+### 5.4 그림자 및 둥근 모서리
 
 **그림자**:
 - `shadow-sm` - 미묘한 그림자
@@ -683,9 +855,9 @@
 
 ---
 
-## 5. 접근성 가이드라인
+## 6. 접근성 가이드라인
 
-### 5.1 키보드 네비게이션
+### 6.1 키보드 네비게이션
 
 **필수 지원**:
 - `Tab` / `Shift+Tab`: 포커스 이동
@@ -706,7 +878,7 @@
 </Button>
 ```
 
-### 5.2 ARIA 속성
+### 6.2 ARIA 속성
 
 **필수 ARIA 속성**:
 - `aria-label`: 텍스트가 없는 버튼
@@ -728,7 +900,7 @@
 </nav>
 ```
 
-### 5.3 포커스 관리
+### 6.3 포커스 관리
 
 **포커스 표시**:
 - `focus-visible:ring-2` - 포커스 링
@@ -746,7 +918,7 @@
 </Button>
 ```
 
-### 5.4 스크린 리더
+### 6.4 스크린 리더
 
 **스크린 리더 전용 텍스트**:
 - `sr-only` 클래스 사용
@@ -771,7 +943,7 @@
 </nav>
 ```
 
-### 5.5 색상 대비
+### 6.5 색상 대비
 
 **WCAG AA 기준**:
 - 일반 텍스트: 4.5:1 이상
@@ -790,7 +962,7 @@
 </p>
 ```
 
-### 5.6 터치 타겟
+### 6.6 터치 타겟
 
 **최소 크기**:
 - 모바일: 44x44px (iOS 권장)
@@ -807,7 +979,7 @@
 </Button>
 ```
 
-### 5.7 폼 접근성
+### 6.7 폼 접근성
 
 **레이블 연결**:
 - 모든 input에 `<Label>` 연결
@@ -836,7 +1008,7 @@
 </div>
 ```
 
-### 5.8 동적 콘텐츠 알림
+### 6.8 동적 콘텐츠 알림
 
 **라이브 리전**:
 - `aria-live="polite"`: 중요하지 않은 업데이트
@@ -852,9 +1024,9 @@
 
 ---
 
-## 6. 컴포넌트 선택 가이드
+## 7. 컴포넌트 선택 가이드
 
-### 6.1 버튼 선택
+### 7.1 버튼 선택
 
 | 사용 사례 | 컴포넌트 | 이유 |
 |---------|---------|------|
@@ -863,7 +1035,7 @@
 | 토글 | `Toggle` / `Switch` | 온/오프 상태 |
 | 선택 그룹 | `ToggleGroup` / `RadioGroup` | 다중 옵션 |
 
-### 6.2 오버레이 선택
+### 7.2 오버레이 선택
 
 | 사용 사례 | 컴포넌트 | 이유 |
 |---------|---------|------|
@@ -873,7 +1045,7 @@
 | 하단 패널 | `Drawer` | 모바일 친화적 |
 | 간단한 정보 | `Popover` / `Tooltip` | 경량 오버레이 |
 
-### 6.3 네비게이션 선택
+### 7.3 네비게이션 선택
 
 | 사용 사례 | 컴포넌트 | 이유 |
 |---------|---------|------|
@@ -882,7 +1054,7 @@
 | 상단 메뉴 | `Header` / `NavigationMenu` | 주요 네비게이션 |
 | 드롭다운 | `DropdownMenu` | 숨김 메뉴 |
 
-### 6.4 입력 선택
+### 7.4 입력 선택
 
 | 사용 사례 | 컴포넌트 | 이유 |
 |---------|---------|------|
@@ -895,9 +1067,9 @@
 
 ---
 
-## 7. 성능 최적화
+## 8. 성능 최적화
 
-### 7.1 코드 스플리팅
+### 8.1 코드 스플리팅
 
 **동적 import 사용**:
 ```tsx
@@ -908,7 +1080,7 @@ const HeavyComponent = dynamic(() => import('./HeavyComponent'), {
 });
 ```
 
-### 7.2 메모이제이션
+### 8.2 메모이제이션
 
 **React.memo 사용**:
 ```tsx
@@ -919,7 +1091,7 @@ const CenterCard = memo(({ name, address }) => {
 });
 ```
 
-### 7.3 가상화
+### 8.3 가상화
 
 **긴 리스트 최적화**:
 ```tsx
@@ -937,9 +1109,9 @@ import { useVirtualizer } from '@tanstack/react-virtual';
 
 ---
 
-## 8. 리뷰 및 평점 컴포넌트 (Sprint 4)
+## 9. 리뷰 및 평점 컴포넌트 (Sprint 4)
 
-### 8.1 ReviewSummary
+### 9.1 ReviewSummary
 
 **목적**: 센터의 평균 별점과 전체 리뷰 개수를 표시하는 요약 컴포넌트
 
@@ -962,7 +1134,7 @@ import { useVirtualizer } from '@tanstack/react-virtual';
 
 ---
 
-### 8.2 ReviewCard
+### 9.2 ReviewCard
 
 **목적**: 개별 리뷰를 카드 형태로 표시 (작성자 정보, 별점, 내용, 반응 버튼 포함)
 
@@ -999,7 +1171,7 @@ import { useVirtualizer } from '@tanstack/react-virtual';
 
 ---
 
-### 8.3 ReviewList
+### 9.3 ReviewList
 
 **목적**: 리뷰 목록을 표시하고 정렬, 무한 스크롤 기능 제공
 
@@ -1033,7 +1205,7 @@ import { useVirtualizer } from '@tanstack/react-virtual';
 
 ---
 
-### 8.4 StarRating
+### 9.4 StarRating
 
 **목적**: 별점 선택 및 표시를 위한 인터랙티브 컴포넌트
 
@@ -1080,7 +1252,7 @@ import { useVirtualizer } from '@tanstack/react-virtual';
 
 ---
 
-### 8.5 ReviewFormModal
+### 9.5 ReviewFormModal
 
 **목적**: 리뷰 작성 및 수정을 위한 모달 폼
 
@@ -1131,7 +1303,7 @@ import { useVirtualizer } from '@tanstack/react-virtual';
 
 ---
 
-### 8.6 EmptyReviews
+### 9.6 EmptyReviews
 
 **목적**: 리뷰가 없을 때 표시하는 빈 상태 컴포넌트
 
@@ -1163,7 +1335,7 @@ import { useVirtualizer } from '@tanstack/react-virtual';
 
 ---
 
-## 9. 리뷰 시스템 통합 가이드
+## 10. 리뷰 시스템 통합 가이드
 
 자세한 통합 예시는 Storybook 문서와 각 컴포넌트의 stories 파일을 참조하세요.
 
@@ -1171,9 +1343,13 @@ import { useVirtualizer } from '@tanstack/react-virtual';
 
 ## 문서 버전
 
-**최종 업데이트**: 2025-10-23
-**컴포넌트 수**: 64개 (Sprint 4: +6개)
-**문서 버전**: 2.1.0
+**최종 업데이트**: 2025-11-19
+**컴포넌트 수**: 64개 (Sprint 1 레이아웃: +2개, Sprint 4: +6개)
+**문서 버전**: 2.2.0
+
+**Sprint 1 레이아웃 컴포넌트** (2025-11-19 문서화 추가):
+- **MainLayout**: 전체 페이지 공통 레이아웃 (헤더, 콘텐츠, 하단 네비게이션)
+- **BottomNavigation**: 모바일 하단 고정 네비게이션 바 (3-tab)
 
 **Sprint 4 추가 컴포넌트**:
 - ReviewSummary
@@ -1182,3 +1358,8 @@ import { useVirtualizer } from '@tanstack/react-virtual';
 - StarRating
 - ReviewFormModal
 - EmptyReviews
+
+**변경 이력**:
+- **v2.2.0** (2025-11-19): 레이아웃 컴포넌트 상세 문서화 (MainLayout, BottomNavigation), 섹션 재구성 (새 Section 3 추가)
+- **v2.1.0** (2025-10-23): Sprint 4 리뷰 및 평점 컴포넌트 추가
+- **v2.0.0**: 초기 컴포넌트 API 문서

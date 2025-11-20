@@ -7,7 +7,7 @@
  * 센터 추천 결과 페이지
  */
 
-import { useEffect, Suspense } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { Loader2, MapPin, TrendingUp, AlertCircle, Search } from 'lucide-react';
 import { useRecommendations } from '@/hooks/useRecommendations';
@@ -25,10 +25,17 @@ function RecommendationsContent() {
   const router = useRouter();
 
   // 쿼리 파라미터에서 위치 정보 읽기
-  const lat = searchParams.get('lat');
-  const lng = searchParams.get('lng');
+  const latParam = searchParams.get('lat');
+  const lngParam = searchParams.get('lng');
   const maxDistance = searchParams.get('maxDistance');
   const limit = searchParams.get('limit');
+
+  // 위치 상태
+  const [location, setLocation] = useState<{ lat: number; lng: number } | null>(
+    latParam && lngParam ? { lat: parseFloat(latParam), lng: parseFloat(lngParam) } : null
+  );
+  const [locationLoading, setLocationLoading] = useState(!latParam || !lngParam);
+  const [locationError, setLocationError] = useState<string | null>(null);
 
   // Recommendations mutation
   const {
@@ -40,29 +47,85 @@ function RecommendationsContent() {
     showErrorToast: true,
   });
 
-  // 페이지 로드 시 자동으로 추천 요청
+  // 현재 위치 가져오기
   useEffect(() => {
-    if (lat && lng) {
+    // 쿼리 파라미터에 위치가 있으면 사용
+    if (latParam && lngParam) {
+      setLocation({ lat: parseFloat(latParam), lng: parseFloat(lngParam) });
+      setLocationLoading(false);
+      return;
+    }
+
+    // 브라우저 Geolocation API로 현재 위치 가져오기
+    if ('geolocation' in navigator) {
+      setLocationLoading(true);
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const userLocation = {
+            lat: position.coords.latitude,
+            lng: position.coords.longitude,
+          };
+          setLocation(userLocation);
+          setLocationLoading(false);
+          setLocationError(null);
+        },
+        (error) => {
+          setLocationLoading(false);
+          setLocationError(
+            error.code === 1
+              ? '위치 접근 권한이 거부되었습니다. 브라우저 설정에서 위치 권한을 허용해주세요.'
+              : '위치 정보를 가져올 수 없습니다.'
+          );
+        }
+      );
+    } else {
+      setLocationLoading(false);
+      setLocationError('이 브라우저는 위치 서비스를 지원하지 않습니다.');
+    }
+  }, [latParam, lngParam]);
+
+  // 위치를 가져온 후 추천 요청
+  useEffect(() => {
+    if (location) {
       getRecommendations({
-        latitude: parseFloat(lat),
-        longitude: parseFloat(lng),
+        latitude: location.lat,
+        longitude: location.lng,
         maxDistance: maxDistance ? parseInt(maxDistance) : 10,
         limit: limit ? parseInt(limit) : 5,
       });
     }
-  }, [lat, lng, maxDistance, limit, getRecommendations]);
+  }, [location, maxDistance, limit, getRecommendations]);
 
-  // 위치 정보가 없는 경우
-  if (!lat || !lng) {
+  // 위치 로딩 중
+  if (locationLoading) {
     return (
       <div className="container max-w-4xl mx-auto px-4 py-12">
-        <Alert>
+        <div className="flex flex-col items-center justify-center space-y-4">
+          <Loader2 className="h-12 w-12 animate-spin text-lavender-600" />
+          <div className="text-center">
+            <h2 className="text-h3 font-semibold text-neutral-900 mb-2">
+              현재 위치 확인 중
+            </h2>
+            <p className="text-body text-neutral-600">
+              센터 추천을 위해 현재 위치를 가져오고 있습니다
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // 위치 정보 오류
+  if (locationError) {
+    return (
+      <div className="container max-w-4xl mx-auto px-4 py-12">
+        <Alert variant="destructive">
           <AlertCircle className="h-5 w-5" />
-          <AlertTitle>위치 정보 필요</AlertTitle>
+          <AlertTitle>위치 정보 오류</AlertTitle>
           <AlertDescription>
-            센터 추천을 받으려면 현재 위치 정보가 필요합니다.
+            {locationError}
             <br />
-            메인 페이지에서 위치를 설정한 후 다시 시도해주세요.
+            메인 페이지에서 위치를 설정하거나 브라우저 위치 권한을 허용해주세요.
           </AlertDescription>
         </Alert>
 

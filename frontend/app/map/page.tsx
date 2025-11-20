@@ -10,6 +10,7 @@
  */
 
 import type { Metadata } from 'next';
+import MainLayout from '@/components/layout/MainLayout';
 import { MapPageClient } from './MapPageClient';
 
 /**
@@ -37,5 +38,9 @@ export const metadata: Metadata = {
  * 지도 페이지 (서버 컴포넌트)
  */
 export default function MapPage() {
-  return <MapPageClient />;
+  return (
+    <MainLayout title="지도 검색" showBackButton={false}>
+      <MapPageClient />
+    </MainLayout>
+  );
 }

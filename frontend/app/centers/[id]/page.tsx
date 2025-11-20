@@ -15,8 +15,8 @@ import {
   CenterDescription,
   OperatingInfoSection,
 } from '@/components/center';
-import { Star, Heart, Share2, ArrowLeft } from 'lucide-react';
-import Link from 'next/link';
+import { Heart, Share2 } from 'lucide-react';
+import MainLayout from '@/components/layout/MainLayout';
 import { CenterStaffSection } from './components/CenterStaffSection';
 import { CenterProgramsSection } from './components/CenterProgramsSection';
 import { CenterReviewsSection } from './components/CenterReviewsSection';
@@ -112,29 +112,20 @@ export default async function CenterDetailPage({ params }: PageProps) {
   }
 
   return (
-    <div className="min-h-screen bg-neutral-50">
-      {/* 헤더 */}
-      <header className="sticky top-0 z-10 bg-white border-b border-neutral-200">
-        <div className="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
-          <Link href="/" className="focus-ring rounded-lg">
-            <Button variant="ghost" size="sm" aria-label="홈으로 돌아가기">
-              <ArrowLeft className="w-5 h-5" />
-            </Button>
-          </Link>
-
-          <div className="flex items-center gap-2">
-            <Button variant="ghost" size="sm" aria-label="공유하기">
-              <Share2 className="w-5 h-5" />
-            </Button>
-            <Button variant="ghost" size="sm" aria-label="즐겨찾기">
-              <Heart className="w-5 h-5" />
-            </Button>
-          </div>
+    <MainLayout title={center.center_name} showBackButton={true}>
+      <div className="bg-neutral-50 min-h-full">
+        {/* 상단 액션 버튼 */}
+        <div className="max-w-4xl mx-auto px-4 py-3 flex justify-end gap-2">
+          <Button variant="ghost" size="sm" aria-label="공유하기">
+            <Share2 className="w-5 h-5" />
+          </Button>
+          <Button variant="ghost" size="sm" aria-label="즐겨찾기">
+            <Heart className="w-5 h-5" />
+          </Button>
         </div>
-      </header>
 
-      {/* 메인 컨텐츠 */}
-      <main className="max-w-4xl mx-auto px-4 py-6 space-y-6">
+        {/* 메인 컨텐츠 */}
+        <div className="max-w-4xl mx-auto px-4 pb-6 space-y-6">
         {/* 센터 기본 정보 - CenterHeader 컴포넌트 */}
         <Card>
           <CardContent className="p-6">
@@ -200,7 +191,8 @@ export default async function CenterDetailPage({ params }: PageProps) {
             </p>
           </CardContent>
         </Card>
-      </main>
-    </div>
+        </div>
+      </div>
+    </MainLayout>
   );
 }

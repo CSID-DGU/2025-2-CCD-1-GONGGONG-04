@@ -49,12 +49,12 @@ export type {
 
 // Sprint 4: 리뷰 훅
 export { useReviews } from './useReviews';
-export { useReviewMutation } from './useReviewMutation';
+export { useCreateReview, useUpdateReview, useDeleteReview } from './useReviewMutation';
 export { useReviewReaction } from './useReviewReaction';
 
 // 유틸리티 훅
 export { useClipboard } from './useClipboard';
-export { useMobile } from './use-mobile';
+export { useIsMobile } from './use-mobile';
 export { useToast, toast } from './use-toast';
 
 // Sprint 1: Kakao Map SDK 훅
@@ -80,3 +80,20 @@ export type {
 // Sprint 1: 센터 데이터 패칭 훅 (지도용)
 export { useCenterData, useCentersQuery } from './useCenterData';
 export type { UseCenterDataParams } from './useCenterData';
+
+// Sprint 2: 전체 센터 목록 패칭 훅 (센터 목록 페이지용)
+export { useCenters } from './useCenters';
+
+// Sprint 2: 센터 필터링 훅 (센터 목록 페이지용)
+export { useFilteredCenters } from './useFilteredCenters';
+export type {
+  UseFilteredCentersParams,
+  UseFilteredCentersReturn,
+} from './useFilteredCenters';
+
+// Sprint 2: 페이지네이션 훅 (센터 목록 페이지용)
+export { usePagination } from './usePagination';
+export type {
+  UsePaginationParams,
+  UsePaginationReturn,
+} from './usePagination';

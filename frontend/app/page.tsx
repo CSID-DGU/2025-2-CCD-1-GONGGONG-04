@@ -1,23 +1,46 @@
-import { Header } from "@/components/header"
-import { SearchBar } from "@/components/search-bar"
-import { HeroBanner } from "@/components/hero-banner"
-import { QuickAccessGrid } from "@/components/quick-access-grid"
-import { PromotionalSection } from "@/components/promotional-section"
-import { BottomNavigation } from "@/components/bottom-navigation"
+/**
+ * 지도 페이지 (홈)
+ *
+ * Kakao Maps를 사용하여 정신건강복지센터를 지도에 표시합니다
+ * - 지도 기반 센터 검색
+ * - 현재 위치 기반 주변 센터 표시
+ * - 지도 이동에 따른 센터 목록 업데이트
+ *
+ * @route /
+ */
 
-export default function HomePage() {
+import type { Metadata } from 'next';
+import MainLayout from '@/components/layout/MainLayout';
+import { MapPageClient } from './MapPageClient';
+
+/**
+ * 페이지 메타데이터
+ */
+export const metadata: Metadata = {
+  title: '지도로 찾기 | 마음이음',
+  description:
+    '지도에서 가까운 정신건강복지센터를 찾아보세요. 현재 위치 기반으로 주변 센터를 확인할 수 있습니다.',
+  keywords: [
+    '정신건강복지센터',
+    '지도',
+    '위치 기반',
+    '센터 찾기',
+    '내 주변 센터',
+  ],
+  openGraph: {
+    title: '지도로 찾기 | 마음이음',
+    description: '지도에서 가까운 정신건강복지센터를 찾아보세요',
+    type: 'website',
+  },
+};
+
+/**
+ * 지도 페이지 (서버 컴포넌트)
+ */
+export default function MapPage() {
   return (
-    <div className="min-h-screen bg-background font-korean">
-      <Header />
-      <main className="pb-20">
-        <div className="px-4 py-6 space-y-6">
-          <SearchBar />
-          <HeroBanner />
-          <QuickAccessGrid />
-          <PromotionalSection />
-        </div>
-      </main>
-      <BottomNavigation />
-    </div>
-  )
+    <MainLayout title="지도 검색" showBackButton={false}>
+      <MapPageClient />
+    </MainLayout>
+  );
 }

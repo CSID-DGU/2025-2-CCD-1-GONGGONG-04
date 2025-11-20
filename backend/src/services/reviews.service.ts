@@ -9,10 +9,10 @@
  * @module services/reviews
  */
 
-import { PrismaClient, Prisma } from '@prisma/client';
+import { Prisma } from '@prisma/client';
 import { NotFoundError, ConflictError, ForbiddenError } from '../utils/errors';
-
-const prisma = new PrismaClient();
+// Sprint 3 - Bug Fix: 중앙화된 Prisma 클라이언트 사용 (UTF-8 인코딩 강제)
+const { prisma } = require('../config/database');
 
 /**
  * Sort options for review listing

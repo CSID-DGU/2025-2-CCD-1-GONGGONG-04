@@ -116,6 +116,7 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
               return (
                 <div
                   key={option.optionNumber}
+                  onClick={() => onSelectOption(option.optionNumber)}
                   className={`
                     flex items-center space-x-3 p-4 rounded-lg border-2 transition-all
                     cursor-pointer min-h-[44px]
@@ -125,6 +126,14 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
                         : 'bg-white border-gray-200 hover:border-lavender-300'
                     }
                   `}
+                  role="button"
+                  tabIndex={0}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      onSelectOption(option.optionNumber);
+                    }
+                  }}
                 >
                   <RadioGroupItem
                     value={option.optionNumber.toString()}
@@ -133,7 +142,7 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
                   />
                   <Label
                     htmlFor={`question-${questionNumber}-option-${option.optionNumber}`}
-                    className="flex-1 cursor-pointer text-body text-gray-900"
+                    className="flex-1 cursor-pointer text-body text-gray-900 pointer-events-none"
                   >
                     {option.optionText}
                   </Label>

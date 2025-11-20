@@ -21,10 +21,11 @@ redisClient.on('error', (err) => {
 
 /**
  * 하이브리드 추천 기본 가중치
+ * Phase 2 Sprint 5: 규칙 기반 50% + AI 의미론적 검색 50%
  */
 const DEFAULT_WEIGHTS = {
-  embedding: parseFloat(process.env.DEFAULT_EMBEDDING_WEIGHT || '0.3'),
-  rule: parseFloat(process.env.DEFAULT_RULE_WEIGHT || '0.7')
+  embedding: parseFloat(process.env.DEFAULT_EMBEDDING_WEIGHT || '0.5'),
+  rule: parseFloat(process.env.DEFAULT_RULE_WEIGHT || '0.5')
 };
 
 /**

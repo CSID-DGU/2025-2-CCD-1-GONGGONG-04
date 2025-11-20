@@ -349,10 +349,38 @@ export async function calculateBatchTotalScores(
 
   const results = await Promise.all(scoringPromises);
 
-  // null 제거 및 점수 내림차순 정렬
-  return results
-    .filter((result): result is IntegratedScoreResult => result !== null)
-    .sort((a, b) => b.totalScore - a.totalScore);
+  // null 제거
+  const validResults = results.filter((result): result is IntegratedScoreResult => result !== null);
+
+  // 점수 내림차순 정렬 먼저 수행 (높은 점수의 센터를 우선 유지)
+  const sortedResults = validResults.sort((a, b) => b.totalScore - a.totalScore);
+
+  // 중복 제거 (centerId와 centerName 기준으로 첫 번째 항목만 유지)
+  const seenCenterIds = new Set<string>();
+  const seenCenterNames = new Set<string>();
+  const deduplicatedResults = sortedResults.filter((result) => {
+    const centerIdStr = result.centerId.toString();
+    // 띄어쓰기 제거하여 정규화 (예: "서울대병원" === "서울 대병원")
+    const centerNameNormalized = result.centerName.trim().toLowerCase().replace(/\s+/g, '');
+
+    // centerId 중복 체크
+    if (seenCenterIds.has(centerIdStr)) {
+      console.warn(`[Scoring] Duplicate center ID detected: ${result.centerName} (ID: ${centerIdStr})`);
+      return false;
+    }
+
+    // centerName 중복 체크 (띄어쓰기 무시)
+    if (seenCenterNames.has(centerNameNormalized)) {
+      console.warn(`[Scoring] Duplicate center name detected: ${result.centerName} (ID: ${centerIdStr}), normalized: ${centerNameNormalized}`);
+      return false;
+    }
+
+    seenCenterIds.add(centerIdStr);
+    seenCenterNames.add(centerNameNormalized);
+    return true;
+  });
+
+  return deduplicatedResults;
 }
 
 /**

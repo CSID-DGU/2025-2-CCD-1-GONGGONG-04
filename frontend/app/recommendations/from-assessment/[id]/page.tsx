@@ -16,13 +16,14 @@
 
 import React, { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { ArrowLeft, AlertCircle, Sparkles, Info } from 'lucide-react';
+import { AlertCircle, Sparkles, Info } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import MainLayout from '@/components/layout/MainLayout';
 import { LocationInputModal } from '@/components/recommendations/LocationInputModal';
 import { AssessmentRecommendationHeader } from '@/components/recommendations/AssessmentRecommendationHeader';
 import { RecommendationCard } from '@/components/recommendations/RecommendationCard';
@@ -46,6 +47,7 @@ export default function AssessmentRecommendationPage() {
   const [userQuery, setUserQuery] = useState<string>(''); // Textarea 입력값
   const [appliedQuery, setAppliedQuery] = useState<string>(''); // 실제로 API에 전달되는 쿼리
   const [showQueryInput, setShowQueryInput] = useState<boolean>(false);
+  const [showAlgorithmInfo, setShowAlgorithmInfo] = useState<boolean>(false); // 알고리즘 정보 토글
 
   /**
    * Assessment 정보 확인 및 위치 모달 열기
@@ -107,13 +109,6 @@ export default function AssessmentRecommendationPage() {
   };
 
   /**
-   * 뒤로 가기
-   */
-  const handleGoBack = () => {
-    router.back();
-  };
-
-  /**
    * AI 추천 적용하기 (Manual Trigger)
    */
   const handleApplyQuery = () => {
@@ -125,28 +120,24 @@ export default function AssessmentRecommendationPage() {
    */
   if (!storeResult || storeResult.assessmentId !== assessmentId) {
     return (
-      <div className="container mx-auto px-4 py-8 max-w-5xl">
-        <div className="space-y-6">
-          {/* 뒤로 가기 버튼 */}
-          <Button variant="ghost" onClick={handleGoBack} className="gap-2">
-            <ArrowLeft className="h-4 w-4" />
-            뒤로 가기
-          </Button>
+      <MainLayout title="맞춤 추천" showBackButton={true}>
+        <div className="container mx-auto px-4 py-8 max-w-5xl">
+          <div className="space-y-6">
+            {/* 에러 메시지 */}
+            <Alert variant="destructive">
+              <AlertCircle className="h-4 w-4" />
+              <AlertTitle>진단 정보를 찾을 수 없습니다</AlertTitle>
+              <AlertDescription>
+                진단을 먼저 완료해주세요.
+              </AlertDescription>
+            </Alert>
 
-          {/* 에러 메시지 */}
-          <Alert variant="destructive">
-            <AlertCircle className="h-4 w-4" />
-            <AlertTitle>진단 정보를 찾을 수 없습니다</AlertTitle>
-            <AlertDescription>
-              진단을 먼저 완료해주세요.
-            </AlertDescription>
-          </Alert>
-
-          <Button variant="lavender" onClick={() => router.push('/assessment')}>
-            자가진단 시작하기
-          </Button>
+            <Button variant="lavender" onClick={() => router.push('/assessment')}>
+              자가진단 시작하기
+            </Button>
+          </div>
         </div>
-      </div>
+      </MainLayout>
     );
   }
 
@@ -157,15 +148,10 @@ export default function AssessmentRecommendationPage() {
   const hasRecommendations = recommendations.length > 0;
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-5xl">
-      <div className="space-y-6">
-        {/* 뒤로 가기 버튼 */}
-        <Button variant="ghost" onClick={handleGoBack} className="gap-2">
-          <ArrowLeft className="h-4 w-4" />
-          뒤로 가기
-        </Button>
-
-        {/* 헤더 (진단 정보) */}
+    <MainLayout title="맞춤 추천" showBackButton={true}>
+      <div className="container mx-auto px-4 py-8 max-w-5xl">
+        <div className="space-y-6">
+          {/* 헤더 (진단 정보) */}
         <AssessmentRecommendationHeader
           assessment={storeResult as any}
           location={locationInput}
@@ -251,29 +237,48 @@ export default function AssessmentRecommendationPage() {
         {recommendationData?.data?.metadata && (
           <Card className="border-neutral-200 bg-neutral-50">
             <CardContent className="p-4">
-              <div className="flex items-center gap-4 text-caption">
+              <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <span className="text-neutral-600">추천 알고리즘:</span>
-                  <Badge variant={recommendationData.data.metadata.fallbackMode ? 'secondary' : 'default'}>
-                    {recommendationData.data.metadata.algorithm === 'hybrid' ? 'AI 하이브리드' : '규칙 기반'}
-                  </Badge>
-                </div>
-                {!recommendationData.data.metadata.fallbackMode && (
-                  <div className="flex items-center gap-2">
-                    <span className="text-neutral-600">가중치:</span>
-                    <span className="text-neutral-900 font-medium">
-                      규칙 {Math.round(recommendationData.data.metadata.weights.rule * 100)}% +
-                      AI {Math.round(recommendationData.data.metadata.weights.embedding * 100)}%
-                    </span>
-                  </div>
-                )}
-                <div className="flex items-center gap-2">
-                  <span className="text-neutral-600">응답 시간:</span>
-                  <span className="text-neutral-900 font-medium">
-                    {recommendationData.data.metadata.queryTime}ms
+                  <Info className="h-4 w-4 text-neutral-500" />
+                  <span className="text-body font-medium text-neutral-700">
+                    추천 알고리즘 정보
                   </span>
                 </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowAlgorithmInfo(!showAlgorithmInfo)}
+                  className="text-neutral-600 hover:text-neutral-900 hover:bg-neutral-100"
+                >
+                  {showAlgorithmInfo ? '숨기기' : '상세보기'}
+                </Button>
               </div>
+
+              {showAlgorithmInfo && (
+                <div className="mt-4 pt-4 border-t border-neutral-200 space-y-2">
+                  <div className="flex items-center gap-2 text-caption">
+                    <span className="text-neutral-600">추천 알고리즘:</span>
+                    <Badge variant={recommendationData.data.metadata.fallbackMode ? 'secondary' : 'default'}>
+                      {recommendationData.data.metadata.algorithm === 'hybrid' ? 'AI 하이브리드' : '규칙 기반'}
+                    </Badge>
+                  </div>
+                  {!recommendationData.data.metadata.fallbackMode && (
+                    <div className="flex items-center gap-2 text-caption">
+                      <span className="text-neutral-600">가중치:</span>
+                      <span className="text-neutral-900 font-medium">
+                        규칙 {Math.round(recommendationData.data.metadata.weights.rule * 100)}% +
+                        AI {Math.round(recommendationData.data.metadata.weights.embedding * 100)}%
+                      </span>
+                    </div>
+                  )}
+                  <div className="flex items-center gap-2 text-caption">
+                    <span className="text-neutral-600">응답 시간:</span>
+                    <span className="text-neutral-900 font-medium">
+                      {recommendationData.data.metadata.queryTime}ms
+                    </span>
+                  </div>
+                </div>
+              )}
             </CardContent>
           </Card>
         )}
@@ -327,16 +332,17 @@ export default function AssessmentRecommendationPage() {
           // 추천 결과 없음
           <EmptyRecommendations onChangeLocation={handleChangeLocation} />
         )}
-      </div>
+        </div>
 
-      {/* 위치 입력 모달 */}
-      <LocationInputModal
-        open={isLocationModalOpen}
-        onOpenChange={setIsLocationModalOpen}
-        onConfirm={handleLocationConfirm}
-        initialLocation={locationInput}
-        isLoading={isLoadingRecommendations}
-      />
-    </div>
+        {/* 위치 입력 모달 */}
+        <LocationInputModal
+          open={isLocationModalOpen}
+          onOpenChange={setIsLocationModalOpen}
+          onConfirm={handleLocationConfirm}
+          initialLocation={locationInput}
+          isLoading={isLoadingRecommendations}
+        />
+      </div>
+    </MainLayout>
   );
 }

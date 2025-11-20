@@ -401,6 +401,67 @@ export interface CentersListResponse {
 }
 
 /**
+ * 전체 센터 목록 조회 (Sprint 2 - Centers List Page)
+ *
+ * @returns 전체 센터 목록과 총 개수
+ * @throws CenterApiError
+ *
+ * @example
+ * const result = await getAllCenters();
+ */
+export async function getAllCenters(): Promise<CentersListResponse> {
+  try {
+    // Seoul City Hall coordinates for default search with all centers
+    // Using 'all' radius to get all centers in Korea
+    const url = new URL(`${API_BASE_URL}/centers`);
+    url.searchParams.append('lat', '37.5665');
+    url.searchParams.append('lng', '126.9780');
+    url.searchParams.append('radius', 'all'); // 'all' to get all centers in Korea
+
+    const response = await fetch(url.toString(), {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      cache: 'no-store',
+    });
+
+    if (!response.ok) {
+      if (response.status === 400) {
+        throw new CenterApiError('Failed to fetch centers', 400);
+      }
+
+      if (response.status >= 500) {
+        throw new CenterApiError('Server error occurred', response.status);
+      }
+
+      const errorData: ApiError = await response.json().catch(() => ({
+        error: 'Unknown error occurred',
+      }));
+
+      throw new CenterApiError(
+        errorData.message || errorData.error,
+        response.status
+      );
+    }
+
+    const responseBody = await response.json();
+    return responseBody.data;
+
+  } catch (error) {
+    if (error instanceof CenterApiError) {
+      throw error;
+    }
+
+    if (error instanceof TypeError && error.message.includes('fetch')) {
+      throw new CenterApiError('Network connection failed', 0);
+    }
+
+    throw new CenterApiError('Temporary error occurred', 500);
+  }
+}
+
+/**
  * 지도 중심 좌표 기준으로 주변 센터 검색
  *
  * @param params - 검색 파라미터 { lat, lng, radius }

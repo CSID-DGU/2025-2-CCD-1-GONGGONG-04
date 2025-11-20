@@ -1,0 +1,156 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`AssessmentSkeleton > 스냅샷 > should match snapshot 1`] = `
+<div>
+  <div
+    aria-label="자가진단 로딩 중"
+    class="container max-w-3xl mx-auto px-4 py-8"
+    role="status"
+  >
+    <div
+      class="mb-8"
+    >
+      <div
+        class="bg-accent animate-pulse rounded-md h-10 w-3/4 mb-3"
+        data-slot="skeleton"
+      />
+      <div
+        class="bg-accent animate-pulse rounded-md h-5 w-full mb-2"
+        data-slot="skeleton"
+      />
+      <div
+        class="bg-accent animate-pulse rounded-md h-5 w-2/3 mb-4"
+        data-slot="skeleton"
+      />
+      <div
+        class="flex items-center gap-2"
+      >
+        <div
+          class="bg-accent animate-pulse h-4 w-4 rounded-full"
+          data-slot="skeleton"
+        />
+        <div
+          class="bg-accent animate-pulse rounded-md h-4 w-32"
+          data-slot="skeleton"
+        />
+      </div>
+    </div>
+    <div
+      class="mb-6"
+    >
+      <div
+        class="flex items-center justify-between mb-2"
+      >
+        <div
+          class="bg-accent animate-pulse rounded-md h-4 w-20"
+          data-slot="skeleton"
+        />
+        <div
+          class="bg-accent animate-pulse rounded-md h-4 w-16"
+          data-slot="skeleton"
+        />
+      </div>
+      <div
+        class="bg-accent animate-pulse h-2 w-full rounded-full"
+        data-slot="skeleton"
+      />
+    </div>
+    <div
+      class="bg-card text-card-foreground flex flex-col gap-6 rounded-card border py-6 shadow-soft hover:shadow-card transition-shadow duration-200 shadow-md"
+      data-slot="card"
+    >
+      <div
+        class="@container/card-header grid auto-rows-min grid-rows-[auto_auto] items-start gap-1.5 px-6 has-data-[slot=card-action]:grid-cols-[1fr_auto] [.border-b]:pb-6 pb-4"
+        data-slot="card-header"
+      >
+        <div
+          class="bg-accent animate-pulse h-8 w-8 rounded-full mb-3"
+          data-slot="skeleton"
+        />
+        <div
+          class="bg-accent animate-pulse rounded-md h-7 w-full mb-2"
+          data-slot="skeleton"
+        />
+        <div
+          class="bg-accent animate-pulse rounded-md h-7 w-4/5"
+          data-slot="skeleton"
+        />
+      </div>
+      <div
+        class="px-6"
+        data-slot="card-content"
+      >
+        <div
+          class="space-y-3"
+        >
+          <div
+            class="flex items-center space-x-3 p-4 rounded-lg border-2 border-gray-200 min-h-[44px]"
+          >
+            <div
+              class="bg-accent animate-pulse h-5 w-5 rounded-full flex-shrink-0"
+              data-slot="skeleton"
+            />
+            <div
+              class="bg-accent animate-pulse rounded-md h-5 flex-1"
+              data-slot="skeleton"
+            />
+          </div>
+          <div
+            class="flex items-center space-x-3 p-4 rounded-lg border-2 border-gray-200 min-h-[44px]"
+          >
+            <div
+              class="bg-accent animate-pulse h-5 w-5 rounded-full flex-shrink-0"
+              data-slot="skeleton"
+            />
+            <div
+              class="bg-accent animate-pulse rounded-md h-5 flex-1"
+              data-slot="skeleton"
+            />
+          </div>
+          <div
+            class="flex items-center space-x-3 p-4 rounded-lg border-2 border-gray-200 min-h-[44px]"
+          >
+            <div
+              class="bg-accent animate-pulse h-5 w-5 rounded-full flex-shrink-0"
+              data-slot="skeleton"
+            />
+            <div
+              class="bg-accent animate-pulse rounded-md h-5 flex-1"
+              data-slot="skeleton"
+            />
+          </div>
+          <div
+            class="flex items-center space-x-3 p-4 rounded-lg border-2 border-gray-200 min-h-[44px]"
+          >
+            <div
+              class="bg-accent animate-pulse h-5 w-5 rounded-full flex-shrink-0"
+              data-slot="skeleton"
+            />
+            <div
+              class="bg-accent animate-pulse rounded-md h-5 flex-1"
+              data-slot="skeleton"
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+    <div
+      class="flex items-center justify-between gap-4 mt-6"
+    >
+      <div
+        class="bg-accent animate-pulse h-12 w-[120px] rounded-md"
+        data-slot="skeleton"
+      />
+      <div
+        class="bg-accent animate-pulse h-12 w-[120px] rounded-md"
+        data-slot="skeleton"
+      />
+    </div>
+    <span
+      class="sr-only"
+    >
+      자가진단 템플릿을 불러오는 중입니다...
+    </span>
+  </div>
+</div>
+`;
