@@ -18,33 +18,29 @@ const { prisma } = require('../config/database');
  * Sprint 1: 지도 기반 센터 검색
  * Day 1: Backend API Implementation
  *
- * @route GET /api/v1/centers?lat=37.5665&lng=126.9780&radius=5&offset=0&limit=50
+ * @route GET /api/v1/centers?lat=37.5665&lng=126.9780&radius=5
  * @param {Object} req - Express request object
  * @param {Object} req.query - Query parameters
  * @param {string} req.query.lat - User's latitude (required)
  * @param {string} req.query.lng - User's longitude (required)
  * @param {string} req.query.radius - Search radius ('10', '30', '50', '100', 'all') (optional, default: '5')
- * @param {string} req.query.offset - Pagination offset (optional, default: 0)
- * @param {string} req.query.limit - Results per page (optional, default: 50)
  * @param {Object} res - Express response object
  * @param {Function} next - Express next middleware function
  *
- * @returns {Object} Centers within radius with operating status, pagination info
+ * @returns {Object} All centers within radius with operating status
  *
  * @example
- * GET /api/v1/centers?lat=37.5665&lng=126.9780&radius=10&offset=0&limit=50
+ * GET /api/v1/centers?lat=37.5665&lng=126.9780&radius=10
  */
 const searchCenters = async (req, res, next) => {
   try {
-    const { lat, lng, radius, offset, limit } = req.query;
+    const { lat, lng, radius } = req.query;
 
-    // Get centers within radius (service handles caching and distance calculation)
+    // Get all centers within radius (service handles caching and distance calculation)
     const result = await getCentersWithinRadius(
       parseFloat(lat),
       parseFloat(lng),
       radius || '50',
-      offset ? parseInt(offset, 10) : 0,
-      limit ? parseInt(limit, 10) : 50,
     );
 
     // Send success response with Sprint 2 enhanced format

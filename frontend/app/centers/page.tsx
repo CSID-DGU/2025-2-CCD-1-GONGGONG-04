@@ -4,7 +4,7 @@
  * 전체 정신건강복지센터 리스트를 표시합니다
  * - 검색 기능 (센터명, 주소)
  * - 필터링 (센터 유형, 지역, 운영 상태)
- * - 페이지네이션 (20개/페이지)
+ * - 모든 센터를 한 번에 표시
  * - 센터 카드 클릭 시 상세 페이지 이동
  *
  * @route /centers
@@ -38,17 +38,10 @@ export const metadata: Metadata = {
 /**
  * 센터 목록 페이지 (서버 컴포넌트)
  */
-export default function CentersPage({
-  searchParams,
-}: {
-  searchParams: { page?: string };
-}) {
-  // Parse page from URL, default to 1
-  const initialPage = parseInt(searchParams.page || '1', 10);
-
+export default function CentersPage() {
   return (
     <MainLayout title="센터 목록" showBackButton={false} showBottomNav={true}>
-      <CenterListClient initialPage={initialPage} />
+      <CenterListClient />
     </MainLayout>
   );
 }

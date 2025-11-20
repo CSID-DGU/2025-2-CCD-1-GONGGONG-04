@@ -1,42 +1,20 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { useCenters, useFilteredCenters, usePagination } from '@/hooks';
+import { useState } from 'react';
+import { useCenters, useFilteredCenters } from '@/hooks';
 import { CenterCard } from '@/components/centers/CenterCard';
 import { SearchBar } from '@/components/centers/SearchBar';
 import { CenterListSkeleton } from '@/components/centers/CenterListSkeleton';
 import { EmptyStatePresets } from '@/components/centers/EmptyState';
 import CenterFilters from '@/components/centers/CenterFilters';
 import { FilterTags } from '@/components/centers/FilterTags';
-import {
-  Pagination,
-  PaginationContent,
-  PaginationItem,
-  PaginationLink,
-  PaginationPrevious,
-  PaginationNext,
-  PaginationEllipsis,
-} from '@/components/ui/pagination';
 import { Button } from '@/components/ui/button';
 import type { CenterFilters as CenterFiltersType } from '@/lib/utils/filterCenters';
 
-interface CenterListClientProps {
-  initialPage: number;
-}
-
-export function CenterListClient({ initialPage }: CenterListClientProps) {
-  const router = useRouter();
-
+export function CenterListClient() {
   const [searchQuery, setSearchQuery] = useState('');
   const [filters, setFilters] = useState<CenterFiltersType>({});
   const [isFilterOpen, setIsFilterOpen] = useState(false);
-  const [currentPage, setCurrentPage] = useState(initialPage);
-
-  // Sync currentPage with initialPage when it changes (e.g., browser back/forward)
-  useEffect(() => {
-    setCurrentPage(initialPage);
-  }, [initialPage]);
 
   // Fetch all centers
   const { data, isLoading, error } = useCenters();
@@ -50,58 +28,12 @@ export function CenterListClient({ initialPage }: CenterListClientProps) {
     filters,
   });
 
-  // Apply pagination
-  const {
-    paginatedItems,
-    totalPages,
-    currentPage: validatedPage,
-    hasPrevPage,
-    hasNextPage,
-    pageNumbers,
-    pageInfo,
-  } = usePagination({
-    items: filteredCenters,
-    currentPage,
-    itemsPerPage: 20,
-    maxVisiblePages: 5,
-  });
-
-  // Debug: Track state changes
-  useEffect(() => {
-    console.log('=== useEffect: State changed ===');
-    console.log('currentPage:', currentPage);
-    console.log('validatedPage:', validatedPage);
-    console.log('totalPages:', totalPages);
-    console.log('filteredCenters.length:', filteredCenters.length);
-    console.log('paginatedItems.length:', paginatedItems.length);
-    console.log('First 3 paginated items:', paginatedItems.slice(0, 3).map(c => ({ id: c.id, name: c.name })));
-    console.log('pageInfo:', pageInfo);
-  }, [currentPage, validatedPage, paginatedItems, filteredCenters, totalPages, pageInfo]);
-
-  // Page change handler using URL navigation
-  const handlePageChange = (page: number) => {
-    console.log('=== handlePageChange called ===');
-    console.log('Changing to page:', page);
-    console.log('Current page before:', currentPage);
-
-    // Update local state immediately for responsive UI
-    setCurrentPage(page);
-
-    // Update URL with new page number (include full path for App Router)
-    router.push(`/centers?page=${page}`, { scroll: false });
-
-    // Scroll to top
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-
   // Filter handlers
   const handleFiltersChange = (newFilters: CenterFiltersType) => {
     setFilters(newFilters);
   };
 
   const handleApplyFilters = () => {
-    setCurrentPage(1); // Reset to first page
-    router.push('/centers?page=1', { scroll: false }); // Reset to first page when filters change
     setIsFilterOpen(false);
   };
 
@@ -133,15 +65,11 @@ export function CenterListClient({ initialPage }: CenterListClientProps) {
     }
 
     setFilters(newFilters);
-    setCurrentPage(1); // Reset to first page
-    router.push('/centers?page=1', { scroll: false });
   };
 
   const handleResetFilters = () => {
     setFilters({});
     setSearchQuery('');
-    setCurrentPage(1); // Reset to first page
-    router.push('/centers?page=1', { scroll: false });
   };
 
   // Show full page skeleton during initial load
@@ -188,11 +116,7 @@ export function CenterListClient({ initialPage }: CenterListClientProps) {
       <div className="flex flex-col sm:flex-row gap-3">
         <div className="flex-1">
           <SearchBar
-            onSearchChange={(query) => {
-              setSearchQuery(query);
-              setCurrentPage(1); // Reset to first page
-              router.push('/centers?page=1', { scroll: false }); // Reset to first page on search
-            }}
+            onSearchChange={setSearchQuery}
             defaultValue={searchQuery}
             placeholder="센터명, 주소로 검색..."
           />
@@ -233,100 +157,11 @@ export function CenterListClient({ initialPage }: CenterListClientProps) {
             )}
           </div>
         ) : (
-          paginatedItems.map((center) => (
+          filteredCenters.map((center) => (
             <CenterCard key={center.id} center={center} variant="list" />
           ))
         )}
       </div>
-
-      {/* Pagination */}
-      {filteredCenters.length > 0 && (
-        <div className="flex flex-col items-center gap-4 pt-4">
-          {/* Page Info */}
-          <div className="text-small text-neutral-500" aria-live="polite">
-            {pageInfo}
-          </div>
-
-          {/* Pagination Controls */}
-          {totalPages > 1 && (
-            <Pagination>
-              <PaginationContent>
-                {/* Previous Button */}
-                <PaginationItem>
-                  <PaginationPrevious
-                    href="#"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      if (hasPrevPage) handlePageChange(validatedPage - 1);
-                    }}
-                    className={!hasPrevPage ? 'pointer-events-none opacity-50' : ''}
-                    aria-disabled={!hasPrevPage}
-                  />
-                </PaginationItem>
-
-                {/* Page Numbers */}
-                {pageNumbers.map((pageNum, index) => {
-                  // Check if we need ellipsis before this page
-                  const showEllipsisBefore = index === 0 && pageNum > 1;
-
-                  // Check if we need ellipsis after this page
-                  const showEllipsisAfter =
-                    index === pageNumbers.length - 1 && pageNum < totalPages;
-
-                  return (
-                    <div key={pageNum} className="flex items-center">
-                      {showEllipsisBefore && (
-                        <PaginationItem>
-                          <PaginationEllipsis />
-                        </PaginationItem>
-                      )}
-
-                      <PaginationItem>
-                        <PaginationLink
-                          href="#"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            handlePageChange(pageNum);
-                          }}
-                          isActive={pageNum === validatedPage}
-                          aria-label={`${pageNum}페이지로 이동`}
-                          aria-current={pageNum === validatedPage ? 'page' : undefined}
-                          className={
-                            pageNum === validatedPage
-                              ? 'bg-lavender-500 text-white hover:bg-lavender-600 border-lavender-500'
-                              : ''
-                          }
-                        >
-                          {pageNum}
-                        </PaginationLink>
-                      </PaginationItem>
-
-                      {showEllipsisAfter && (
-                        <PaginationItem>
-                          <PaginationEllipsis />
-                        </PaginationItem>
-                      )}
-                    </div>
-                  );
-                })}
-
-                {/* Next Button */}
-                <PaginationItem>
-                  <PaginationNext
-                    href="#"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      if (hasNextPage) handlePageChange(validatedPage + 1);
-                    }}
-                    className={!hasNextPage ? 'pointer-events-none opacity-50' : ''}
-                    aria-disabled={!hasNextPage}
-                  />
-                </PaginationItem>
-              </PaginationContent>
-            </Pagination>
-          )}
-        </div>
-      )}
 
       {/* Filter Dialog/Sheet */}
       <CenterFilters

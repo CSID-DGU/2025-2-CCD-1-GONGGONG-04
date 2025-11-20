@@ -282,7 +282,7 @@ function mergeAndScoreResults(ruleResults, semanticResults, weightEmbedding, wei
         total: Math.round(hybridScore),
         ruleBasedScore: ruleResult.totalScore,
         embeddingScore: Math.round(embeddingScore * 100),
-        breakdown: ruleResult.scores
+        ...ruleResult.scores
       },
       reasons: [
         ...ruleResult.reasons,

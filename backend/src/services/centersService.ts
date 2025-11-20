@@ -63,8 +63,6 @@ export interface CenterSearchResponse {
     lat: number;
     lng: number;
   };
-  hasMore?: boolean;
-  nextOffset?: number | null;
 }
 
 /**
@@ -97,16 +95,12 @@ interface RawCenterData {
  * @param lat - User latitude
  * @param lng - User longitude
  * @param radius - Search radius string ('10', '30', '50', '100', 'all')
- * @param offset - Pagination offset (default: 0)
- * @param limit - Results per page (default: 50)
- * @returns Promise<CenterSearchResponse> - Centers within radius
+ * @returns Promise<CenterSearchResponse> - All centers within radius
  */
 export async function getCentersWithinRadius(
   lat: number,
   lng: number,
   radius: string = '50',
-  offset: number = 0,
-  limit: number = 50,
 ): Promise<CenterSearchResponse> {
   const startTime = Date.now();
 
@@ -179,8 +173,6 @@ export async function getCentersWithinRadius(
         POINT(longitude, latitude),
         POINT(${lng}, ${lat})
       ) ASC
-      LIMIT ${limit}
-      OFFSET ${offset}
     `;
   } catch (err) {
     logger.error('[Center Search] Database query failed:', err);
@@ -261,8 +253,6 @@ export async function getCentersWithinRadius(
     total: processedCenters.length,
     radius: getRadiusDisplay(radius),
     userLocation: { lat, lng },
-    hasMore: processedCenters.length === limit,
-    nextOffset: processedCenters.length === limit ? offset + limit : null,
   };
 
   // 4. Save to Redis cache with 5-minute TTL
