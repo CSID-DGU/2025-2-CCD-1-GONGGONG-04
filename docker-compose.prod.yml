@@ -64,6 +64,9 @@ services:
       - DATABASE_URL=mysql://mindconnect_user:mindconnect_pass@mysql:3306/mindconnect
       - REDIS_URL=redis://redis:6379
       - QDRANT_URL=http://qdrant:6333
+    volumes:
+      # Prisma 디렉토리 마운트 (migration 파일, seed 파일 포함)
+      - ./backend/prisma:/app/prisma:ro
     depends_on:
       mysql:
         condition: service_healthy

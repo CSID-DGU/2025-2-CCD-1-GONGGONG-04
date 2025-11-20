@@ -128,16 +128,65 @@
 ## 🚀 시작하기
 
 ### 전체 환경 실행 (Docker Compose)
+
+#### 📦 프로덕션 환경
+**최적화된 빌드로 안정적인 운영**
+
 ```bash
-# 전체 환경 시작
-docker-compose up -d
+# 1. 전체 환경 시작
+docker compose -f docker-compose.prod.yml up -d
+
+# 2. 로그 확인
+docker compose -f docker-compose.prod.yml logs -f
+
+# 3. 환경 종료 (데이터는 보존됨)
+docker compose -f docker-compose.prod.yml down
+
+# 4. 소스코드 수정 후 재시작 (이미지 재빌드 + 변경사항 반영)
+docker compose -f docker-compose.prod.yml down
+docker compose -f docker-compose.prod.yml up -d --build
+
+# 5. 특정 서비스만 재빌드
+docker compose -f docker-compose.prod.yml up -d --build backend  # 또는 frontend
+```
+
+**특정 서비스만 빌드/재시작**:
+```bash
+# 백엔드만 캐시 없이 빌드
+docker compose -f docker-compose.prod.yml build --no-cache backend
+
+# 백엔드만 재시작
+docker compose -f docker-compose.prod.yml up -d backend
+
+# 프론트엔드만 캐시 없이 빌드 후 재시작
+docker compose -f docker-compose.prod.yml build --no-cache frontend
+docker compose -f docker-compose.prod.yml up -d frontend
+```
+
+**주의사항**:
+- ✅ `docker compose down`: 컨테이너만 종료, **DB 데이터는 유지됨** (volume 보존)
+- ⚠️ `docker compose down -v`: 컨테이너 + volume 삭제, **DB 데이터 삭제됨** (절대 사용 금지)
+- 🔄 소스코드 변경 시 반드시 `--build` 플래그로 재빌드 필요
+- 🚀 `--no-cache`: Docker 빌드 캐시를 사용하지 않고 처음부터 빌드 (의존성 문제 해결 시 유용)
+
+#### 🚀 개발 환경 (권장)
+**소스코드 변경 시 자동 반영 + Hot Reload**
+
+```bash
+# 개발 환경 실행
+docker compose -f docker-compose.dev.yml up -d
 
 # 로그 확인
-docker-compose logs -f
+docker compose -f docker-compose.dev.yml logs -f
 
 # 환경 종료
-docker-compose down
+docker compose -f docker-compose.dev.yml down
 ```
+
+**특징**:
+- ✅ 소스코드 수정 시 자동 반영 (이미지 재빌드 불필요)
+- ✅ Backend: nodemon으로 파일 변경 감지 → 자동 재시작
+- ✅ Frontend: Next.js Fast Refresh → 브라우저 자동 새로고침
 
 ### 개발 환경 설정
 
@@ -171,6 +220,112 @@ cd frontend
 npm run storybook
 # → http://localhost:6006
 ```
+
+## 💾 데이터베이스 관리
+
+### 프로덕션 환경 데이터베이스 초기화
+
+#### 0️⃣ 사전 준비 (Migration 파일 확인)
+**Prisma 디렉토리가 자동으로 마운트됩니다**
+
+```bash
+# 백엔드 컨테이너에서 migration 파일 존재 확인
+docker compose -f docker-compose.prod.yml exec backend ls -la prisma/migrations
+
+# ✅ docker-compose.prod.yml에 이미 설정됨:
+# volumes:
+#   - ./backend/prisma:/app/prisma:ro  (읽기 전용)
+#
+# 따라서 호스트의 migration 파일이 자동으로 컨테이너에 반영됩니다.
+```
+
+#### 1️⃣ 신규 배포 (처음 설정)
+**안전하게 스키마 적용 + 초기 데이터 삽입**
+
+```bash
+# 1. 백엔드 컨테이너 접속
+docker compose -f docker-compose.prod.yml exec backend sh
+
+# 2. Prisma 마이그레이션 적용 (프로덕션용)
+npx prisma migrate deploy
+
+# 3. Seed 데이터 삽입
+node prisma/seeds/assessmentTemplates.seed.js
+node prisma/seeds/k10-assessment-template.seed.js
+
+# 4. 컨테이너에서 나가기
+exit
+```
+
+#### 2️⃣ 스키마 변경사항 적용 (마이그레이션만)
+**기존 데이터 유지하면서 스키마만 업데이트**
+
+```bash
+# 백엔드 컨테이너에서 실행
+docker compose -f docker-compose.prod.yml exec backend npx prisma migrate deploy
+```
+
+#### 3️⃣ 완전 초기화 (⚠️ 모든 데이터 삭제)
+**데이터베이스를 완전히 초기화하고 처음부터 다시 설정**
+
+```bash
+# ⚠️ 경고: 모든 데이터가 영구적으로 삭제됩니다!
+# 프로덕션 환경에서는 절대 사용하지 마세요!
+
+# 1. 백엔드 컨테이너 접속
+docker compose -f docker-compose.prod.yml exec backend sh
+
+# 2. 데이터베이스 완전 초기화
+npx prisma migrate reset --force
+
+# 3. Seed 데이터 재삽입
+node prisma/seeds/assessmentTemplates.seed.js
+node prisma/seeds/k10-assessment-template.seed.js
+
+exit
+```
+
+#### 4️⃣ Prisma Client 재생성
+**스키마 변경 후 TypeScript 타입 동기화**
+
+```bash
+docker compose -f docker-compose.prod.yml exec backend npx prisma generate
+```
+
+### 개발 환경 데이터베이스 관리
+
+```bash
+# 개발 환경 백엔드 컨테이너 접속
+docker compose -f docker-compose.dev.yml exec backend sh
+
+# 개발용 마이그레이션 (자동으로 DB 스키마 적용)
+npx prisma migrate dev
+
+# Seed 데이터 삽입
+node prisma/seeds/assessmentTemplates.seed.js
+node prisma/seeds/k10-assessment-template.seed.js
+
+# Prisma Studio (DB GUI)
+npx prisma studio
+# → http://localhost:5555
+
+exit
+```
+
+### 주의사항
+
+**프로덕션 환경**:
+- ✅ `prisma migrate deploy`: 안전 (프로덕션 전용)
+- ⚠️ `prisma migrate dev`: 절대 사용 금지 (개발 전용)
+- 🚨 `prisma migrate reset`: 모든 데이터 삭제 (절대 사용 금지)
+
+**개발 환경**:
+- ✅ `prisma migrate dev`: 스키마 변경 + 자동 적용
+- ✅ `prisma migrate reset`: 완전 초기화 가능
+
+**데이터 보존**:
+- `docker compose down`: 데이터 유지 (volume 보존)
+- `docker compose down -v`: 데이터 삭제 (volume 삭제)
 
 ## 🧪 테스트
 

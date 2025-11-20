@@ -20,7 +20,7 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { KakaoMapView } from '@/components/Map/KakaoMapView';
-import { MapLayout } from '@/components/Map/MapLayout';
+import { MapLayoutSplit } from '@/components/Map/MapLayout';
 import { CenterMarkers } from '@/components/Map/CenterMarkers';
 import { MarkerInfoPopup } from '@/components/Map/MarkerInfoPopup';
 import { AddressSearchBar } from '@/components/Map/AddressSearchBar';
@@ -35,7 +35,7 @@ import { CenterMarkerData } from '@/lib/api/centers';
 import type { Address } from '@/types/address';
 import { createRoot, Root } from 'react-dom/client';
 import { Button } from '@/components/ui/button';
-import { MapPin, List, Map as MapIcon } from 'lucide-react';
+import { MapPin } from 'lucide-react';
 
 /**
  * 서울시청 기본 좌표
@@ -58,9 +58,6 @@ export function MapPageClient() {
   const [mapCenter, setMapCenter] = useState(SEOUL_CITY_HALL);
   const [selectedCenter, setSelectedCenter] = useState<CenterMarkerData | null>(null);
   const [isPopupOpen, setIsPopupOpen] = useState(false);
-
-  // 모바일 뷰 토글 (지도/리스트)
-  const [viewMode, setViewMode] = useState<'map' | 'list'>('map');
 
   // CustomOverlay 관리를 위한 ref
   const overlayRef = useRef<kakao.maps.CustomOverlay | null>(null);
@@ -128,6 +125,8 @@ export function MapPageClient() {
    * 상세보기 핸들러
    */
   const handleNavigate = useCallback((centerId: number) => {
+    console.log('[MapPageClient] handleNavigate 호출, centerId:', centerId);
+    console.log('[MapPageClient] router.push 실행:', `/centers/${centerId}`);
     router.push(`/centers/${centerId}`);
   }, [router]);
 
@@ -215,12 +214,7 @@ export function MapPageClient() {
 
     // 마커 클릭과 동일한 동작 (팝업 열기)
     handleMarkerClick(center);
-
-    // 모바일에서는 자동으로 지도 뷰로 전환
-    if (viewMode === 'list') {
-      setViewMode('map');
-    }
-  }, [map, handleMarkerClick, viewMode]);
+  }, [map, handleMarkerClick]);
 
   /**
    * 로딩 상태 표시
@@ -261,16 +255,6 @@ export function MapPageClient() {
     // 팝업을 렌더링할 컨테이너 생성
     const container = document.createElement('div');
     container.style.cssText = 'z-index: 1000;';
-
-    // Native 이벤트 차단 (Kakao Map 이벤트 시스템으로의 전파 방지)
-    // 클릭뿐 아니라 pointer/mouse/touch 시작 이벤트도 캡처 단계에서 차단
-    const stop = (e: Event) => {
-      e.stopPropagation();
-    };
-    container.addEventListener('click', stop, true);
-    container.addEventListener('pointerdown', stop, true);
-    container.addEventListener('mousedown', stop, true);
-    container.addEventListener('touchstart', stop, true);
 
     // React root 생성 및 렌더링
     const root = createRoot(container);
@@ -321,7 +305,22 @@ export function MapPageClient() {
   }, [map, selectedCenter, isPopupOpen, handleClosePopup, handleNavigate]);
 
   return (
-    <MapLayout>
+    <MapLayoutSplit
+      list={
+        <CenterList
+          centers={data?.centers || []}
+          isLoading={isLoading}
+          error={error?.message}
+          onSelectCenter={handleCenterListItemClick}
+          selectedCenterId={selectedCenter?.id || null}
+          hasNextPage={data?.hasMore || false}
+          isFetchingNextPage={false}
+          onLoadMore={() => {
+            console.log('Load more centers...');
+          }}
+        />
+      }
+    >
       {/* 지도 컨테이너 */}
       <div className="relative w-full h-full">
         <KakaoMapView
@@ -387,26 +386,6 @@ export function MapPageClient() {
           />
         )}
 
-        {/* 모바일 뷰 토글 버튼 */}
-        <div className="absolute bottom-20 right-4 z-10 flex flex-col gap-2 md:hidden">
-          <Button
-            variant={viewMode === 'map' ? 'lavender' : 'outline'}
-            size="icon"
-            onClick={() => setViewMode('map')}
-            aria-label="지도 보기"
-          >
-            <MapIcon />
-          </Button>
-          <Button
-            variant={viewMode === 'list' ? 'lavender' : 'outline'}
-            size="icon"
-            onClick={() => setViewMode('list')}
-            aria-label="리스트 보기"
-          >
-            <List />
-          </Button>
-        </div>
-
         {/* GPS 에러 토스트 */}
         {gpsError && (
           <div className="absolute top-32 left-1/2 transform -translate-x-1/2 z-20 bg-red-500 text-white px-4 py-2 rounded-lg shadow-lg">
@@ -414,30 +393,6 @@ export function MapPageClient() {
           </div>
         )}
       </div>
-
-      {/* 센터 리스트 패널 (데스크탑: 사이드 패널, 모바일: 전체 화면 토글) */}
-      <div className={`
-        fixed md:relative
-        inset-0 md:inset-auto
-        z-20 md:z-0
-        bg-white md:bg-transparent
-        transition-transform duration-300
-        ${viewMode === 'list' ? 'translate-x-0' : 'translate-x-full md:translate-x-0'}
-        md:w-96 md:h-full
-      `}>
-        <CenterList
-          centers={data?.centers || []}
-          isLoading={isLoading}
-          error={error?.message}
-          onSelectCenter={handleCenterListItemClick}
-          selectedCenterId={selectedCenter?.id || null}
-          hasNextPage={data?.hasMore || false}
-          isFetchingNextPage={false}
-          onLoadMore={() => {
-            console.log('Load more centers...');
-          }}
-        />
-      </div>
-    </MapLayout>
+    </MapLayoutSplit>
   );
 }

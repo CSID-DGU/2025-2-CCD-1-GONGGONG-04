@@ -12,12 +12,14 @@ describe('BottomNavigation', () => {
     vi.clearAllMocks();
   });
 
-  it('3개의 탭 버튼을 렌더링한다', () => {
+  it('5개의 탭 버튼을 렌더링한다', () => {
     (usePathname as ReturnType<typeof vi.fn>).mockReturnValue('/map');
     render(<BottomNavigation />);
 
     expect(screen.getByLabelText('지도 검색 페이지로 이동')).toBeInTheDocument();
     expect(screen.getByLabelText('센터 목록 페이지로 이동')).toBeInTheDocument();
+    expect(screen.getByLabelText('홈 페이지로 이동')).toBeInTheDocument();
+    expect(screen.getByLabelText('추천 페이지로 이동')).toBeInTheDocument();
     expect(screen.getByLabelText('자가진단 페이지로 이동')).toBeInTheDocument();
   });
 
@@ -33,11 +35,13 @@ describe('BottomNavigation', () => {
   });
 
   it('각 탭에 올바른 href가 설정되어 있다', () => {
-    (usePathname as ReturnType<typeof vi.fn>).mockReturnValue('/');
+    (usePathname as ReturnType<typeof vi.fn>).mockReturnValue('/map');
     render(<BottomNavigation />);
 
     expect(screen.getByLabelText('지도 검색 페이지로 이동')).toHaveAttribute('href', '/map');
     expect(screen.getByLabelText('센터 목록 페이지로 이동')).toHaveAttribute('href', '/centers');
+    expect(screen.getByLabelText('홈 페이지로 이동')).toHaveAttribute('href', '/');
+    expect(screen.getByLabelText('추천 페이지로 이동')).toHaveAttribute('href', '/recommendations');
     expect(screen.getByLabelText('자가진단 페이지로 이동')).toHaveAttribute('href', '/assessment');
   });
 
@@ -47,6 +51,8 @@ describe('BottomNavigation', () => {
 
     expect(screen.getByText('지도 검색')).toBeInTheDocument();
     expect(screen.getByText('센터 목록')).toBeInTheDocument();
+    expect(screen.getByText('홈')).toBeInTheDocument();
+    expect(screen.getByText('추천')).toBeInTheDocument();
     expect(screen.getByText('자가진단')).toBeInTheDocument();
   });
 

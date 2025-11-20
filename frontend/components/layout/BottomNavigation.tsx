@@ -2,7 +2,7 @@
 
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
-import { Map, List, ClipboardList, Heart, User, LucideIcon } from 'lucide-react';
+import { Map, List, ClipboardList, Heart, Home, LucideIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface NavTab {
@@ -12,11 +12,11 @@ interface NavTab {
 }
 
 const NAV_TABS: NavTab[] = [
-  { label: '지도 검색', href: '/', icon: Map },
+  { label: '지도 검색', href: '/map', icon: Map },
   { label: '센터 목록', href: '/centers', icon: List },
+  { label: '홈', href: '/', icon: Home },
   { label: '추천', href: '/recommendations', icon: Heart },
   { label: '자가진단', href: '/assessment', icon: ClipboardList },
-  { label: '마이', href: '/my', icon: User },
 ];
 
 export default function BottomNavigation() {
@@ -31,11 +31,8 @@ export default function BottomNavigation() {
       <div className="flex items-center justify-around h-16 pb-[env(safe-area-inset-bottom,0px)]">
         {NAV_TABS.map((tab) => {
           // 정확히 일치하거나 하위 경로인 경우 active 처리
-          // 단, '/' 경로는 정확히 일치해야만 active (모든 경로가 '/'로 시작하므로)
           const isActive =
-            tab.href === '/'
-              ? pathname === '/'
-              : pathname === tab.href || pathname.startsWith(tab.href + '/');
+            pathname === tab.href || pathname.startsWith(tab.href + '/');
           const Icon = tab.icon;
 
           return (
