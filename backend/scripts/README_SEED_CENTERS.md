@@ -38,7 +38,7 @@ docker-compose -f docker-compose.dev.yml ps
 # 프로젝트 루트에서
 docker-compose -f docker-compose.dev.yml exec -T mysql \
   mysql -umindconnect_user -pmindconnect_pass mindconnect \
-  < backend/scripts/seed_centers_for_embedding.sql
+  < backend/scripts/seed_centers_for_embedding_v2.sql
 ```
 
 **예상 출력**:
